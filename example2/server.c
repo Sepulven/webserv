@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/29 20:42:38 by asepulve          #+#    #+#             */
-/*   Updated: 2024/03/30 23:02:25 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/01 17:22:14 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -153,52 +153,6 @@ void	build_http_response(const char *file_name, const char *file_ext, char *resp
 	close(file_fd);
 }
 
-// void build_http_response(const char *file_name, 
-//                         const char *file_ext, 
-//                         char *response, 
-//                         size_t *response_len) {
-//     // build HTTP header
-//     const char *mime_type = get_mime_type(file_ext);
-//     char *header = (char *)malloc(BUFFER_SIZE * sizeof(char));
-//     snprintf(header, BUFFER_SIZE,
-//              "HTTP/1.1 200 OK\r\n"
-//              "Content-Type: %s\r\n"
-//              "\r\n",
-//              mime_type);
-
-//     // if file not exist, response is 404 Not Found
-//     int file_fd = open(file_name, O_RDONLY);
-//     if (file_fd == -1) {
-//         snprintf(response, BUFFER_SIZE,
-//                  "HTTP/1.1 404 Not Found\r\n"
-//                  "Content-Type: text/plain\r\n"
-//                  "\r\n"
-//                  "404 Not Found");
-//         *response_len = strlen(response);
-//         return;
-//     }
-
-//     // get file size for Content-Length
-//     struct stat file_stat;
-//     fstat(file_fd, &file_stat);
-//     off_t file_size = file_stat.st_size;
-
-//     // copy header to response buffer
-//     *response_len = 0;
-//     memcpy(response, header, strlen(header));
-//     *response_len += strlen(header);
-
-//     // copy file to response buffer
-//     ssize_t bytes_read;
-//     while ((bytes_read = read(file_fd, 
-//                             response + *response_len, 
-//                             BUFFER_SIZE - *response_len)) > 0) {
-//         *response_len += bytes_read;
-//     }
-//     free(header);
-//     close(file_fd);
-// }
-
 void	*handle_client(void *arg)
 {
 	int client_fd = *((int*)arg);
@@ -206,7 +160,7 @@ void	*handle_client(void *arg)
 
 	printf("CLIENT:%d \n", client_fd);
 	ssize_t bytes_received = recv(client_fd, buffer, BUFFER_SIZE, 0);
-	if (bytes_received > 0)
+	if (bytes_received > 0)		
 	{
 		regex_t regex;
 		
@@ -235,7 +189,6 @@ void	*handle_client(void *arg)
 		regfree(&regex);
 	}
 	close(client_fd);
-	free(arg);
 	free(buffer);
 	return (NULL);
 }
@@ -254,8 +207,16 @@ int main(void)
 	
 	//confif socket
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_addr.s_addr = INADDR_ANY;
+	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	server_addr.sin_port = htons(PORT);
+
+	struct linger ling;
+	ling.l_onoff = 1;
+	ling.l_linger = 0;
+	// if (setsockopt(server_fd, SOL_SOCKET, SO_LINGER, &ling, sizeof(ling)) < 0) {
+	// 	perror("setsockopt(SO_LINGER) failed");
+	// 	exit(EXIT_FAILURE);
+	// }
 
 	// Set the SO_REUSEADDR option
 	int enable = 1;
@@ -265,6 +226,11 @@ int main(void)
 		exit(EXIT_FAILURE);
 	}
 	
+	// if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT, &enable, sizeof(int)) < 0) {
+	// 	perror("setsockopt(SO_REUSEPORT) failed");
+	// 	exit(EXIT_FAILURE);
+	// }
+
 	if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr))  < 0)
 	{
 		perror("bind failed!");
@@ -280,19 +246,19 @@ int main(void)
 	printf("[NOT A NODE SERVER hehehe]Server is running on port:8080\n");
 	while (1)	
 	{
-		 struct sockaddr_in client_addr;
+		struct sockaddr_in client_addr;
 		socklen_t client_addr_len = sizeof(client_addr);
-		int *client_fd = malloc(sizeof(int));
+		int client_fd;
 
-		*client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_addr_len);
-		if (*client_fd < 0)
+		client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_addr_len);
+		if (client_fd < 0)
 		{
 			perror("accept failed");
 			continue ;
 		}
 
 		pthread_t thread_id;
-		pthread_create(&thread_id, NULL, handle_client, (void*)client_fd);
+		pthread_create(&thread_id, NULL, handle_client, &client_fd);
 		pthread_detach(thread_id);
 	}
 }
