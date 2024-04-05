@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/29 20:42:38 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/05 15:32:35 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/05 15:53:20 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,6 +199,15 @@ int main(void)
 	int server_fd;
 	struct sockaddr_in server_addr;
 
+	/*
+		AF_INET -> tcp/ip (selects the protocol family)
+			SOCK_STREAM
+			Provides sequenced, reliable, two-way, connection-based
+			byte streams.  An out-of-band data transmission mechanism
+			may be supported.
+
+
+	*/
 	server_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (server_fd < 0)
 	{
@@ -218,14 +227,9 @@ int main(void)
 		perror("setsockopt(SO_REUSEADDR) failed");
 		exit(EXIT_FAILURE);
 	}
-	
-	// if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT, &enable, sizeof(int)) < 0) {
-	// 	perror("setsockopt(SO_REUSEPORT) failed");
-	// 	exit(EXIT_FAILURE);
-	// }
 
 	int status = bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr));
-	printf("status: %d\n", enable);
+	printf("status: %d\n", status);
 	if (status < 0)
 	{
 		perror("bind failed!");
@@ -251,9 +255,13 @@ int main(void)
 			perror("accept failed");
 			continue ;
 		}
+		else{
+			printf("here\n");
+		}
 
-		pthread_t thread_id;
-		pthread_create(&thread_id, NULL, handle_client, &client_fd);
-		pthread_detach(thread_id);
+		// pthread_t thread_id;
+		handle_client(client_fd);
+		// pthread_create(&thread_id, NULL, handle_client, &client_fd);
+		// pthread_detach(thread_id);
 	}
 }
