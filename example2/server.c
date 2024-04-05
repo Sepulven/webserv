@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/29 20:42:38 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/01 17:22:14 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/05 15:32:35 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,7 @@ char *get_file_case_insensitive(const char *file_name) {
 
 char *url_decode(const char *src) {
     size_t src_len = strlen(src);
-    char *decoded = malloc(src_len + 1);
+    char *decoded = (char*)malloc(src_len + 1);
     size_t decoded_len = 0;
 
     // decode %2x to hex
@@ -133,6 +133,7 @@ void	build_http_response(const char *file_name, const char *file_ext, char *resp
 	struct stat file_stat;
 	fstat(file_fd, &file_stat);
 	off_t file_size = file_stat.st_size;
+	(void)file_size;
 	
 	*response_len = 0;
 	memcpy(response, header, strlen(header));
@@ -208,15 +209,7 @@ int main(void)
 	//confif socket
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	server_addr.sin_port = htons(PORT);
-
-	struct linger ling;
-	ling.l_onoff = 1;
-	ling.l_linger = 0;
-	// if (setsockopt(server_fd, SOL_SOCKET, SO_LINGER, &ling, sizeof(ling)) < 0) {
-	// 	perror("setsockopt(SO_LINGER) failed");
-	// 	exit(EXIT_FAILURE);
-	// }
+	server_addr.sin_port = PORT;
 
 	// Set the SO_REUSEADDR option
 	int enable = 1;
@@ -231,7 +224,9 @@ int main(void)
 	// 	exit(EXIT_FAILURE);
 	// }
 
-	if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr))  < 0)
+	int status = bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr));
+	printf("status: %d\n", enable);
+	if (status < 0)
 	{
 		perror("bind failed!");
 		exit(EXIT_FAILURE);
