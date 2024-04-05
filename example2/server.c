@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/29 20:42:38 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/05 15:53:20 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/05 19:23:34 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <poll.h>
 
 #define PORT 8080
 #define BUFFER_SIZE 104857600
@@ -217,8 +218,8 @@ int main(void)
 	
 	//confif socket
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	server_addr.sin_port = PORT;
+	server_addr.sin_addr.s_addr = INADDR_ANY;
+	server_addr.sin_port = htons(PORT);
 
 	// Set the SO_REUSEADDR option
 	int enable = 1;
@@ -241,27 +242,23 @@ int main(void)
 		perror("listen failed!");
 		exit(EXIT_FAILURE);
 	}
-	
-	printf("[NOT A NODE SERVER hehehe]Server is running on port:8080\n");
+
+	printf("server_fd %d\n", server_fd);
 	while (1)	
 	{
 		struct sockaddr_in client_addr;
 		socklen_t client_addr_len = sizeof(client_addr);
-		int client_fd;
+		int client_fd = -1;
 
+		printf("=\n");
 		client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_addr_len);
 		if (client_fd < 0)
 		{
 			perror("accept failed");
 			continue ;
+		} else {
+			printf("here we are!\n");
+			// handle_client(&client_fd);
 		}
-		else{
-			printf("here\n");
-		}
-
-		// pthread_t thread_id;
-		handle_client(client_fd);
-		// pthread_create(&thread_id, NULL, handle_client, &client_fd);
-		// pthread_detach(thread_id);
 	}
 }
