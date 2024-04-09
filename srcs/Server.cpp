@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 13:22:29 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/09 18:06:13 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/09 19:01:39 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,11 @@ void Server::accept_connection(int epoll_fd)
 	this->connections.push_back(event);
 	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &event) < 0)
 		throw Server::Error("Epoll_ctl failed");
+}
+
+void Server::read_request()
+{
+	
 }
 
 void Server::listen(void)
