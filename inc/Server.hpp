@@ -6,34 +6,49 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 12:31:02 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/09 12:41:46 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/09 13:55:52 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
+/* C headers*/
+#include <sys/epoll.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <unistd.h>
+
+/* C++ headers*/
+#include <iostream>
+#include <exception>
+#include <vector>
+
+// #include <sys/stat.h>
+// #include <sys/types.h>
+
 class Server
 {
-public:
-	Server();
-	Server(Server &&) = default;
-	Server(const Server &) = default;
-	Server &operator=(Server &&) = default;
-	Server &operator=(const Server &) = default;
-	~Server();
-private:
-	struct sockaddr_in  server_addr;
-	int fd;
-	/*CGI - may be a new object */
-	unsigned short int PORT;
-	struct epoll_event *connections;
-	int max_events;
+	private:
+		struct sockaddr_in  server_addr;
+		int domain;
+		int fd;
+	
+		/*CGI - may be a new object */
+		int port;
+		std::vector<struct epoll_event> connections;
+		int max_events;
+	public:
+		void	listen(void);
+		Server();
+		~Server();
+
+		class Error : public std::exception
+		{
+			private:
+				const char *msg;
+				virtual const char * what() const throw();
+			public:
+				Error(const char *_msg);
+		};
 };
-
-Server::Server()
-{
-}
-
-Server::~Server()
-{
-}

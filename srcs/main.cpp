@@ -6,16 +6,16 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 12:28:28 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/09 12:45:10 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/09 13:48:58 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <Server.hpp>
 
 
-int main(void argc, char **argv)
+int main(void)
 {
-	Server server(argv[1]);
+	Server server;
 
 	server.listen();
 }
