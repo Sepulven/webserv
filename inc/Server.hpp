@@ -6,13 +6,14 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 12:31:02 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/09 13:55:52 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/09 17:19:23 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 /* C headers*/
+#include <string.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -40,6 +41,8 @@ class Server
 		int max_events;
 	public:
 		void	listen(void);
+		void	accept_connection(int);
+
 		Server();
 		~Server();
 
