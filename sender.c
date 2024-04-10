@@ -42,10 +42,12 @@ int main() {
 
     // Send HTTP GET request
     const char *request = "GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n";
-    if (send(sockfd, request, strlen(request), 0) == -1) {
-        perror("send");
-        exit(1);
-    }
+	for (size_t i = 0; i <= strlen(request); i++)
+	{
+		write(sockfd, &request[i], 1);
+		write(1, &request[i], 1);
+		usleep(1000);
+	}
 
     // Receive response
     while ((numbytes = recv(sockfd, buf, BUFSIZE - 1, 0)) > 0) {

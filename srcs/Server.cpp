@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 13:22:29 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/10 15:41:44 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/10 15:53:27 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,11 +66,16 @@ void Server::read_request(int epoll_fd, struct epoll_event conn, int i)
 	char buffer[1024];
 	std::string &str = this->request;
 	std::string suffix = "\r\n\r\n";
-	read(conn.data.fd, buffer, 1024);
-	std::cout << buffer << std::endl;
-	str += buffer;
+	int bytes_read = read(conn.data.fd, buffer, 1024);
 
-	if (str.length() >= suffix.length() && str.substr(str.length() - suffix.length()) == suffix)
+	buffer[bytes_read] = 0;
+	std::cout << buffer << std::endl;
+	std::cout << "bytes_read:" << bytes_read << std::endl;
+
+	str += buffer;
+	std::cout << str << std::endl;
+
+	if (!strcmp(&(str.c_str()[str.size() - 4]), "\r\n\r\n"))
 	{
 		char buffer1[1024] = "HTTP/1.1 200 OK\n"
 					"Date: Mon, 27 Jul 2009 12:28:53 GMT\n"
