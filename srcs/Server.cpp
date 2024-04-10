@@ -63,10 +63,14 @@ void Server::accept_connection(int epoll_fd)
 
 void Server::read_request(int epoll_fd, struct epoll_event conn, int i)
 {
-	char buffer[1024];
 	// handle_client request
-	read(conn.data.fd, buffer, 1024);
-	std::cout << buffer << std::endl;
+
+	Req	req(conn.data.fd);
+	req.get_request();
+
+	// char buffer[1024];
+	// read(conn.data.fd, buffer, 1024);
+	// std::cout << buffer << std::endl;
 
 	char buffer1[1024] = "HTTP/1.1 200 OK\n"
 						"Date: Mon, 27 Jul 2009 12:28:53 GMT\n"

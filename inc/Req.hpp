@@ -10,6 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#ifndef REQ_HPP
+#define REQ_HPP
+
 #pragma once
 
 /*
@@ -27,24 +30,39 @@
 
 */
 
+
+/*
+- receive header and check it
+	method + request target + transfer protocol
+	host
+	user-agent
+	accept
+	accept-language
+	accept-charset
+	connection
+
+- check for the end, unchunk if it is chunked
+*/
+
+#include <iostream>
+#include <ostream>
+#include <unistd.h>
+#include <map>
+
 class Req
 {
 	public:
-		Req();
-		Req(Req &&) = default;
-		Req(const Req &) = default;
-		Req &operator=(Req &&) = default;
-		Req &operator=(const Req &) = default;
-		~Req();
+		Req(int connection);
+		void	get_request();
+		void    map_elements();
 
 	private:
-	
+		std::string	line;
+		std::map<std::string, std::string>	elements;
+
+		std::string	method;
+		std::string	url;
+		// std::string version;
 };
 
-Req::Req()
-{
-}
-
-Req::~Req()
-{
-}
+#endif

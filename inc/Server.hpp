@@ -30,6 +30,8 @@
 // #include <sys/stat.h>
 // #include <sys/types.h>
 
+#include <Req.hpp>
+
 class Server
 {
 	private:
