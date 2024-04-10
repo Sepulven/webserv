@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 12:31:02 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/10 15:52:17 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/10 19:35:44 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <signal.h>
 
 #include <string.h>
 
@@ -55,8 +56,8 @@ class Server
 		Server();
 		~Server();
 		
-		static int sfd_non_blocking(int sfd);
-
+		void	sig_handler(int);
+		static int	sfd_non_blocking(int);
 		class Error : public std::exception
 		{
 			private:

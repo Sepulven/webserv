@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 13:22:29 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/10 15:53:27 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/10 20:29:07 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,31 +78,35 @@ void Server::read_request(int epoll_fd, struct epoll_event conn, int i)
 	if (!strcmp(&(str.c_str()[str.size() - 4]), "\r\n\r\n"))
 	{
 		char buffer1[1024] = "HTTP/1.1 200 OK\n"
-					"Date: Mon, 27 Jul 2009 12:28:53 GMT\n"
-					"Server: Apache/2.2.14 (Win32)\n"
-					"Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT\n"
-					"Content-Length: 88\n"
-					"Content-Type: text/html\n"
-					"Connection: Closed\n"
-					"\n"
-					"<html>\n"
-					"<body>\n"
-					"<h1>Hello, World!</h1>\n"
-					"</body>\n"
-					"</html>\n"
-					"\r\n";
+							"Date: Mon, 27 Jul 2009 12:28:53 GMT\n"
+							"Server: Apache/2.2.14 (Win32)\n"
+							"Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT\n"
+							"Content-Length: 88\n"
+							"Content-Type: text/html\n"
+							"Connection: Closed\n"
+							"\n"
+							"<html>\n"
+							"<body>\n"
+							"<img src='./42.jpeg' alt="">"
+							"<h1>Hello, World!</h1>\n"
+							"</body>\n"
+							"</html>\n"
+							"\r\n";
 		write(conn.data.fd, buffer1, sizeof(buffer1));
 
+		(void)epoll_fd;
+		(void)i;
+		(void)conn;
 		// Remove it from the list of watched elements
-		if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, conn.data.fd, NULL) < 0)
-			throw Server::Error("Epoll_ctl failed here");
+		// if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, conn.data.fd, NULL) < 0)
+		// 	throw Server::Error("Epoll_ctl failed here");
 
 		// Close the connection and finishes the request
-		close(conn.data.fd);
+		// close(conn.data.fd);
 
 		// We must erase the element without changing the order of the elements.
 		// So epoll could work
-		this->connections.erase(this->connections.begin() + i);
+		// this->connections.erase(this->connections.begin() + i);
 	}
 }
 
@@ -128,10 +132,9 @@ void Server::listen(void)
 
 		event.events = EPOLLIN;
 		event.data.fd = this->fd;
-		
 		if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, this->fd, &event))
 			throw Server::Error("epoll_ctl failed.");
-		while (true)
+		while (this->fd != -1)
 		{
 			num_connections = epoll_wait(epoll_fd, this->connections.data(), this->max_events, -1);
 			if (num_connections < 0)
