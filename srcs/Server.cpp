@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 13:22:29 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/09 19:01:39 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/10 11:54:19 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,10 +58,10 @@ void Server::accept_connection(int epoll_fd)
 		throw Server::Error("Epoll_ctl failed");
 }
 
-void Server::read_request()
-{
+// void Server::read_request()
+// {
 	
-}
+// }
 
 void Server::listen(void)
 {
@@ -90,10 +90,12 @@ void Server::listen(void)
 			if (num_connections < 0)
 				throw Server::Error("Epoll_wait failed.");
 			for (int i = 0; i < num_connections; i++)
-			{	
-				if (this->connections[i].data.fd == this->fd)
+			{
+				if (this->connections[i].events & EPOLLIN)
+					std::cout << "EPOLLIN in " << this->connections[i].data.fd << std::endl;
+				if ((this->connections[i].data.fd == this->fd) && (this->connections[i].events & EPOLLIN))
 					accept_connection(epoll_fd);
-				else
+				else if (this->connections[i].events & EPOLLIN)
 				{
 					char buffer[1024];
 					// handle_client request
