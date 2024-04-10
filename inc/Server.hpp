@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 12:31:02 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/10 13:19:45 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/10 15:40:06 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,9 @@ class Server
 		void	accept_connection(int);
 		void	read_request(int, struct epoll_event, int);
 
+
+		/*test purpose*/
+		std::string request;
 		Server();
 		~Server();
 		

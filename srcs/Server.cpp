@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 13:22:29 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/10 14:42:26 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/10 15:41:44 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,37 +64,41 @@ void Server::accept_connection(int epoll_fd)
 void Server::read_request(int epoll_fd, struct epoll_event conn, int i)
 {
 	char buffer[1024];
-	// handle_client request
+	std::string &str = this->request;
+	std::string suffix = "\r\n\r\n";
 	read(conn.data.fd, buffer, 1024);
 	std::cout << buffer << std::endl;
+	str += buffer;
 
-	char buffer1[1024] = "HTTP/1.1 200 OK\n"
-						"Date: Mon, 27 Jul 2009 12:28:53 GMT\n"
-						"Server: Apache/2.2.14 (Win32)\n"
-						"Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT\n"
-						"Content-Length: 88\n"
-						"Content-Type: text/html\n"
-						"Connection: Closed\n"
-						"\n"
-						"<html>\n"
-						"<body>\n"
-						"<h1>Hello, World!</h1>\n"
-						"</body>\n"
-						"</html>\n"
-						"\r\n";
-	
-	write(conn.data.fd, buffer1, sizeof(buffer1));
+	if (str.length() >= suffix.length() && str.substr(str.length() - suffix.length()) == suffix)
+	{
+		char buffer1[1024] = "HTTP/1.1 200 OK\n"
+					"Date: Mon, 27 Jul 2009 12:28:53 GMT\n"
+					"Server: Apache/2.2.14 (Win32)\n"
+					"Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT\n"
+					"Content-Length: 88\n"
+					"Content-Type: text/html\n"
+					"Connection: Closed\n"
+					"\n"
+					"<html>\n"
+					"<body>\n"
+					"<h1>Hello, World!</h1>\n"
+					"</body>\n"
+					"</html>\n"
+					"\r\n";
+		write(conn.data.fd, buffer1, sizeof(buffer1));
 
-	// Remove it from the list of watched elements
-	if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, conn.data.fd, NULL) < 0)
-		throw Server::Error("Epoll_ctl failed here");
+		// Remove it from the list of watched elements
+		if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, conn.data.fd, NULL) < 0)
+			throw Server::Error("Epoll_ctl failed here");
 
-	// Close the connection and finishes the request
-	close(conn.data.fd);
+		// Close the connection and finishes the request
+		close(conn.data.fd);
 
-	// We must erase the element without changing the order of the elements.
-	// So epoll could work
-	this->connections.erase(this->connections.begin() + i);
+		// We must erase the element without changing the order of the elements.
+		// So epoll could work
+		this->connections.erase(this->connections.begin() + i);
+	}
 }
 
 void Server::listen(void)
