@@ -30,20 +30,6 @@
 
 */
 
-
-/*
-- receive header and check it
-	method + request target + transfer protocol
-	host
-	user-agent
-	accept
-	accept-language
-	accept-charset
-	connection
-
-- check for the end, unchunk if it is chunked
-*/
-
 #include <iostream>
 #include <ostream>
 #include <unistd.h>
@@ -55,14 +41,16 @@ class Req
 		Req(int connection);
 		void	get_request();
 		void    map_elements();
-
+		void    get_info();
 	private:
 		std::string	line;
 		std::map<std::string, std::string>	elements;
 
 		std::string	method;
 		std::string	url;
-		// std::string version;
+		std::string	connection;
+		std::string cont_type;
+		std::string cont_len;
 };
 
 #endif
