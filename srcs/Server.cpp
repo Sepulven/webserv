@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 13:22:29 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/10 13:23:18 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/10 14:42:26 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,6 @@ void Server::read_request(int epoll_fd, struct epoll_event conn, int i)
 
 	// We must erase the element without changing the order of the elements.
 	// So epoll could work
-
 	this->connections.erase(this->connections.begin() + i);
 }
 
@@ -131,8 +130,6 @@ void Server::listen(void)
 			for (int i = 0; i < num_connections; i++)
 			{
 				current_connection = this->connections[i];
-				if (current_connection.events & EPOLLIN)
-					std::cout << "EPOLLIN in " << current_connection.data.fd << std::endl;
 				if ((current_connection.data.fd == this->fd) && (current_connection.events & EPOLLIN))
 					accept_connection(epoll_fd);
 				else if (this->connections[i].events & EPOLLIN)
