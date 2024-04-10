@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 13:22:29 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/10 11:54:19 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/10 13:20:34 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,8 @@ Server::Server() : domain(AF_INET), port(8080)
 	this->fd = socket(this->domain, SOCK_STREAM, 0);
 	if (this->fd < 0)
 		throw Server::Error("Socket failed.");
-
+	if (Server::sfd_non_blocking(this->fd))
+		throw Server::Error("Couldn't make the server socket non-blocking.");
 	memset(&this->server_addr, 0, sizeof(struct sockaddr_in));
 	this->server_addr.sin_family = this->domain;
 	this->server_addr.sin_addr.s_addr = INADDR_ANY;
@@ -49,25 +50,60 @@ void Server::accept_connection(int epoll_fd)
 	if (client_fd < 0) 
 		throw Server::Error("accept failed.");
 
-
+	if (sfd_non_blocking(client_fd) < 0)
+		throw Server::Error("Couln't make socket fd non-blocking.");
 	event.events = EPOLLIN;
 	event.data.fd = client_fd;
 
 	this->connections.push_back(event);
+	
 	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &event) < 0)
 		throw Server::Error("Epoll_ctl failed");
 }
 
-// void Server::read_request()
-// {
+void Server::read_request(int epoll_fd, struct epoll_event conn, int i)
+{
+	char buffer[1024];
+	// handle_client request
+	read(conn.data.fd, buffer, 1024);
+	std::cout << buffer << std::endl;
+
+	char buffer1[1024] = "HTTP/1.1 200 OK\n"
+						"Date: Mon, 27 Jul 2009 12:28:53 GMT\n"
+						"Server: Apache/2.2.14 (Win32)\n"
+						"Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT\n"
+						"Content-Length: 88\n"
+						"Content-Type: text/html\n"
+						"Connection: Closed\n"
+						"\n"
+						"<html>\n"
+						"<body>\n"
+						"<h1>Hello, World!</h1>\n"
+						"</body>\n"
+						"</html>\n"
+						"\r\n";
 	
-// }
+	write(conn.data.fd, buffer1, sizeof(buffer1));
+
+	// Remove it from the list of watched elements
+	if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, conn.data.fd, NULL) < 0)
+		throw Server::Error("Epoll_ctl failed here");
+
+	// Close the connection and finishes the request
+	close(conn.data.fd);
+
+	// We must erase the element without changing the order of the elements.
+	// So epoll could work
+
+	this->connections.erase(this->connections.begin() + i);
+}
 
 void Server::listen(void)
 {
 		struct epoll_event event;
 		int num_connections = 0;
 		int epoll_fd = 0; 
+		struct epoll_event current_connection;
 
 		epoll_fd = epoll_create1(0);
 
@@ -78,6 +114,9 @@ void Server::listen(void)
 
 		if (epoll_fd < 0)
 			throw Server::Error("Epoll_create1 failed.");
+
+		if (Server::sfd_non_blocking(epoll_fd) < 0)
+			throw Server::Error("Couln't make epoll fd non-blocking.");
 
 		event.events = EPOLLIN;
 		event.data.fd = this->fd;
@@ -91,52 +130,16 @@ void Server::listen(void)
 				throw Server::Error("Epoll_wait failed.");
 			for (int i = 0; i < num_connections; i++)
 			{
-				if (this->connections[i].events & EPOLLIN)
-					std::cout << "EPOLLIN in " << this->connections[i].data.fd << std::endl;
-				if ((this->connections[i].data.fd == this->fd) && (this->connections[i].events & EPOLLIN))
+				current_connection = this->connections[i];
+				if (current_connection.events & EPOLLIN)
+					std::cout << "EPOLLIN in " << current_connection.data.fd << std::endl;
+				if ((current_connection.data.fd == this->fd) && (current_connection.events & EPOLLIN))
 					accept_connection(epoll_fd);
 				else if (this->connections[i].events & EPOLLIN)
-				{
-					char buffer[1024];
-					// handle_client request
-					read(this->connections[i].data.fd, buffer, 1024);
-					std::cout << buffer << std::endl;
-
-					char buffer1[1024] = "HTTP/1.1 200 OK\n"
-										"Date: Mon, 27 Jul 2009 12:28:53 GMT\n"
-										"Server: Apache/2.2.14 (Win32)\n"
-										"Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT\n"
-										"Content-Length: 88\n"
-										"Content-Type: text/html\n"
-										"Connection: Closed\n"
-										"\n"
-										"<html>\n"
-										"<body>\n"
-										"<h1>Hello, World!</h1>\n"
-										"</body>\n"
-										"</html>\n"
-										"\r\n";
-					
-					write(this->connections[i].data.fd, buffer1, sizeof(buffer1));
-
-					// Remove it from the list of watched elements
-					if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, this->connections[i].data.fd, NULL) < 0)
-						throw Server::Error("Epoll_ctl failed here");
-
-					// Close the connection and finishes the request
-					close(this->connections[i].data.fd);
-
-
-					// We must erase the element without changing the order of the elements.
-					// So epoll could work
-					this->connections.erase(this->connections.begin() + i);
-					
-				}
+					read_request(epoll_fd, current_connection, i);
 			}
 		}
-
 }
-
 
 /*Exception class*/
 Server::Error::Error(const char *_msg) : msg(_msg) {}

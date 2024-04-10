@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 12:31:02 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/09 17:19:23 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/10 13:19:45 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,13 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 /* C++ headers*/
 #include <iostream>
 #include <exception>
 #include <vector>
+#include <algorithm>
 
 // #include <sys/stat.h>
 // #include <sys/types.h>
@@ -41,10 +43,14 @@ class Server
 		int max_events;
 	public:
 		void	listen(void);
+
 		void	accept_connection(int);
+		void	read_request(int, struct epoll_event, int);
 
 		Server();
 		~Server();
+		
+		static int sfd_non_blocking(int sfd);
 
 		class Error : public std::exception
 		{
