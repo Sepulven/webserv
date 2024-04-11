@@ -45,10 +45,15 @@ class Req
 		void		process_request();
 		void    	map_elements();
 		void    	get_info();
+
 		void		send_file();
+		void		response_file(int dir);
+		void		response_directory();
+
 		void		create_file();
 		void		delete_file();
-		std::string	readFile(const std::string& filename);
+
+		std::string	readFile(int dir);
 	private:
 		std::string	line;
 		std::map<std::string, std::string>	elements;
@@ -61,6 +66,14 @@ class Req
 		std::string cont_len;
 
 		std::string	file_to_open;
+
+		// info from config file
+		bool		autoindex; // directory listing
+		std::string	index; // default file
+		bool		redirect;
+		bool		get_allowed;
+		bool		post_allowed;
+		bool		delete_allowed;
 };
 
 #endif
