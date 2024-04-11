@@ -66,28 +66,24 @@ void Server::read_request(int epoll_fd, struct epoll_event conn, int i)
 	// handle_client request
 
 	Req	req(conn.data.fd);
-	req.get_request();
+	req.process_request();
 
-	// char buffer[1024];
-	// read(conn.data.fd, buffer, 1024);
-	// std::cout << buffer << std::endl;
-
-	char buffer1[1024] = "HTTP/1.1 200 OK\n"
-						"Date: Mon, 27 Jul 2009 12:28:53 GMT\n"
-						"Server: Apache/2.2.14 (Win32)\n"
-						"Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT\n"
-						"Content-Length: 88\n"
-						"Content-Type: text/html\n"
-						"Connection: Closed\n"
-						"\n"
-						"<html>\n"
-						"<body>\n"
-						"<h1>Hello, World!</h1>\n"
-						"</body>\n"
-						"</html>\n"
-						"\r\n";
+	// char buffer1[1024] = "HTTP/1.1 200 OK\n"
+	// 					"Date: Mon, 27 Jul 2009 12:28:53 GMT\n"
+	// 					"Server: Apache/2.2.14 (Win32)\n"
+	// 					"Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT\n"
+	// 					"Content-Length: 88\n"
+	// 					"Content-Type: text/html\n"
+	// 					"Connection: Closed\n"
+	// 					"\n"
+	// 					"<html>\n"
+	// 					"<body>\n"
+	// 					"<h1>Hello, World!</h1>\n"
+	// 					"</body>\n"
+	// 					"</html>\n"
+	// 					"\r\n";
 	
-	write(conn.data.fd, buffer1, sizeof(buffer1));
+	// write(conn.data.fd, buffer1, sizeof(buffer1));
 
 	// Remove it from the list of watched elements
 	if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, conn.data.fd, NULL) < 0)
@@ -100,6 +96,7 @@ void Server::read_request(int epoll_fd, struct epoll_event conn, int i)
 	// So epoll could work
 
 	this->connections.erase(this->connections.begin() + i);
+	//std::cout << "check\n";
 }
 
 void Server::listen(void)

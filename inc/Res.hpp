@@ -10,6 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#ifndef REQ_HPP
+#define REQ_HPP
+
 #pragma once
 
 /*
@@ -27,24 +30,14 @@
 		* Update fds in the server vector; 
 */
 
+#include "Req.hpp"
+
 class Res
 {
-public:
-	Res();
-	Res(Res &&) = default;
-	Res(const Res &) = default;
-	Res &operator=(Res &&) = default;
-	Res &operator=(const Res &) = default;
-	~Res();
+	public:
 
-private:
-	
+	private:
+
 };
 
-Res::Res()
-{
-}
-
-Res::~Res()
-{
-}
+#endif

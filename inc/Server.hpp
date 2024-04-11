@@ -31,6 +31,7 @@
 // #include <sys/types.h>
 
 #include <Req.hpp>
+#include <Res.hpp>
 
 class Server
 {

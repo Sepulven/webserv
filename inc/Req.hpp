@@ -34,23 +34,33 @@
 #include <ostream>
 #include <unistd.h>
 #include <map>
+#include <fcntl.h>
+#include <sstream>
+#include <fstream>
 
 class Req
 {
 	public:
 		Req(int connection);
-		void	get_request();
-		void    map_elements();
-		void    get_info();
+		void		process_request();
+		void    	map_elements();
+		void    	get_info();
+		void		send_file();
+		void		create_file();
+		void		delete_file();
+		std::string	readFile(const std::string& filename);
 	private:
 		std::string	line;
 		std::map<std::string, std::string>	elements;
+		int	con;
 
 		std::string	method;
-		std::string	url;
+		std::string	location;
 		std::string	connection;
 		std::string cont_type;
 		std::string cont_len;
+
+		std::string	file_to_open;
 };
 
 #endif

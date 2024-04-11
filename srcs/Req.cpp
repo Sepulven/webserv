@@ -5,13 +5,17 @@ Req::Req(int connection)
     char buffer[1024];
     int bytes_received = read(connection, buffer, sizeof(buffer));
     this->line = buffer;
+	std::cout << "Request: \n" <<  this->line << "." << std::endl;
     while (!this->line.find("\r\n\r\n"))
     {
         buffer[bytes_received] = '\0';
         this->line =+ buffer;
         bytes_received = read(connection, buffer, sizeof(buffer));
     }
-	std::cout << "Request: \n" <<  this->line << "." << std::endl;
+    if (!this->line.size())
+        throw std::invalid_argument("Invalid request - empty");
+
+    this->con = connection;
 }
 
 std::pair<std::string,std::string> split(std::string str, char c)
@@ -21,6 +25,27 @@ std::pair<std::string,std::string> split(std::string str, char c)
     std::string s2 = str.substr(found + 1);
     
     return std::make_pair(s1, s2);
+}
+
+std::string Req::readFile(const std::string& filename)
+{
+    if (filename == "./")
+        this->file_to_open = "index.html";
+    else
+        this->file_to_open = filename;
+
+    std::ifstream file(file_to_open.c_str());
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    std::cout << buffer.str() << std::endl;
+
+    return buffer.str();
+}
+
+std::string intToString(int value) {
+    std::stringstream ss;
+    ss << value;
+    return ss.str();
 }
 
 void    Req::map_elements()
@@ -50,8 +75,10 @@ void    Req::get_info()
     long unsigned int f = this->line.find("\n");
     std::string aux = this->line.substr(0, f);
     std::string aux1 = (split(aux, ' ')).second;
+
     if (this->method == "GET")
-        this->url = (split(aux1, ' ')).first;
+        this->location = (split(aux1, ' ')).first;
+
     this->connection = (this->elements)["Connection"];
 
     if (this->method == "POST")
@@ -61,7 +88,30 @@ void    Req::get_info()
     }
 }
 
-void    Req::get_request(void)
+void    Req::send_file()
+{
+    if (location[0] == '/')
+            location = "." + location;
+    if (open(location.c_str(), O_RDONLY) == -1)
+        throw std::invalid_argument("Invalid request - file not found");
+
+    std::string htmlContent = this->readFile(location);
+    std::string response = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " + intToString(htmlContent.length()) + "\n\n" + htmlContent;
+
+    write(this->con, response.c_str(), response.size());
+}
+
+void    Req::create_file()
+{
+
+}
+
+void    Req::delete_file()
+{
+
+}
+
+void    Req::process_request(void)
 {
     this->map_elements();
 
@@ -73,15 +123,20 @@ void    Req::get_request(void)
     // }
 
     // check request - permissions and existance ?
-    std::cout << this->connection << std::endl;
-    std::cout << this->url << std::endl;
-    std::cout << this->method << std::endl;
 
     if (this->method != "GET" && this->method != "POST" && this->method != "DELETE")
-        throw std::invalid_argument("Invalid request");
+        throw std::invalid_argument("Invalid request - method");
 
-    
     this->get_info();
 
+    std::cout << this->connection << std::endl;
+    std::cout << this->location << std::endl;
+    std::cout << this->method << std::endl;
 
+    if (this->method == "GET")
+        this->send_file();
+    else if (this->method == "POST")
+        this->create_file();
+    else if (this->method == "DELETE")
+        this->delete_file();
 }
