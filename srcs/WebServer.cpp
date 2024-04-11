@@ -17,45 +17,56 @@ Webserver::Webserver() : domain(AF_INET), port(8080)
 	this->max_events = 200;
 
 	// We are going to create multiple server fds given the context;
-	
 
-	this->fd = socket(this->domain, SOCK_STREAM, 0);
-	if (this->fd < 0)
-		throw Webserver::Error("Socket failed.");
-	if (Webserver::sfd_non_blocking(this->fd))
-		throw Webserver::Error("Couldn't make the Webserver socket non-blocking.");
-	memset(&this->Webserver_addr, 0, sizeof(struct sockaddr_in));
-	this->Webserver_addr.sin_family = this->domain;
-	this->Webserver_addr.sin_addr.s_addr = INADDR_ANY;
-	this->Webserver_addr.sin_port = htons(this->port);
-
-	//We ensure that our vector won't change its area.
-	this->connections.reserve(this->max_events);
-
-	int enable = 1;
-	if (setsockopt(this->fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
-		throw Webserver::Error("Setsockopt failed");
-
-	epoll_fd = epoll_create1(0);
-
-
-	if (bind(this->fd, (struct sockaddr *)&this->Webserver_addr, sizeof(Webserver_addr)) < 0)
-		throw Webserver::Error("Bind failed.");
-	if (::listen(this->fd, this->max_events) < 0)
-		throw Webserver::Error("Listen failed.");
-
-	if (epoll_fd < 0)
-		throw Webserver::Error("Epoll_create1 failed.");
-
-	if (Webserver::sfd_non_blocking(epoll_fd) < 0)
-		throw Webserver::Error("Couln't make epoll fd non-blocking.");
-
-	event.events = EPOLLIN;
-	event.data.fd = this->fd;
-	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, this->fd, &event))
-		throw Webserver::Error("epoll_ctl failed.");
 }
 
+void	WebServer::init_servers(void)
+{
+	std::vector<Server*> vec = {
+		new Server("asepulve.com.br", "localhost", 80),
+		new Server("ratavare.com.br", "localhost", 8080),
+		new Server("mvicent.com.br", "localhost", 8888)
+	};
+	struct sockaddr_in server_addr;
+	struct epoll_event event;
+
+	this->epoll_fd = epoll_create1(0);
+	
+	if (this->epoll_fd < 0)
+		throw Server::Error("Epoll_create1 failed.");
+	
+	for (size_t i = 0; i < vec.size(); i++)
+	{
+		memset(&server_addr, 0, sizeof(struct sockaddr_in));
+
+		server_addr.sin_family = AF_INET;
+		server_addr.sin_addr.s_addr = vec->domain;
+		server_addr.sin_port = htons(vec->port);
+	
+
+		vec[i]->fd = socket(AF_INET, SOCK_STREAM, 0);
+		if (vec[i]->fd < 0)
+			throw Webserver::Error("Socket failed.");
+		if (WebServer::sfd_non_blocking(this->fd) < 0)
+			throw Server::Error("Couldn't make the server socket non-blocking.");
+		if (WebServer::set_reuseaddr(vec[i]->fd) < 0)
+			throw Webserver::Error("Setsockopt failed");
+		if (WebServer::bind(vec[i]->fd), &server_addr < 0)
+			throw Server::Error("Bind failed.");
+		if (::listen(vec[i]->fd, vec[i]->max_conns) < 0)
+			throw Webserver::Error("Listen failed.");
+
+		memset(&event, 0, sizeof(struct epoll_event));
+		event.events = EPOLLIN;
+		event.data.fd = vec[i]->fd;
+		event.data.ptr = NULL; // We can add a lot of extra information in here whenever an event triggers;
+		if (WebServer::epoll_add_fd(this->epoll_fd, vec[i]->fd, &event));
+			throw Webserver::Error("epoll_ctl failed.");
+	}
+
+	//We ensure that our vector won't change its memory area.
+	this->connections.reserve(this->max_events);
+}
 Webserver::~Webserver()
 {
 	close(this->fd);

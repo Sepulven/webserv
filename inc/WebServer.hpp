@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/11 15:56:54 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/11 16:19:21 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/12 00:44:01 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ public:
 	std::string request;
 
 	void	listen(void);
+	void	init_servers(void);
 	void	accept_connection(int);
 	void	read_request(int, struct epoll_event, int);
 
@@ -63,12 +64,7 @@ public:
 			Error(const char *_msg);
 	};
 	static int	sfd_non_blocking(int);
+	static int	set_reuseaddr(int);
+	static int	epoll_add_fd(int, int, struct epoll_event *);
+	static int	bind(int, struct sockaddr_in *);
 };
-
-WebServer::WebServer()
-{
-}
-
-WebServer::~WebServer()
-{
-}
