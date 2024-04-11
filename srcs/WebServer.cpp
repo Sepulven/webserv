@@ -15,6 +15,8 @@
 Webserver::Webserver() : domain(AF_INET), port(8080)
 {
 	this->max_events = 200;
+
+	// We are going to create multiple server fds given the context;
 	
 
 	this->fd = socket(this->domain, SOCK_STREAM, 0);
