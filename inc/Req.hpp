@@ -56,6 +56,7 @@ class Req
 		std::string	readFile(int dir);
 	private:
 		std::string	line;
+		std::string	body;
 		std::map<std::string, std::string>	elements;
 		int	con;
 
@@ -64,13 +65,14 @@ class Req
 		std::string	connection;
 		std::string cont_type;
 		std::string cont_len;
+		std::string	filename;
 
 		std::string	file_to_open;
 
 		// info from config file
 		bool		autoindex; // directory listing
 		std::string	index; // default file
-		bool		redirect;
+		std::string	redirect;
 		bool		get_allowed;
 		bool		post_allowed;
 		bool		delete_allowed;

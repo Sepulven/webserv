@@ -20,7 +20,7 @@ Req::Req(int connection)
     // defining elements from config file
     this->autoindex = true;
     this->index = "";
-    this->redirect = false;
+    this->redirect = "";
     this->get_allowed = true;
     this->post_allowed = true;
     this->delete_allowed = true;
@@ -95,6 +95,15 @@ void    Req::get_info()
     {
         this->cont_type = (this->elements)["Content-Type"];
         this->cont_len = (this->elements)["Content-Length"];
+
+        int pos = this->line.find("Content-Disposition");
+        this->body = this->line.substr(pos);
+
+        std::string req = this->line;
+        int i = req.find("filename=") + 10;
+        req = req.substr(i);
+        int f = req.find("\"");
+        this->filename = req.substr(0, f);
     }
 }
 
@@ -130,8 +139,6 @@ void    Req::response_directory()
 
 void    Req::response_file(int dir)
 {
-    if (location[0] == '/')
-        location = "." + location;
     if (open(location.c_str(), O_RDONLY) == -1)
         throw std::invalid_argument("Invalid request - file not found");
 
@@ -143,9 +150,13 @@ void    Req::response_file(int dir)
 
 void    Req::send_file()
 {
+    if (!this->get_allowed)
+        throw std::invalid_argument("Invalid request - method not allowed");
+
+    if (location[0] == '/')
+        location = "." + location;
     if (location[location.size() - 1] == '/') // directory
     {
-        location = "." + location;
         if (this->index != "")
             this->response_file(1);
         else if (this->autoindex)
@@ -155,19 +166,32 @@ void    Req::send_file()
     }
     else
         this->response_file(0);
-
-    // check if is a redirect
-
 }
 
 void    Req::create_file()
 {
+    if (!this->post_allowed)
+        throw std::invalid_argument("Invalid request - method not allowed");
+    
+    std::ofstream file; // check if files exists
+    file.open(this->filename.c_str(), std::ios::in | std::ios::binary);
+    if (file.is_open())
+        throw std::invalid_argument("Invalid request - file already exists");
 
+    std::ofstream c_file(this->filename.c_str()); // create file
+    if (!c_file)
+        throw std::invalid_argument("Invalid request - error creating file");
+
+    c_file << this->body; // populate file
+    
+    std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nFile uploaded successfully!";
+    write(this->con, response.c_str(), response.size()); // send file
 }
 
 void    Req::delete_file()
 {
-
+    if (!this->delete_allowed)
+        throw std::invalid_argument("Invalid request - method not allowed");
 }
 
 void    Req::process_request(void)
@@ -175,20 +199,28 @@ void    Req::process_request(void)
     this->map_elements();
 
     // missing
-    // redirects
-    // get post delete allowed
+    // post - test browser file upload (working with client)
     // check request - permissions
-    // status codes + error pages
+    // status codes + server response (cant exit)
+    // error pages in browser
     // check links directory listing
 
     if (this->method != "GET" && this->method != "POST" && this->method != "DELETE")
-        throw std::invalid_argument("Invalid request - method");
+        throw std::invalid_argument("Invalid request - invalid method");
 
     this->get_info();
 
     std::cout << this->connection << std::endl;
     std::cout << this->location << std::endl;
     std::cout << this->method << std::endl;
+
+    if (this->redirect != "")
+    {
+        this->location = this->redirect;
+        std::cout << "Moved temporarily" << std::endl;
+    }
+
+    std::cout << this->location << std::endl;
 
     if (this->method == "GET")
         this->send_file();

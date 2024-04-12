@@ -91,7 +91,6 @@ void Server::read_request(int epoll_fd, struct epoll_event conn, int i)
 
 	// Close the connection and finishes the request
 	close(conn.data.fd);
-
 	// We must erase the element without changing the order of the elements.
 	// So epoll could work
 
