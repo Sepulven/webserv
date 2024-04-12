@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 12:28:28 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/11 16:17:22 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/12 16:54:44 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,10 @@ const char* RESET_COLOR = "\033[0m";
 
 int main(void)
 {
-	WebServer server;
 
 	try
 	{
+		WebServer server;
 		server.listen();
 	}
 	catch (const std::exception& e)
