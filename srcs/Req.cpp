@@ -199,11 +199,11 @@ void    Req::process_request(void)
     this->map_elements();
 
     // missing
-    // post - test browser file upload (working with client)
-    // check request - permissions
     // status codes + server response (cant exit)
     // error pages in browser
     // check links directory listing
+    // check request - permissions
+    // delete file
 
     if (this->method != "GET" && this->method != "POST" && this->method != "DELETE")
         throw std::invalid_argument("Invalid request - invalid method");
