@@ -1,78 +1,80 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   WebWebserver.cpp                                      :+:      :+:    :+:   */
+/*   WebServer.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/04/11 15:56:38 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/11 16:15:20 by asepulve         ###   ########.fr       */
+/*   Created: 2024/04/12 01:07:43 by asepulve          #+#    #+#             */
+/*   Updated: 2024/04/12 01:44:47 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <Webserver.hpp>
+#include <WebServer.hpp>
 
-Webserver::Webserver() : domain(AF_INET), port(8080)
+WebServer::WebServer()
 {
-	this->max_events = 200;
-
 	// We are going to create multiple server fds given the context;
+	this->init_servers();
+}
 
+WebServer::~WebServer()
+{
 }
 
 void	WebServer::init_servers(void)
 {
-	std::vector<Server*> vec = {
-		new Server("asepulve.com.br", "localhost", 80),
-		new Server("ratavare.com.br", "localhost", 8080),
-		new Server("mvicent.com.br", "localhost", 8888)
-	};
+	std::vector<Server*> vec;
+	vec.push_back(new Server("asepulve.com.br", "localhost", 80));
+	vec.push_back(new Server("ratavare.com.br", "localhost", 8080));
+	vec.push_back(new Server("mvicent.com.br", "localhost", 8888));
 	struct sockaddr_in server_addr;
 	struct epoll_event event;
 
 	this->epoll_fd = epoll_create1(0);
 	
 	if (this->epoll_fd < 0)
-		throw Server::Error("Epoll_create1 failed.");
+		throw WebServer::Error("Epoll_create1 failed.");
 	
 	for (size_t i = 0; i < vec.size(); i++)
 	{
 		memset(&server_addr, 0, sizeof(struct sockaddr_in));
 
 		server_addr.sin_family = AF_INET;
-		server_addr.sin_addr.s_addr = vec->domain;
-		server_addr.sin_port = htons(vec->port);
+		server_addr.sin_addr.s_addr = vec[i]->domain;
+		server_addr.sin_port = htons(vec[i]->port);
 	
 
-		vec[i]->fd = socket(AF_INET, SOCK_STREAM, 0);
-		if (vec[i]->fd < 0)
-			throw Webserver::Error("Socket failed.");
-		if (WebServer::sfd_non_blocking(this->fd) < 0)
-			throw Server::Error("Couldn't make the server socket non-blocking.");
-		if (WebServer::set_reuseaddr(vec[i]->fd) < 0)
-			throw Webserver::Error("Setsockopt failed");
-		if (WebServer::bind(vec[i]->fd), &server_addr < 0)
-			throw Server::Error("Bind failed.");
-		if (::listen(vec[i]->fd, vec[i]->max_conns) < 0)
-			throw Webserver::Error("Listen failed.");
+		vec[i]->socket = socket(AF_INET, SOCK_STREAM, 0);
+		if (vec[i]->socket < 0)
+			throw WebServer::Error("Socket failed.");
+		if (WebServer::sfd_non_blocking(vec[i]->socket) < 0)
+			throw WebServer::Error("Couldn't make the server socket non-blocking.");
+		if (WebServer::set_reuseaddr(vec[i]->socket) < 0)
+			throw WebServer::Error("Setsockopt failed");
+		if (WebServer::bind(vec[i]->socket, &server_addr) < 0)
+			throw WebServer::Error("Bind failed.");
+		if (::listen(vec[i]->socket, vec[i]->max_events) < 0)
+			throw WebServer::Error("Listen failed.");
 
 		memset(&event, 0, sizeof(struct epoll_event));
 		event.events = EPOLLIN;
-		event.data.fd = vec[i]->fd;
+		event.data.fd = vec[i]->socket;
 		event.data.ptr = NULL; // We can add a lot of extra information in here whenever an event triggers;
-		if (WebServer::epoll_add_fd(this->epoll_fd, vec[i]->fd, &event));
-			throw Webserver::Error("epoll_ctl failed.");
+		if (WebServer::epoll_add_fd(this->epoll_fd, vec[i]->socket, &event))
+			throw WebServer::Error("epoll_ctl failed.");
 	}
+
+	this->max_events = 0;
+	for (int i = 0; i < 3; i++)
+		this->max_events += vec[i]->max_events;
 
 	//We ensure that our vector won't change its memory area.
 	this->connections.reserve(this->max_events);
 }
-Webserver::~Webserver()
-{
-	close(this->fd);
-}
 
-void Webserver::accept_connection(int epoll_fd)
+
+void WebServer::accept_connection(int epoll_fd)
 {
 	struct epoll_event event;
 
@@ -81,20 +83,20 @@ void Webserver::accept_connection(int epoll_fd)
 	int client_fd = accept(this->fd, (struct sockaddr *)&client_addr, &client_addr_len);
 
 	if (client_fd < 0) 
-		throw Webserver::Error("accept failed.");
+		throw WebServer::Error("accept failed.");
 
 	if (sfd_non_blocking(client_fd) < 0)
-		throw Webserver::Error("Couln't make socket fd non-blocking.");
+		throw WebServer::Error("Couln't make socket fd non-blocking.");
 	event.events = EPOLLIN;
 	event.data.fd = client_fd;
 
 	this->connections.push_back(event);
 	
 	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &event) < 0)
-		throw Webserver::Error("Epoll_ctl failed");
+		throw WebServer::Error("Epoll_ctl failed");
 }
 
-void Webserver::read_request(int epoll_fd, struct epoll_event conn, int i)
+void WebServer::read_request(int epoll_fd, struct epoll_event conn, int i)
 {
 	char buffer[1024];
 	std::string &str = this->request;
@@ -129,7 +131,7 @@ void Webserver::read_request(int epoll_fd, struct epoll_event conn, int i)
 
 		// Remove it from the list of watched elements
 		if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, conn.data.fd, NULL) < 0)
-			throw Webserver::Error("Epoll_ctl failed here");
+			throw WebServer::Error("Epoll_ctl failed here");
 
 		// Close the connection and finishes the request
 		close(conn.data.fd);
@@ -140,14 +142,13 @@ void Webserver::read_request(int epoll_fd, struct epoll_event conn, int i)
 	}
 }
 
-void Webserver::listen(void)
+void WebServer::listen(void)
 {
-		struct epoll_event event;
 		int num_connections = 0;
 		int epoll_fd = this->epoll_fd; 
 		struct epoll_event current_connection;
 
-		while (this->fd != -1)
+		while (WebServer::is_running)
 		{
 			num_connections = epoll_wait(epoll_fd, this->connections.data(), this->max_events, -1);
 			if (num_connections < 0)
@@ -164,9 +165,9 @@ void Webserver::listen(void)
 }
 
 /*Exception class*/
-Webserver::Error::Error(const char *_msg) : msg(_msg) {}
+WebServer::Error::Error(const char *_msg) : msg(_msg) {}
 
-const char * Webserver::Error::what() const throw()
+const char * WebServer::Error::what() const throw()
 {
     return (msg);
 }
