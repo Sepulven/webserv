@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/11 15:56:54 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/12 16:51:58 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/14 23:03:24 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,8 +52,8 @@ public:
 
 	void	listen(void);
 	void	init_servers(void);
-	void	accept_connection(int, struct epoll_event );
-	void	read_request(int, struct epoll_event, int);
+	void	accept_connection(int, struct epoll_event *);
+	void	read_request(int, struct epoll_event*, int);
 
 	class Error : public std::exception
 	{
@@ -65,6 +65,6 @@ public:
 	};
 	static int	sfd_non_blocking(int);
 	static int	set_reuseaddr(int);
-	static int	epoll_add_fd(int, int, struct epoll_event *);
+	static int	epoll_add_fd(int, int, struct epoll_event);
 	static int	bind(int, struct sockaddr_in *);
 };
