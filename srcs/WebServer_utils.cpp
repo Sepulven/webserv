@@ -21,8 +21,10 @@ int WebServer::bind(int sfd, struct sockaddr_in *server_addr)
 
 int WebServer::epoll_add_fd(int epoll_fd, int fd, struct epoll_event event)
 {
-	// if (!event)
-	// 	return (-1);
-	std::cout << event.data.fd << " " << fd << std::endl;
 	return (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &event));
+}
+
+int WebServer::epoll_del_fd(int epoll_fd, int fd)
+{
+	return (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL));
 }

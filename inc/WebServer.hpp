@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/11 15:56:54 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/14 23:03:24 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/15 10:49:15 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <stdio.h>
 
 #include <string.h>
 
@@ -34,6 +35,12 @@
 
 // #include <sys/stat.h>
 // #include <sys/types.h>
+
+typedef struct s_events {
+	int fd;
+	char *type;
+	s_events(int _fd, char *_type) : fd(_fd), type(_type) {}
+} t_events;
 
 class WebServer
 {
@@ -52,8 +59,8 @@ public:
 
 	void	listen(void);
 	void	init_servers(void);
-	void	accept_connection(int, struct epoll_event *);
-	void	read_request(int, struct epoll_event*, int);
+	void	accept_connection(int, int);
+	void	read_request(int, int);
 
 	class Error : public std::exception
 	{
@@ -66,5 +73,6 @@ public:
 	static int	sfd_non_blocking(int);
 	static int	set_reuseaddr(int);
 	static int	epoll_add_fd(int, int, struct epoll_event);
+	static int	epoll_del_fd(int, int);
 	static int	bind(int, struct sockaddr_in *);
 };

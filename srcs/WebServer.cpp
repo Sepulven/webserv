@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 01:07:43 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/14 23:09:43 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/15 11:00:35 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,9 +60,7 @@ void	WebServer::init_servers(void)
 
 		memset(&event, 0, sizeof(struct epoll_event));
 		event.events = EPOLLIN;
-		event.data.fd = vec[i]->socket;
-		event.data.ptr = (void*)&event; // We can add a lot of extra information in here whenever an event triggers;
-		// std::cout << event.data.fd << " " << vec[i]->socket  << std::endl;
+		event.data.ptr = new t_events(vec[i]->socket, strdup("server"));
 		if (WebServer::epoll_add_fd(this->epoll_fd, vec[i]->socket, event))
 			throw WebServer::Error("epoll_ctl failed.");
 	}
@@ -76,35 +74,36 @@ void	WebServer::init_servers(void)
 }
 
 
-void WebServer::accept_connection(int epoll_fd, struct epoll_event *conn)
+void WebServer::accept_connection(int epoll_fd, int fd)
 {
 	struct epoll_event event;
-
 	struct sockaddr_in client_addr;
 	socklen_t client_addr_len = sizeof(client_addr);
-	int client_fd = accept(conn->data.fd, (struct sockaddr *)&client_addr, &client_addr_len);
+	int client_fd = accept(fd, (struct sockaddr *)&client_addr, &client_addr_len);
 
-	std::cout << "Accept fd: " << conn->data.fd << std::endl;
-	if (client_fd < 0) 
+	std::cout << client_fd << std::endl;
+	if (client_fd < 0)
 		throw WebServer::Error("accept failed.");
-
 	if (sfd_non_blocking(client_fd) < 0)
 		throw WebServer::Error("Couln't make socket fd non-blocking.");
 	event.events = EPOLLIN;
-	event.data.fd = client_fd;
-	event.data.ptr = NULL;
-	this->connections.push_back(event);
-	
-	if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &event) < 0)
+	event.data.ptr = new t_events(client_fd, strdup("client"));
+
+	t_events* ptr = (t_events*)event.data.ptr;
+	std::cout << "fd that has been accepted" << ptr->fd << std::endl;
+	if (WebServer::epoll_add_fd(epoll_fd, client_fd, event) < 0)
 		throw WebServer::Error("Epoll_ctl failed");
 }
 
-void WebServer::read_request(int epoll_fd, struct epoll_event *conn, int i)
+void WebServer::read_request(int epoll_fd, int fd)
 {
 	char buffer[1024];
 	std::string &str = this->request;
 	std::string suffix = "\r\n\r\n";
-	int bytes_read = read(conn->data.fd, buffer, 1024);
+	int bytes_read = read(fd, buffer, 1024);
+
+	if (bytes_read < 0)
+		return ;
 
 	buffer[bytes_read] = 0;
 	std::cout << buffer << std::endl;
@@ -130,18 +129,11 @@ void WebServer::read_request(int epoll_fd, struct epoll_event *conn, int i)
 							"</body>\n"
 							"</html>\n"
 							"\r\n";
-		write(conn->data.fd, buffer1, sizeof(buffer1));
-
-		// Remove it from the list of watched elements
-		if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, conn->data.fd, NULL) < 0)
-			throw WebServer::Error("Epoll_ctl failed here");
-
+		write(fd, buffer1, sizeof(buffer1));
+		
+		if (WebServer::epoll_del_fd(epoll_fd, fd))
 		// Close the connection and finishes the request
-		close(conn->data.fd);
-
-		// We must erase the element without changing the order of the elements.
-		// So epoll could work
-		this->connections.erase(this->connections.begin() + i);
+		close(fd);
 	}
 }
 
@@ -156,18 +148,23 @@ void WebServer::listen(void)
 			num_connections = epoll_wait(epoll_fd, this->connections.data(), this->max_events, -1);
 			if (num_connections < 0)
 				throw WebServer::Error("Epoll_wait failed.");
-
+	
 			for (int i = 0; i < num_connections; i++)
 			{
 				conn = &this->connections[i];
-				std::cout << "here: " << conn->data.fd << std::endl;
-				// Work around with conn.data->ptr, it's the poll_event strucuture 
-				// point used to indicate whether the fd is server or not
-				if ((conn->data.ptr) && (conn->events & EPOLLIN))
-					accept_connection(epoll_fd, conn);
+				t_events* event_data = (t_events*)conn->data.ptr;
+				if ((!strcmp(event_data->type, "server")) && (conn->events & EPOLLIN))
+				{
+					std::cout << "Accept_connection:" << std::endl;
+					accept_connection(epoll_fd, event_data->fd);
+				}
 				else if (this->connections[i].events & EPOLLIN)
-					read_request(epoll_fd, conn, i);
+				{
+					// std::cout << "Read request: " << std::endl;
+					read_request(epoll_fd, event_data->fd);
+				}
 			}
+			this->connections.clear();
 		}
 }
 
