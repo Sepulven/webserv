@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   WebServer_utils.cpp                                :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/04/15 16:54:14 by asepulve          #+#    #+#             */
+/*   Updated: 2024/04/15 16:54:31 by asepulve         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include <WebServer.hpp>
 
 int WebServer::sfd_non_blocking(int sfd)
@@ -19,19 +31,19 @@ int WebServer::bind(int sfd, struct sockaddr_in *server_addr)
 	return (::bind(sfd, (struct sockaddr *)server_addr, sizeof(struct sockaddr_in)));
 }
 
-int WebServer::epoll_add_fd(int epoll_fd, int fd, struct epoll_event event)
+int WebServer::epoll_add_fd(int epoll_fd, int fd, t_event event)
 {
 	return (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &event));
 }
 
-int WebServer::epoll_in_fd(int epoll_fd, int fd, struct epoll_event event)
+int WebServer::epoll_in_fd(int epoll_fd, int fd, t_event event)
 {
 	// event.events = EPOLLIN | EPOLLERR | EPOLLHUP;
 	event.events = EPOLLIN | EPOLLET;
 	return (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event));
 }
 
-int WebServer::epoll_out_fd(int epoll_fd, int fd, struct epoll_event event)
+int WebServer::epoll_out_fd(int epoll_fd, int fd, t_event event)
 {
 	// event.events = EPOLLOUT | EPOLLERR | EPOLLHUP;
 	event.events = EPOLLOUT | EPOLLET;
