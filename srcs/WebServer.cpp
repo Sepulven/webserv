@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 01:07:43 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/15 15:48:04 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/15 16:15:15 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,6 @@ void	WebServer::init_servers(void)
 		server_addr.sin_addr.s_addr = vec[i]->domain;
 		std::cout << vec[i]->port << std::endl;
 		server_addr.sin_port = htons(vec[i]->port);
-	
 
 		vec[i]->socket = socket(AF_INET, SOCK_STREAM, 0);
 		if (vec[i]->socket < 0)
@@ -61,7 +60,7 @@ void	WebServer::init_servers(void)
 
 		memset(&event, 0, sizeof(struct epoll_event));
 		event.events = EPOLLIN | EPOLLET;
-		event.data.ptr = new t_events(vec[i]->socket, strdup("server"));
+		event.data.ptr = new t_events(vec[i]->socket, SERVER);
 		if (WebServer::epoll_add_fd(this->epoll_fd, vec[i]->socket, event))
 			throw WebServer::Error("epoll_ctl failed.");
 	}
@@ -88,7 +87,7 @@ void WebServer::accept_connection(int epoll_fd, int fd)
 		throw WebServer::Error("Couln't make socket fd non-blocking.");
 
 	event.events = EPOLLIN;
-	event.data.ptr = new t_events(client_fd, strdup("client"));
+	event.data.ptr = new t_events(client_fd, CLIENT);
 
 	if (WebServer::epoll_add_fd(epoll_fd, client_fd, event) < 0)
 		throw WebServer::Error("Epoll_ctl failed");
@@ -113,7 +112,6 @@ void WebServer::send_request(int epoll_fd, int fd, struct epoll_event event)
 							"\r\n";
 
 	std::cout << "response size:" << strlen(buffer1) << std::endl;
-	// "<img src='./42.jpeg' alt="">"
 	write(fd, buffer1, strlen(buffer1));
 	write(1, buffer1, strlen(buffer1));
 	if (WebServer::epoll_in_fd(epoll_fd, fd, event) < 0)
@@ -134,20 +132,17 @@ void WebServer::read_request(int epoll_fd, int fd, struct epoll_event event)
 	std::string suffix = "\r\n\r\n";
 	int bytes_read = read(fd, buffer, 1024);
 
-	if (bytes_read == 0)
+	if (bytes_read <= 0)
 	{
 		this->close_conn(epoll_fd, fd);
 		return ;
 	}
-	
 
 	buffer[bytes_read] = 0;
 	std::cout << buffer << std::endl;
 	std::cout << "bytes_read:" << bytes_read << std::endl;
 
 	str += buffer;
-	// std::cout << str << std::endl;
-
 	if (!strcmp(&(str.c_str()[str.size() - 4]), "\r\n\r\n"))
 	{
 		if (WebServer::epoll_out_fd(epoll_fd, fd, event))
@@ -170,7 +165,7 @@ void WebServer::listen(void)
 			{
 				conn = &this->connections[i];
 				t_events* event_data = (t_events*)conn->data.ptr;
-				if ((!strcmp(event_data->type, "server")) && (conn->events & EPOLLIN))
+				if ((event_data->type == SERVER) && (conn->events & EPOLLIN))
 				{
 					std::cout << "Accept_connection:" << std::endl;
 					accept_connection(epoll_fd, event_data->fd);
@@ -185,6 +180,7 @@ void WebServer::listen(void)
 					std::cout << "epoll out event" << std::endl;
 					send_request(epoll_fd, event_data->fd, *conn);
 				}
+				// I need to forcefully test this scnerario for better error handling.
 				else if (conn->events & EPOLLERR || conn->events & EPOLLHUP)
 				{
 					std::cout << "Conn. closed in " << event_data->fd << std::endl;

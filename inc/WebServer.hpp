@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/11 15:56:54 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/15 12:08:52 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/15 16:14:52 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,9 +38,15 @@
 
 typedef struct s_events {
 	int fd;
-	char *type;
-	s_events(int _fd, char *_type) : fd(_fd), type(_type) {}
+	char type;
+	s_events(int _fd, char _type) : fd(_fd), type(_type) {}
 } t_events;
+
+enum SOCKET_TYPE
+{
+	SERVER = 's',
+	CLIENT = 'c'
+};
 
 class WebServer
 {
