@@ -5,7 +5,7 @@ Req::Req(int connection)
     char buffer[1024];
     int bytes_received = read(connection, buffer, sizeof(buffer));
     this->line = buffer;
-	std::cout << "Request: \n" <<  this->line << "." << std::endl;
+	std::cout << "<<<<<<<<<<<<<<<\n" <<  this->line << std::endl;
     while (!this->line.find("\r\n\r\n"))
     {
         buffer[bytes_received] = '\0';
@@ -13,20 +13,24 @@ Req::Req(int connection)
         bytes_received = read(connection, buffer, sizeof(buffer));
     }
     if (!this->line.size())
-        throw std::invalid_argument("Invalid request - empty");
+        this->send_response("400", -1);
 
     this->con = connection;
 
     // defining elements from config file
     this->autoindex = true;
-    this->index = "";
+    this->index = "index.html";
     this->redirect = "";
     this->get_allowed = true;
     this->post_allowed = true;
     this->delete_allowed = true;
+
+    // define default error pages if not specified in file
+    this->error_pages["400"] = "./error/400.html";
+    this->error_pages["404"] = "./error/404.html";
 }
 
-std::pair<std::string,std::string> split(std::string str, char c)
+std::pair<std::string, std::string> split(std::string str, char c)
 {
     std::size_t found = str.find(c);
     std::string s1 = str.substr(0, found);
@@ -47,7 +51,6 @@ std::string Req::readFile(int dir)
     std::ifstream file(file_to_open.c_str());
     std::stringstream buffer;
     buffer << file.rdbuf();
-    std::cout << buffer.str() << std::endl;
 
     return buffer.str();
 }
@@ -137,13 +140,34 @@ void    Req::response_directory()
     write(this->con, response.c_str(), response.size());
 }
 
-void    Req::response_file(int dir)
+void    Req::send_response(std::string code, int dir)
 {
-    if (open(location.c_str(), O_RDONLY) == -1)
-        throw std::invalid_argument("Invalid request - file not found");
+    std::string file_name;
+    std::string status;
+    std::string content;
 
-    std::string content = this->readFile(dir);
-    std::string response = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " + intToString(content.length()) + "\n\n" + content;
+    if (code == "200")
+    {
+        content = this->readFile(dir);
+        status = "OK";
+    }
+    else
+    {
+        file_name = this->error_pages[code];
+
+        std::ifstream file(file_name.c_str());
+        std::stringstream buffer;
+        buffer << file.rdbuf();
+        content = buffer.str();
+    }
+    
+    if (code == "400")
+        status = "BAD REQUEST";
+    else if (code == "404")
+        status = "NOT FOUND";
+
+    std::string response = "HTTP/1.1 " + code + " " + status + "\nContent-Type: text/html\nContent-Length: " + intToString(content.length()) + "\r\n\r\n" + content;
+    std::cout << ">>>>>>>>>>>>>>>\n" << response << std::endl;
 
     write(this->con, response.c_str(), response.size());
 }
@@ -151,36 +175,48 @@ void    Req::response_file(int dir)
 void    Req::send_file()
 {
     if (!this->get_allowed)
-        throw std::invalid_argument("Invalid request - method not allowed");
-
-    if (location[0] == '/')
-        location = "." + location;
-    if (location[location.size() - 1] == '/') // directory
-    {
-        if (this->index != "")
-            this->response_file(1);
-        else if (this->autoindex)
-            this->response_directory();
-        else
-            throw std::invalid_argument("Invalid request - file not found");
-    }
+        this->send_response("400", -1);
     else
-        this->response_file(0);
+    {
+        if (location[0] == '/')
+            location = "." + location;
+        if (location[location.size() - 1] == '/') // directory
+        {
+            if (this->index != "")
+            {
+                if (open(location.c_str(), O_RDONLY) == -1)
+                    this->send_response("404", -1);
+                else
+                    this->send_response("200", 1);
+            }
+            else if (this->autoindex)
+                this->response_directory();
+            else
+                this->send_response("404", -1);
+        }
+        else
+        {
+            if (open(location.c_str(), O_RDONLY) == -1)
+                this->send_response("404", -1);
+            else
+                this->send_response("200", 0);
+        }
+    }
 }
 
 void    Req::create_file()
 {
     if (!this->post_allowed)
-        throw std::invalid_argument("Invalid request - method not allowed");
+        this->send_response("400", -1);
     
     std::ofstream file; // check if files exists
     file.open(this->filename.c_str(), std::ios::in | std::ios::binary);
     if (file.is_open())
-        throw std::invalid_argument("Invalid request - file already exists");
+        this->send_response("400", -1);
 
     std::ofstream c_file(this->filename.c_str()); // create file
     if (!c_file)
-        throw std::invalid_argument("Invalid request - error creating file");
+        this->send_response("400", -1);
 
     c_file << this->body; // populate file
     
@@ -191,7 +227,7 @@ void    Req::create_file()
 void    Req::delete_file()
 {
     if (!this->delete_allowed)
-        throw std::invalid_argument("Invalid request - method not allowed");
+        this->send_response("400", -1);
 }
 
 void    Req::process_request(void)
@@ -199,28 +235,23 @@ void    Req::process_request(void)
     this->map_elements();
 
     // missing
-    // status codes + server response (cant exit)
-    // error pages in browser
     // check links directory listing
     // check request - permissions
     // delete file
+    // response header (check date, server, etc)
+    // moved permanentely
 
     if (this->method != "GET" && this->method != "POST" && this->method != "DELETE")
-        throw std::invalid_argument("Invalid request - invalid method");
+        this->send_response("400", -1);
 
     this->get_info();
 
-    std::cout << this->connection << std::endl;
-    std::cout << this->location << std::endl;
-    std::cout << this->method << std::endl;
 
     if (this->redirect != "")
     {
         this->location = this->redirect;
         std::cout << "Moved temporarily" << std::endl;
     }
-
-    std::cout << this->location << std::endl;
 
     if (this->method == "GET")
         this->send_file();

@@ -38,6 +38,19 @@
 #include <sstream>
 #include <fstream>
 
+
+/*Errors
+400 - bad request (request that was sent to the server has invalid syntax)
+404 - not found 
+
+401 - unauthorized (user tries to access a resource that is protected by HTTP authentication)
+403 - forbidden (lack of permission to access the requested resource,
+trying to access a directory that does not have a default index file, and directory listings
+are not enabled)
+502 - bad gateway (socket doesnt exist)
+504 - gateway timeout
+*/
+
 class Req
 {
 	public:
@@ -46,14 +59,16 @@ class Req
 		void    	map_elements();
 		void    	get_info();
 
-		void		send_file();
-		void		response_file(int dir);
-		void		response_directory();
 
+		void		send_file();
 		void		create_file();
 		void		delete_file();
 
+		void		send_response(std::string error_number, int dir);
+		void		response_directory();
+
 		std::string	readFile(int dir);
+
 	private:
 		std::string	line;
 		std::string	body;
@@ -76,6 +91,7 @@ class Req
 		bool		get_allowed;
 		bool		post_allowed;
 		bool		delete_allowed;
+		std::map<std::string, std::string>	error_pages;
 };
 
 #endif
