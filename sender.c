@@ -6,6 +6,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 #define PORT 8080
 #define BUFSIZE 4096
@@ -41,7 +43,7 @@ int main() {
     }
 
     // Send HTTP GET request
-    const char *request = "GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n";
+    const char *request = "GET / HTTP/1.1\r\nHost: localhost\r\nConnection: keep-alive\r\n\r\n";
 	for (size_t i = 0; i <= strlen(request); i++)
 	{
 		write(sockfd, &request[i], 1);
@@ -49,18 +51,20 @@ int main() {
 		usleep(1000);
 	}
 
+     fcntl(sockfd, F_SETFL, O_NONBLOCK | FD_CLOEXEC);
     // Receive response
-    while ((numbytes = recv(sockfd, buf, BUFSIZE - 1, 0)) > 0) {
+    while ((numbytes = read(sockfd, buf, BUFSIZE - 1)) > 0) {
         buf[numbytes] = '\0';
         printf("%s", buf);
     }
 
     // Check for errors or EOF
     if (numbytes == -1) {
-        perror("recv");
+        perror("read");
         exit(1);
     }
 
+    printf("we have closed the socket!");
     // Close socket
     close(sockfd);
 

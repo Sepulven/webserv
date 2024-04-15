@@ -24,6 +24,18 @@ int WebServer::epoll_add_fd(int epoll_fd, int fd, struct epoll_event event)
 	return (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &event));
 }
 
+int WebServer::epoll_in_fd(int epoll_fd, int fd, struct epoll_event event)
+{
+	event.events = EPOLLIN | EPOLLERR | EPOLLHUP;
+	return (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event));
+}
+
+int WebServer::epoll_out_fd(int epoll_fd, int fd, struct epoll_event event)
+{
+	event.events = EPOLLOUT | EPOLLERR | EPOLLHUP;
+	return (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event));
+}
+
 int WebServer::epoll_del_fd(int epoll_fd, int fd)
 {
 	return (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL));

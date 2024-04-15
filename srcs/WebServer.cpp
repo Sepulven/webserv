@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 01:07:43 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/15 11:00:35 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/15 12:19:32 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ void	WebServer::init_servers(void)
 			throw WebServer::Error("Listen failed.");
 
 		memset(&event, 0, sizeof(struct epoll_event));
-		event.events = EPOLLIN;
+		event.events = EPOLLIN | EPOLLERR | EPOLLHUP;
 		event.data.ptr = new t_events(vec[i]->socket, strdup("server"));
 		if (WebServer::epoll_add_fd(this->epoll_fd, vec[i]->socket, event))
 			throw WebServer::Error("epoll_ctl failed.");
@@ -86,16 +86,45 @@ void WebServer::accept_connection(int epoll_fd, int fd)
 		throw WebServer::Error("accept failed.");
 	if (sfd_non_blocking(client_fd) < 0)
 		throw WebServer::Error("Couln't make socket fd non-blocking.");
+
 	event.events = EPOLLIN;
 	event.data.ptr = new t_events(client_fd, strdup("client"));
 
-	t_events* ptr = (t_events*)event.data.ptr;
-	std::cout << "fd that has been accepted" << ptr->fd << std::endl;
 	if (WebServer::epoll_add_fd(epoll_fd, client_fd, event) < 0)
 		throw WebServer::Error("Epoll_ctl failed");
 }
 
-void WebServer::read_request(int epoll_fd, int fd)
+void WebServer::send_request(int epoll_fd, int fd, struct epoll_event event)
+{
+	char buffer1[1024] = "HTTP/1.1 200 OK\n"
+							"Date: Mon, 27 Jul 2009 12:28:53 GMT\n"
+							"Webserver: Apache/2.2.14 (Win32)\n"
+							"Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT\n"
+							"Content-Length: 88\n"
+							"Content-Type: text/html\n"
+							"Connection: Closed\n"
+							"\n"
+							"<html>\n"
+							"<body>\n"
+							"<img src='./42.jpeg' alt="">"
+							"<h1>Hello, World!</h1>\n"
+							"</body>\n"
+							"</html>\n"
+							"\r\n";
+
+	write(fd, buffer1, strlen(buffer1) + 1);
+	if (WebServer::epoll_in_fd(epoll_fd, fd, event) < 0)
+		throw WebServer::Error("Epoll_ctl failed");
+}
+
+void WebServer::close_conn(int epoll_fd, int fd)
+{
+		if (WebServer::epoll_del_fd(epoll_fd, fd) < 0)
+			throw WebServer::Error("Epoll_ctl failed");
+		close(fd);
+}
+
+void WebServer::read_request(int epoll_fd, int fd, struct epoll_event event)
 {
 	char buffer[1024];
 	std::string &str = this->request;
@@ -114,26 +143,8 @@ void WebServer::read_request(int epoll_fd, int fd)
 
 	if (!strcmp(&(str.c_str()[str.size() - 4]), "\r\n\r\n"))
 	{
-		char buffer1[1024] = "HTTP/1.1 200 OK\n"
-							"Date: Mon, 27 Jul 2009 12:28:53 GMT\n"
-							"Webserver: Apache/2.2.14 (Win32)\n"
-							"Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT\n"
-							"Content-Length: 88\n"
-							"Content-Type: text/html\n"
-							"Connection: Closed\n"
-							"\n"
-							"<html>\n"
-							"<body>\n"
-							"<img src='./42.jpeg' alt="">"
-							"<h1>Hello, World!</h1>\n"
-							"</body>\n"
-							"</html>\n"
-							"\r\n";
-		write(fd, buffer1, sizeof(buffer1));
-		
-		if (WebServer::epoll_del_fd(epoll_fd, fd))
-		// Close the connection and finishes the request
-		close(fd);
+		if (WebServer::epoll_out_fd(epoll_fd, fd, event))
+			throw WebServer::Error("Epoll_ctl failed");
 	}
 }
 
@@ -158,10 +169,19 @@ void WebServer::listen(void)
 					std::cout << "Accept_connection:" << std::endl;
 					accept_connection(epoll_fd, event_data->fd);
 				}
-				else if (this->connections[i].events & EPOLLIN)
+				else if (conn->events & EPOLLIN)
 				{
-					// std::cout << "Read request: " << std::endl;
-					read_request(epoll_fd, event_data->fd);
+					read_request(epoll_fd, event_data->fd, *conn);
+				}
+				else if (conn->events & EPOLLOUT)
+				{
+					std::cout << "epoll out event" << std::endl;
+					send_request(epoll_fd, event_data->fd, *conn);
+				}
+				else if (conn->events & EPOLLERR || conn->events & EPOLLHUP)
+				{
+					std::cout << "Conn. closed in " << event_data->fd << std::endl;
+					close_conn(epoll_fd, event_data->fd);
 				}
 			}
 			this->connections.clear();
