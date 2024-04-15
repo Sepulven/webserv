@@ -37,6 +37,7 @@
 #include <fcntl.h>
 #include <sstream>
 #include <fstream>
+#include <cstdio>
 
 
 /*Errors
