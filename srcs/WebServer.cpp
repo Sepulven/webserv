@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 01:07:43 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/15 16:49:02 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/15 16:52:54 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,8 +65,7 @@ void	WebServer::init_servers(void)
 		std::cout << "[" << vec[i]->max_events << "] Listening on port: " << vec[i]->port << std::endl;
 	}
 	//We ensure that our vector won't change its memory area.
-	std::cout << this->max_events << std::endl;
-	this->connections.reserve(this->max_events);
+	this->events.reserve(this->max_events);
 }
 
 
@@ -154,12 +153,12 @@ void WebServer::listen(void)
 
 		while (WebServer::is_running)
 		{
-			num_events = epoll_wait(epoll_fd, this->connections.data(), this->max_events, -1);
+			num_events = epoll_wait(epoll_fd, this->events.data(), this->max_events, -1);
 			if (num_events < 0)
 				throw Error("Epoll_wait failed.");
 			for (int i = 0; i < num_events; i++)
 			{
-				conn = &this->connections[i];
+				conn = &this->events[i];
 				t_events* event_data = (t_events*)conn->data.ptr;
 				if ((event_data->type == SERVER) && (conn->events & EPOLLIN))
 				{
@@ -183,7 +182,7 @@ void WebServer::listen(void)
 					close_conn(epoll_fd, event_data->fd);
 				}
 			}
-			this->connections.clear();
+			this->events.clear();
 		}
 		std::cout << std::endl << std::endl << "SERVER DIED" << std::endl;
 }
