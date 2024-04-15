@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 01:07:43 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/15 12:19:32 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/15 15:48:04 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@ WebServer::WebServer()
 {
 	// We are going to create multiple server fds given the context;
 	this->init_servers();
+	this->is_running = 1;
 }
 
 WebServer::~WebServer()
@@ -32,10 +33,10 @@ void	WebServer::init_servers(void)
 	struct epoll_event event;
 
 	this->epoll_fd = epoll_create1(0);
-	
+
 	if (this->epoll_fd < 0)
 		throw WebServer::Error("Epoll_create1 failed.");
-	
+
 	for (size_t i = 0; i < vec.size(); i++)
 	{
 		memset(&server_addr, 0, sizeof(struct sockaddr_in));
@@ -59,7 +60,7 @@ void	WebServer::init_servers(void)
 			throw WebServer::Error("Listen failed.");
 
 		memset(&event, 0, sizeof(struct epoll_event));
-		event.events = EPOLLIN | EPOLLERR | EPOLLHUP;
+		event.events = EPOLLIN | EPOLLET;
 		event.data.ptr = new t_events(vec[i]->socket, strdup("server"));
 		if (WebServer::epoll_add_fd(this->epoll_fd, vec[i]->socket, event))
 			throw WebServer::Error("epoll_ctl failed.");
@@ -81,7 +82,6 @@ void WebServer::accept_connection(int epoll_fd, int fd)
 	socklen_t client_addr_len = sizeof(client_addr);
 	int client_fd = accept(fd, (struct sockaddr *)&client_addr, &client_addr_len);
 
-	std::cout << client_fd << std::endl;
 	if (client_fd < 0)
 		throw WebServer::Error("accept failed.");
 	if (sfd_non_blocking(client_fd) < 0)
@@ -100,28 +100,31 @@ void WebServer::send_request(int epoll_fd, int fd, struct epoll_event event)
 							"Date: Mon, 27 Jul 2009 12:28:53 GMT\n"
 							"Webserver: Apache/2.2.14 (Win32)\n"
 							"Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT\n"
-							"Content-Length: 88\n"
+							"Content-Length: 70\n"
 							"Content-Type: text/html\n"
 							"Connection: Closed\n"
 							"\n"
 							"<html>\n"
 							"<body>\n"
-							"<img src='./42.jpeg' alt="">"
+							"<h1>Hello, World!</h1>\n"
 							"<h1>Hello, World!</h1>\n"
 							"</body>\n"
 							"</html>\n"
 							"\r\n";
 
-	write(fd, buffer1, strlen(buffer1) + 1);
+	std::cout << "response size:" << strlen(buffer1) << std::endl;
+	// "<img src='./42.jpeg' alt="">"
+	write(fd, buffer1, strlen(buffer1));
+	write(1, buffer1, strlen(buffer1));
 	if (WebServer::epoll_in_fd(epoll_fd, fd, event) < 0)
 		throw WebServer::Error("Epoll_ctl failed");
 }
 
 void WebServer::close_conn(int epoll_fd, int fd)
 {
-		if (WebServer::epoll_del_fd(epoll_fd, fd) < 0)
-			throw WebServer::Error("Epoll_ctl failed");
-		close(fd);
+	if (WebServer::epoll_del_fd(epoll_fd, fd) < 0)
+		throw WebServer::Error("Epoll_ctl failed");
+	close(fd);
 }
 
 void WebServer::read_request(int epoll_fd, int fd, struct epoll_event event)
@@ -131,15 +134,19 @@ void WebServer::read_request(int epoll_fd, int fd, struct epoll_event event)
 	std::string suffix = "\r\n\r\n";
 	int bytes_read = read(fd, buffer, 1024);
 
-	if (bytes_read < 0)
+	if (bytes_read == 0)
+	{
+		this->close_conn(epoll_fd, fd);
 		return ;
+	}
+	
 
 	buffer[bytes_read] = 0;
 	std::cout << buffer << std::endl;
 	std::cout << "bytes_read:" << bytes_read << std::endl;
 
 	str += buffer;
-	std::cout << str << std::endl;
+	// std::cout << str << std::endl;
 
 	if (!strcmp(&(str.c_str()[str.size() - 4]), "\r\n\r\n"))
 	{
@@ -159,7 +166,6 @@ void WebServer::listen(void)
 			num_connections = epoll_wait(epoll_fd, this->connections.data(), this->max_events, -1);
 			if (num_connections < 0)
 				throw WebServer::Error("Epoll_wait failed.");
-	
 			for (int i = 0; i < num_connections; i++)
 			{
 				conn = &this->connections[i];
@@ -171,6 +177,7 @@ void WebServer::listen(void)
 				}
 				else if (conn->events & EPOLLIN)
 				{
+					std::cout << "read request:" << std::endl;
 					read_request(epoll_fd, event_data->fd, *conn);
 				}
 				else if (conn->events & EPOLLOUT)
@@ -186,6 +193,7 @@ void WebServer::listen(void)
 			}
 			this->connections.clear();
 		}
+		std::cout << std::endl << std::endl << "SERVER DIED" << std::endl;
 }
 
 /*Exception class*/

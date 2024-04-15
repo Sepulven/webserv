@@ -26,13 +26,15 @@ int WebServer::epoll_add_fd(int epoll_fd, int fd, struct epoll_event event)
 
 int WebServer::epoll_in_fd(int epoll_fd, int fd, struct epoll_event event)
 {
-	event.events = EPOLLIN | EPOLLERR | EPOLLHUP;
+	// event.events = EPOLLIN | EPOLLERR | EPOLLHUP;
+	event.events = EPOLLIN | EPOLLET;
 	return (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event));
 }
 
 int WebServer::epoll_out_fd(int epoll_fd, int fd, struct epoll_event event)
 {
-	event.events = EPOLLOUT | EPOLLERR | EPOLLHUP;
+	// event.events = EPOLLOUT | EPOLLERR | EPOLLHUP;
+	event.events = EPOLLOUT | EPOLLET;
 	return (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event));
 }
 

@@ -49,19 +49,22 @@ int main() {
 		write(sockfd, &request[i], 1);
 		write(1, &request[i], 1);
 		usleep(1000);
+		close(sockfd);
 	}
 
      fcntl(sockfd, F_SETFL, O_NONBLOCK | FD_CLOEXEC);
     // Receive response
     while ((numbytes = read(sockfd, buf, BUFSIZE - 1)) > 0) {
         buf[numbytes] = '\0';
+		printf("NUMBYTES: %d\n", numbytes);
         printf("%s", buf);
     }
 
     // Check for errors or EOF
     if (numbytes == -1) {
+		printf("NUMBYTES: %d\n", numbytes);
         perror("read");
-        exit(1);
+        // exit(1);
     }
 
     printf("we have closed the socket!");
