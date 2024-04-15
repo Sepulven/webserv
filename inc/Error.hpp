@@ -1,32 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   Error.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/04/09 12:28:28 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/15 16:36:47 by asepulve         ###   ########.fr       */
+/*   Created: 2024/04/15 16:25:39 by asepulve          #+#    #+#             */
+/*   Updated: 2024/04/15 16:26:01 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <WebServer.hpp>
 
-const char* RED_TEXT = "\033[31m";
-const char* RESET_COLOR = "\033[0m";
+#pragma once
 
-int main(void)
+#include <exception>
+
+class Error : public std::exception
 {
-
-	try
-	{
-		WebServer server;
-		server.listen();
-	}
-	catch (const std::exception& e)
-	{
-		std::cout << RED_TEXT << "ERROR: " << e.what() << RESET_COLOR << std::endl;
-		perror("");
-	}
-}
-
+	private:
+		const char *msg;
+		virtual const char * what() const throw();
+	public:
+		Error(const char *_msg);
+};
