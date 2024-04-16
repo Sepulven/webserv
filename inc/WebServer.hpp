@@ -56,9 +56,12 @@ private:
 	int max_events;
 	int epoll_fd;
 	int is_running; // We are going to set is to false with a signal.
-	std::string line_w;
 	std::vector<Server *> servers; 
 	std::vector<t_event> events;
+
+	std::string					line_w;
+	std::map<int, std::string>	requests;
+
 public:
 	WebServer();
 	~WebServer();

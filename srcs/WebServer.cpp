@@ -90,8 +90,9 @@ void WebServer::accept_connection(int epoll_fd, int fd)
 
 void WebServer::send_request(int epoll_fd, int fd, struct epoll_event event)
 {
-	Req req(fd, this->line_w);
+	Req req(fd, (this->requests)[fd]);
 	req.process_request();
+	this->requests.erase(fd);
 	
 	if (epoll_in_fd(epoll_fd, fd, event) < 0)
 		throw Error("Epoll_ctl failed");
@@ -117,11 +118,21 @@ void WebServer::read_request(int epoll_fd, int fd, struct epoll_event event)
 		return ;
 	}
 
-	this->line_w = buffer;
+	std::string aux;
+	aux = buffer;
+	while (!aux.find("\r\n\r\n"))
+    {
+        buffer[bytes_read] = '\0';
+        aux =+ buffer;
+        bytes_read = read(fd, buffer, sizeof(buffer));
+    }
+
+	this->requests.insert(make_pair(fd, aux));
+	//this->line_w = aux;
 
 	buffer[bytes_read] = 0;
-	std::cout << buffer << std::endl;
-	std::cout << "bytes_read:" << bytes_read << std::endl;
+	std::cout << aux << std::endl;
+	std::cout << "bytes_read:" << sizeof(aux) << std::endl;
 
 	str += buffer;
 	if (!strcmp(&(str.c_str()[str.size() - 4]), "\r\n\r\n"))

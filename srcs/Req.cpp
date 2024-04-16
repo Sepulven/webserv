@@ -211,7 +211,6 @@ void    Req::send_file()
             this->send_response("404");
         this->send_response("200");
     }
-    std::cout << "check final\n";
 }
 
 void    Req::create_file()
