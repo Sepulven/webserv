@@ -111,6 +111,7 @@ void WebServer::read_request(int epoll_fd, int fd, struct epoll_event event)
 	std::string &str = this->request;
 	std::string suffix = "\r\n\r\n";
 	int bytes_read = read(fd, buffer, 1024);
+	buffer[bytes_read] = '\0';
 
 	if (bytes_read <= 0)
 	{

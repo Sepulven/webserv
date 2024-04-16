@@ -117,29 +117,33 @@ void    Req::response_directory()
 {
     std::cout << "listing" << std::endl;
     std::string listing;
-
     listing += "<!DOCTYPE html><html lang=\"en\"><html><head><title>Directory Listing</title></head><body><h1>Directory Listing</h1><ul>";
-    std::cout << location << std::endl;
+    
     DIR* dir = opendir(location.c_str());
     if (dir != NULL) {
         struct dirent* entry;
-        while ((entry = readdir(dir)) != NULL) {
-            std::string link = "<li><a href=\"/" + std::string(entry->d_name) + "\" target=\"_blank\">" + std::string(entry->d_name) + "</a></li>";
+
+        std::string aux;
+        if (location[location.size() - 1] != '/')
+            aux = location.substr(2) + '/';
+        else
+            aux = location;
+
+        while ((entry = readdir(dir)) != NULL)
+        {
+            std::string link = "<li><a href=\"/" + aux + std::string(entry->d_name) + "\" target=\"_blank\">" + std::string(entry->d_name) + "</a></li>";
             std::cout << "new link: " << link << std::endl;
-            listing += "<li><a href=\"/" + std::string(entry->d_name) + "\" target=\"_blank\">" + std::string(entry->d_name) + "</a></li>";
-            // listing += "<li>" + std::string(entry->d_name) + "</li>";
+            listing += "<li><a href=\"/" + aux + std::string(entry->d_name) + "\" target=\"_blank\">" + std::string(entry->d_name) + "</a></li>";
         }
         closedir(dir);
-    } else {
-        listing += "<li>Error: Unable to open directory</li>";
     }
+    else
+        listing += "<li>Error: Unable to open directory</li>";
 
     listing += "</ul></body></html>";
 
     std::string response = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " + intToString(listing.length()) + "\n\n" + listing;
-
-    std::cout << ">>>>>>>>>>>>>>>" << std::endl;
-    std::cout << response << std::endl;
+    std::cout << ">>>>>>>>>>>>>>>\n" << response << std::endl;
     write(this->con, response.c_str(), response.size());
 }
 
@@ -189,7 +193,7 @@ void    Req::send_file()
         location = "." + location;
 
     if (open(location.c_str(), O_RDONLY) == -1)
-            this->send_response("404");
+        this->send_response("404");
         
     DIR* dir = opendir(location.c_str());
     if (dir != NULL)  // directory
@@ -260,7 +264,6 @@ void    Req::delete_file()
 
 void    Req::process_request(void)
 {
-    // listing - file inside directory
     // response header (check date, server, etc)
 
     // post request status
