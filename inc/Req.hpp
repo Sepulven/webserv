@@ -10,6 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#ifndef REQ_HPP
+#define REQ_HPP
+
 #pragma once
 
 /*
@@ -27,24 +30,69 @@
 
 */
 
+#include <iostream>
+#include <ostream>
+#include <unistd.h>
+#include <map>
+#include <fcntl.h>
+#include <sstream>
+#include <fstream>
+#include <cstdio>
+
+
+/*Errors
+400 - bad request (request that was sent to the server has invalid syntax)
+404 - not found 
+
+401 - unauthorized (user tries to access a resource that is protected by HTTP authentication)
+403 - forbidden (lack of permission to access the requested resource,
+trying to access a directory that does not have a default index file, and directory listings
+are not enabled)
+502 - bad gateway (socket doesnt exist)
+504 - gateway timeout
+*/
+
 class Req
 {
 	public:
-		Req();
-		Req(Req &&) = default;
-		Req(const Req &) = default;
-		Req &operator=(Req &&) = default;
-		Req &operator=(const Req &) = default;
-		~Req();
+		Req(int connection);
+		void		process_request();
+		void    	map_elements();
+		void    	get_info();
+
+
+		void		send_file();
+		void		create_file();
+		void		delete_file();
+
+		void		send_response(std::string error_number);
+		void		response_directory();
+
+		std::string	readFile();
 
 	private:
-	
+		std::string	line;
+		std::string	body;
+		std::map<std::string, std::string>	elements;
+		int	con;
+
+		std::string	method;
+		std::string	location;
+		std::string	connection;
+		std::string cont_type;
+		std::string cont_len;
+		std::string	filename;
+
+		std::string	file_to_open;
+
+		// info from config file
+		bool		autoindex; // directory listing
+		std::string	index; // default file
+		std::string	redirect;
+		bool		get_allowed;
+		bool		post_allowed;
+		bool		delete_allowed;
+		std::map<std::string, std::string>	error_pages;
 };
 
-Req::Req()
-{
-}
-
-Req::~Req()
-{
-}
+#endif

@@ -26,6 +26,9 @@
 	All information about the server context must be hold in server class;
 	Since we are going to have multiple serve context definition;
 */
+#include <Req.hpp>
+#include <Res.hpp>
+
 class Server
 {
 	private:		

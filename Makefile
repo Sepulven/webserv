@@ -1,9 +1,9 @@
 NAME		=	webserv
 CXX			=	c++
-CXXFLAGS	=	-Wall -Werror -Wextra -std=c++98 -g #-fsanitize=address
+CXXFLAGS 		=	-Wall -Werror -Wextra -std=c++98 #-g -fsanitize=address
+SRC			=	srcs/main.cpp srcs/Server.cpp srcs/Server_utils.cpp srcs/Req.cpp srcs/Res.cpp srcs/WebServer_utils.cpp srcs/WebServer.cpp
 INCLUDES	=	-I./inc
 
-SRCS		=	main.cpp Server.cpp WebServer_utils.cpp WebServer.cpp
 SRC			=	$(addprefix srcs/,$(SRCS))
 
 OBJ			=	$(SRC:.cpp=.o)
