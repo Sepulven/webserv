@@ -1,17 +1,18 @@
 #include <Req.hpp>
 
-Req::Req(int connection)
+Req::Req(int connection, std::string line_w)
 {
-    char buffer[1024];
-    int bytes_received = read(connection, buffer, sizeof(buffer));
-    this->line = buffer;
+    // char buffer[1024];
+    // int bytes_received = read(connection, buffer, sizeof(buffer));
+    this->line = line_w;
 	std::cout << "<<<<<<<<<<<<<<<\n" <<  this->line << std::endl;
-    while (!this->line.find("\r\n\r\n"))
-    {
-        buffer[bytes_received] = '\0';
-        this->line =+ buffer;
-        bytes_received = read(connection, buffer, sizeof(buffer));
-    }
+    // while (!this->line.find("\r\n\r\n"))
+    // {
+    //     buffer[bytes_received] = '\0';
+    //     this->line =+ buffer;
+    //     bytes_received = read(connection, buffer, sizeof(buffer));
+    // }
+
     if (!this->line.size())
         this->send_response("400");
 
@@ -260,8 +261,7 @@ void    Req::delete_file()
 
 void    Req::process_request(void)
 {
-    // check links directory listing
-
+    // listing - file inside directory
     // response header (check date, server, etc)
 
     // post request status

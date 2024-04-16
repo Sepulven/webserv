@@ -31,7 +31,8 @@
 
 class Server
 {
-	private:		
+	private:	
+
 	public:
 		std::string	name;
 		std::string	ip; // _ip is the string

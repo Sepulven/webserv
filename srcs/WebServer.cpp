@@ -90,25 +90,9 @@ void WebServer::accept_connection(int epoll_fd, int fd)
 
 void WebServer::send_request(int epoll_fd, int fd, struct epoll_event event)
 {
-	char buffer1[1024] = "HTTP/1.1 200 OK\n"
-							"Date: Mon, 27 Jul 2009 12:28:53 GMT\n"
-							"Webserver: Apache/2.2.14 (Win32)\n"
-							"Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT\n"
-							"Content-Length: 70\n"
-							"Content-Type: text/html\n"
-							"Connection: Closed\n"
-							"\n"
-							"<html>\n"
-							"<body>\n"
-							"<h1>Hello, World!</h1>\n"
-							"<h1>Hello, World!</h1>\n"
-							"</body>\n"
-							"</html>\n"
-							"\r\n";
-
-	std::cout << "response size:" << strlen(buffer1) << std::endl;
-	write(fd, buffer1, strlen(buffer1));
-	write(1, buffer1, strlen(buffer1));
+	Req req(fd, this->line_w);
+	req.process_request();
+	
 	if (epoll_in_fd(epoll_fd, fd, event) < 0)
 		throw Error("Epoll_ctl failed");
 }
@@ -133,6 +117,8 @@ void WebServer::read_request(int epoll_fd, int fd, struct epoll_event event)
 		return ;
 	}
 
+	this->line_w = buffer;
+
 	buffer[bytes_read] = 0;
 	std::cout << buffer << std::endl;
 	std::cout << "bytes_read:" << bytes_read << std::endl;
@@ -147,44 +133,44 @@ void WebServer::read_request(int epoll_fd, int fd, struct epoll_event event)
 
 void WebServer::listen(void)
 {
-		int num_events = 0;
-		int epoll_fd = this->epoll_fd; 
-		struct epoll_event *conn;
+	int num_events = 0;
+	int epoll_fd = this->epoll_fd; 
+	struct epoll_event *conn;
 
-		while (WebServer::is_running)
+	while (WebServer::is_running)
+	{
+		num_events = epoll_wait(epoll_fd, this->events.data(), this->max_events, -1);
+		if (num_events < 0)
+			throw Error("Epoll_wait failed.");
+		for (int i = 0; i < num_events; i++)
 		{
-			num_events = epoll_wait(epoll_fd, this->events.data(), this->max_events, -1);
-			if (num_events < 0)
-				throw Error("Epoll_wait failed.");
-			for (int i = 0; i < num_events; i++)
+			conn = &this->events[i];
+			t_events* event_data = (t_events*)conn->data.ptr;
+			if ((event_data->type == SERVER) && (conn->events & EPOLLIN))
 			{
-				conn = &this->events[i];
-				t_events* event_data = (t_events*)conn->data.ptr;
-				if ((event_data->type == SERVER) && (conn->events & EPOLLIN))
-				{
-					std::cout << "Accept_connection:" << std::endl;
-					accept_connection(epoll_fd, event_data->fd);
-				}
-				else if (conn->events & EPOLLIN)
-				{
-					std::cout << "read request:" << std::endl;
-					read_request(epoll_fd, event_data->fd, *conn);
-				}
-				else if (conn->events & EPOLLOUT)
-				{
-					std::cout << "epoll out event" << std::endl;
-					send_request(epoll_fd, event_data->fd, *conn);
-				}
-				// I need to forcefully test this scnerario for better error handling.
-				else if (conn->events & EPOLLERR || conn->events & EPOLLHUP)
-				{
-					std::cout << "Conn. closed in " << event_data->fd << std::endl;
-					close_conn(epoll_fd, event_data->fd);
-				}
+				std::cout << "Accept_connection:" << std::endl;
+				accept_connection(epoll_fd, event_data->fd);
 			}
-			this->events.clear();
+			else if (conn->events & EPOLLIN)
+			{
+				std::cout << "read request:" << std::endl;
+				read_request(epoll_fd, event_data->fd, *conn);
+			}
+			else if (conn->events & EPOLLOUT)
+			{
+				std::cout << "epoll out event" << std::endl;
+				send_request(epoll_fd, event_data->fd, *conn);
+			}
+			// I need to forcefully test this scnerario for better error handling.
+			else if (conn->events & EPOLLERR || conn->events & EPOLLHUP)
+			{
+				std::cout << "Conn. closed in " << event_data->fd << std::endl;
+				close_conn(epoll_fd, event_data->fd);
+			}
 		}
-		std::cout << std::endl << std::endl << "SERVER DIED" << std::endl;
+		this->events.clear();
+	}
+	std::cout << std::endl << std::endl << "SERVER DIED" << std::endl;
 }
 
 /*Exception class*/

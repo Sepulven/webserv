@@ -55,7 +55,7 @@ are not enabled)
 class Req
 {
 	public:
-		Req(int connection);
+		Req(int connection, std::string line_w);
 		void		process_request();
 		void    	map_elements();
 		void    	get_info();
