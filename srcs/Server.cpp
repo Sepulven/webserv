@@ -148,4 +148,3 @@ const char * Server::Error::what() const throw()
 {
     return (msg);
 }
-	

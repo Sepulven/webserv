@@ -65,10 +65,10 @@ class Req
 		void		create_file();
 		void		delete_file();
 
-		void		send_response(std::string error_number, int dir);
+		void		send_response(std::string error_number);
 		void		response_directory();
 
-		std::string	readFile(int dir);
+		std::string	readFile();
 
 	private:
 		std::string	line;

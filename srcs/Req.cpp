@@ -13,13 +13,13 @@ Req::Req(int connection)
         bytes_received = read(connection, buffer, sizeof(buffer));
     }
     if (!this->line.size())
-        this->send_response("400", -1);
+        this->send_response("400");
 
     this->con = connection;
 
     // defining elements from config file
     this->autoindex = true;
-    this->index = "index.html";
+    this->index = "";
     this->redirect = "";
     this->get_allowed = true;
     this->post_allowed = true;
@@ -39,11 +39,11 @@ std::pair<std::string, std::string> split(std::string str, char c)
     return std::make_pair(s1, s2);
 }
 
-std::string Req::readFile(int dir)
+std::string Req::readFile(void)
 {
-    // missing: looking for file in root (present in config file)
+    // missing: looking for file in root (present in config file) ?
 
-    if (dir == 1)
+    if (this->index != "")
         this->file_to_open = this->index;
     else
         this->file_to_open = this->location;
@@ -123,8 +123,10 @@ void    Req::response_directory()
     if (dir != NULL) {
         struct dirent* entry;
         while ((entry = readdir(dir)) != NULL) {
-            // listing += "<li><a href=\"" + std::string(entry->d_name) + "\">" + std::string(entry->d_name) + "</a></li>"; - links
-            listing += "<li>" + std::string(entry->d_name) + "</li>";
+            std::string link = "<li><a href=\"/" + std::string(entry->d_name) + "\" target=\"_blank\">" + std::string(entry->d_name) + "</a></li>";
+            std::cout << "new link: " << link << std::endl;
+            listing += "<li><a href=\"/" + std::string(entry->d_name) + "\" target=\"_blank\">" + std::string(entry->d_name) + "</a></li>";
+            // listing += "<li>" + std::string(entry->d_name) + "</li>";
         }
         closedir(dir);
     } else {
@@ -133,14 +135,14 @@ void    Req::response_directory()
 
     listing += "</ul></body></html>";
 
-    std::cout << "Listing:\n" << listing << std::endl;
-
     std::string response = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " + intToString(listing.length()) + "\n\n" + listing;
 
+    std::cout << ">>>>>>>>>>>>>>>" << std::endl;
+    std::cout << response << std::endl;
     write(this->con, response.c_str(), response.size());
 }
 
-void    Req::send_response(std::string code, int dir)
+void    Req::send_response(std::string code)
 {
     std::string file_name;
     std::string status;
@@ -148,7 +150,7 @@ void    Req::send_response(std::string code, int dir)
 
     if (code == "200")
     {
-        content = this->readFile(dir);
+        content = this->readFile();
         status = "OK";
     }
     else
@@ -180,78 +182,84 @@ void    Req::send_response(std::string code, int dir)
 void    Req::send_file()
 {
     if (!this->get_allowed)
-        this->send_response("400", -1);
+        this->send_response("400");
     
     if (location[0] == '/')
         location = "." + location;
-    if (location[location.size() - 1] == '/') // directory
+
+    if (open(location.c_str(), O_RDONLY) == -1)
+            this->send_response("404");
+        
+    DIR* dir = opendir(location.c_str());
+    if (dir != NULL)  // directory
     {
         if (this->index != "")
         {
             if (open(location.c_str(), O_RDONLY) == -1)
-                this->send_response("404", -1);
-            this->send_response("200", 1);
+                this->send_response("404");
+            this->send_response("200");
         }
         else if (this->autoindex)
             this->response_directory();
         else
-            this->send_response("403", -1);
+            this->send_response("403");
     }
-    else
+    else  // file
     {
         if (open(location.c_str(), O_RDONLY) == -1)
-            this->send_response("404", -1);
-        this->send_response("200", 0);
+            this->send_response("404");
+        this->send_response("200");
     }
+    std::cout << "check final\n";
 }
 
 void    Req::create_file()
 {
     if (location[location.size() - 1] == '/') // directory
-        this->send_response("403", -1);
+        this->send_response("403");
 
     if (!this->post_allowed)
-        this->send_response("400", -1);
+        this->send_response("400");
     
     std::ofstream file; // check if files exists
     file.open(this->filename.c_str(), std::ios::in | std::ios::binary);
     if (file.is_open())
-        this->send_response("400", -1);
+        this->send_response("400");
 
     std::ofstream c_file(this->filename.c_str()); // create file
     if (!c_file)
-        this->send_response("400", -1);
+        this->send_response("400");
 
     c_file << this->body; // populate file
 
     std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nFile uploaded successfully!";
-    std::cout << ">>>>>>>>>>>>>>>\n" << response << std::endl;
+    std::cout << ">>>>>>>>>>>>>>>" << std::endl;
 
-    //write(this->con, response.c_str(), response.size()); // send file
+    write(this->con, response.c_str(), response.size()); // send file
 }
 
 void    Req::delete_file()
 {
     if (location[location.size() - 1] == '/') // directory
-        this->send_response("403", -1);
+        this->send_response("403");
 
     if (!this->delete_allowed)
-        this->send_response("400", -1);
+        this->send_response("400");
 
     if (this->location[0] == '/')
         location = location.substr(1);
 
     if (std::remove(location.c_str()) != 0)
-        this->send_response("404", -1);
+        this->send_response("404");
     
     std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nFile deleted successfully!";
     std::cout << ">>>>>>>>>>>>>>>\n" << response << std::endl;
+
+    write(this->con, response.c_str(), response.size()); // send file
 }
 
 void    Req::process_request(void)
 {
-    this->map_elements();
-
     // check links directory listing
 
     // response header (check date, server, etc)
@@ -260,10 +268,12 @@ void    Req::process_request(void)
     // moved temporarily and permanentely
     // method not allowed - new error or 400 ?
 
+    this->map_elements();
+
     try
 	{
         if (this->method != "GET" && this->method != "POST" && this->method != "DELETE")
-            this->send_response("400", -1);
+            this->send_response("400");
 
         this->get_info();
 
@@ -275,9 +285,15 @@ void    Req::process_request(void)
             std::cout << "Moved temporarily" << std::endl;
         }
         if (this->method == "GET")
+        {
+            std::cout << "check get" << std::endl;
             this->send_file();
+        }
         else if (this->method == "POST")
+        {
+            std::cout << "check post" << std::endl;
             this->create_file();
+        }
         else if (this->method == "DELETE")
             this->delete_file();
 	}
