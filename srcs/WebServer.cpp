@@ -6,22 +6,42 @@
 /*   By: ratavare <ratavare@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 01:07:43 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/17 14:20:31 by ratavare         ###   ########.fr       */
+/*   Updated: 2024/04/17 16:36:59 by ratavare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <WebServer.hpp>
+
+void WebServer::sig_handler(int sig)
+{
+	(void)sig;
+	is_running = 0;
+}
 
 WebServer::WebServer()
 {
 	// We are going to create multiple server fds given the context;
 	this->max_events = 0;
 	this->init_servers();
-	this->is_running = 1;
+	signal(SIGINT, &WebServer::sig_handler);
 }
 
 WebServer::~WebServer()
 {
+	std::cout << "\r  ";
+	std::cout << "\033[31m" << std::endl << " ▒█████    █████▒ █████▒██▓     ██▓ ███▄    █ ▓█████ " << std::endl;
+	std::cout << "▒██▒  ██▒▓██   ▒▓██   ▒▓██▒    ▓██▒ ██ ▀█   █ ▓█   ▀ " << std::endl;
+	std::cout << "▒██░  ██▒▒████ ░▒████ ░▒██░    ▒██▒▓██  ▀█ ██▒▒███   " << std::endl;
+	std::cout << "▒██   ██░░▓█▒  ░░▓█▒  ░▒██░    ░██░▓██▒  ▐▌██▒▒▓█  ▄ " << std::endl;
+	std::cout << "░ ████▓▒░░▒█░   ░▒█░   ░██████▒░██░▒██░   ▓██░░▒████▒" << std::endl;
+	std::cout << "░ ▒░▒░▒░  ▒ ░    ▒ ░   ░ ▒░▓  ░░▓  ░ ▒░   ▒ ▒ ░░ ▒░ ░" << std::endl;
+	std::cout << "  ░ ▒ ▒░  ░      ░     ░ ░ ▒  ░ ▒ ░░ ░░   ░ ▒░ ░ ░  ░" << std::endl;
+	std::cout << "░ ░ ░ ▒   ░ ░    ░ ░     ░ ░    ▒ ░   ░   ░ ░    ░   " << std::endl;
+	std::cout << "    ░ ░                    ░  ░ ░           ░    ░  ░" << std::endl << "\033[0m";
+	for (std::vector<Server*>::iterator it = servers.begin(); it != servers.end(); it++)
+		delete *it;
+	for (std::vector<Server*>::iterator it = servers.begin(); it != servers.end(); it++)
+		delete *it;
 }
 
 void	WebServer::init_servers(void)
@@ -66,6 +86,7 @@ void	WebServer::init_servers(void)
 	}
 	//We ensure that our vector won't change its memory area.
 	this->events.reserve(this->max_events);
+	this->servers = vec;
 }
 
 
@@ -147,11 +168,15 @@ void WebServer::listen(void)
 	int epoll_fd = this->epoll_fd; 
 	struct epoll_event *conn;
 
-	while (WebServer::is_running)
+	while (is_running)
 	{
 		num_events = epoll_wait(epoll_fd, this->events.data(), this->max_events, -1);
-		if (num_events < 0)
-			throw Error("Epoll_wait failed.");
+		if (num_events < 0) {
+			if (is_running)
+				throw Error("Epoll_wait failed.");
+			else
+				break ;
+		}
 		for (int i = 0; i < num_events; i++)
 		{
 			conn = &this->events[i];
@@ -180,7 +205,6 @@ void WebServer::listen(void)
 		}
 		this->events.clear();
 	}
-	std::cout << std::endl << std::endl << "SERVER DIED" << std::endl;
 }
 
 /*Exception class*/

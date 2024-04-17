@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ratavare <ratavare@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/11 15:56:54 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/15 16:51:56 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/17 16:26:48 by ratavare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,12 +50,14 @@ enum SOCKET_TYPE
 
 typedef struct epoll_event t_event;
 
+static volatile sig_atomic_t is_running = 1;
+
 class WebServer
 {
 private:
 	int max_events;
 	int epoll_fd;
-	int is_running; // We are going to set is to false with a signal.
+	
 	std::vector<Server *> servers; 
 	std::vector<t_event> events;
 
@@ -75,6 +77,7 @@ public:
 	void	read_request(int, int, t_event);
 	void	send_request(int, int, t_event);
 	void	close_conn(int, int);
+	static void	sig_handler(int sig);
 
 	class Error : public std::exception
 	{
