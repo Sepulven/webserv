@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ratavare <ratavare@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 01:07:43 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/15 16:52:54 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/17 14:20:31 by ratavare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ void	WebServer::init_servers(void)
 			throw Error("Listen failed.");
 
 		memset(&event, 0, sizeof(struct epoll_event));
-		event.events = EPOLLIN | EPOLLET;
+		event.events = EPOLLIN;
 		event.data.ptr = new t_events(vec[i]->socket, SERVER);
 		if (epoll_add_fd(this->epoll_fd, vec[i]->socket, event))
 			throw Error("epoll_ctl failed.");
@@ -81,9 +81,8 @@ void WebServer::accept_connection(int epoll_fd, int fd)
 	if (sfd_non_blocking(client_fd) < 0)
 		throw Error("Couln't make socket fd non-blocking.");
 
-	event.events = EPOLLIN;
+	event.events = EPOLLIN | EPOLLET;
 	event.data.ptr = new t_events(client_fd, CLIENT);
-
 	if (WebServer::epoll_add_fd(epoll_fd, client_fd, event) < 0)
 		throw Error("Epoll_ctl failed");
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ratavare <ratavare@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/11 16:31:58 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/12 01:20:02 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/17 11:53:23 by ratavare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 Server::Server(std::string _name, std::string _ip, int _port) : name(_name), ip(_ip), port(_port)
 {
-	this->max_events = 10;
+	this->max_events = 1000;
 
 	// Por enquanto não, mas no futuro sim
 		//this->domain = getaddrinfo(NULL);//...gets the result;
