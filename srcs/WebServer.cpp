@@ -6,7 +6,7 @@
 /*   By: ratavare <ratavare@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 01:07:43 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/17 16:36:59 by ratavare         ###   ########.fr       */
+/*   Updated: 2024/04/17 16:40:29 by ratavare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,8 +38,6 @@ WebServer::~WebServer()
 	std::cout << "  ░ ▒ ▒░  ░      ░     ░ ░ ▒  ░ ▒ ░░ ░░   ░ ▒░ ░ ░  ░" << std::endl;
 	std::cout << "░ ░ ░ ▒   ░ ░    ░ ░     ░ ░    ▒ ░   ░   ░ ░    ░   " << std::endl;
 	std::cout << "    ░ ░                    ░  ░ ░           ░    ░  ░" << std::endl << "\033[0m";
-	for (std::vector<Server*>::iterator it = servers.begin(); it != servers.end(); it++)
-		delete *it;
 	for (std::vector<Server*>::iterator it = servers.begin(); it != servers.end(); it++)
 		delete *it;
 }
