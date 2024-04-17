@@ -20,7 +20,7 @@ Req::Req(int connection, std::string line_w)
 
     // defining elements from config file
     this->autoindex = true;
-    this->index = "";
+    this->index = "index.html";
     this->redirect = "";
     this->get_allowed = true;
     this->post_allowed = true;
@@ -44,7 +44,7 @@ std::string Req::readFile(void)
 {
     // missing: looking for file in root (present in config file) ?
 
-    if (this->index != "")
+    if (opendir(location.c_str()) != NULL && this->index != "")
         this->file_to_open = this->index;
     else
         this->file_to_open = this->location;
@@ -111,7 +111,6 @@ void    Req::get_info()
     }
 }
 
-#include <dirent.h>
 
 void    Req::response_directory()
 {
@@ -194,7 +193,7 @@ void    Req::send_file()
 
     if (open(location.c_str(), O_RDONLY) == -1)
         this->send_response("404");
-        
+
     DIR* dir = opendir(location.c_str());
     if (dir != NULL)  // directory
     {
@@ -211,6 +210,7 @@ void    Req::send_file()
     }
     else  // file
     {
+        std::cout << "loc: " << location << std::endl;
         if (open(location.c_str(), O_RDONLY) == -1)
             this->send_response("404");
         this->send_response("200");
@@ -219,8 +219,8 @@ void    Req::send_file()
 
 void    Req::create_file()
 {
-    if (location[location.size() - 1] == '/') // directory
-        this->send_response("403");
+    // if (location[location.size() - 1] == '/') // directory
+    //     this->send_response("403");
 
     if (!this->post_allowed)
         this->send_response("400");
@@ -237,15 +237,15 @@ void    Req::create_file()
     c_file << this->body; // populate file
 
     std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nFile uploaded successfully!";
-    std::cout << ">>>>>>>>>>>>>>>" << std::endl;
+    std::cout << ">>>>>>>>>>>>>>>\n" << response << std::endl;
 
     write(this->con, response.c_str(), response.size()); // send file
 }
 
 void    Req::delete_file()
 {
-    if (location[location.size() - 1] == '/') // directory
-        this->send_response("403");
+    // if (location[location.size() - 1] == '/') // directory
+    //     this->send_response("403");
 
     if (!this->delete_allowed)
         this->send_response("400");
@@ -270,6 +270,11 @@ void    Req::process_request(void)
     // moved temporarily and permanentely
     // method not allowed - new error or 400 ?
 
+    // check if opening any dir should open the index, when the index is defined
+
+    // infinite post in browser
+    // post with files different from txt
+
     this->map_elements();
 
     try
@@ -286,11 +291,9 @@ void    Req::process_request(void)
             this->location = this->redirect;
             std::cout << "Moved temporarily" << std::endl;
         }
+        
         if (this->method == "GET")
-        {
-            std::cout << "check get" << std::endl;
             this->send_file();
-        }
         else if (this->method == "POST")
         {
             std::cout << "check post" << std::endl;

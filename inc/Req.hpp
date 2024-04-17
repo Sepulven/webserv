@@ -38,6 +38,8 @@
 #include <sstream>
 #include <fstream>
 #include <cstdio>
+#include <dirent.h>
+
 
 
 /*Errors

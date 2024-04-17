@@ -92,10 +92,14 @@ void WebServer::send_request(int epoll_fd, int fd, struct epoll_event event)
 {
 	Req req(fd, (this->requests)[fd]);
 	req.process_request();
+	std::cout << "end 0\n";
 	this->requests.erase(fd);
+	std::cout << "end 1\n";
 	
 	if (epoll_in_fd(epoll_fd, fd, event) < 0)
 		throw Error("Epoll_ctl failed");
+
+	std::cout << "end 2\n";
 }
 
 void WebServer::close_conn(int epoll_fd, int fd)
@@ -105,11 +109,19 @@ void WebServer::close_conn(int epoll_fd, int fd)
 	close(fd);
 }
 
+std::pair<std::string, std::string> split1(std::string str, char c)
+{
+    std::size_t found = str.find(c);
+    std::string s1 = str.substr(0, found);
+    std::string s2 = str.substr(found + 1);
+    
+    return std::make_pair(s1, s2);
+}
+
 void WebServer::read_request(int epoll_fd, int fd, struct epoll_event event)
 {
 	char buffer[1024];
 	std::string &str = this->request;
-	std::string suffix = "\r\n\r\n";
 	int bytes_read = read(fd, buffer, 1024);
 	buffer[bytes_read] = '\0';
 
@@ -121,7 +133,36 @@ void WebServer::read_request(int epoll_fd, int fd, struct epoll_event event)
 
 	std::string aux;
 	aux = buffer;
-	while (!aux.find("\r\n\r\n"))
+	std::cout << "this->request: " << aux << "." << std::endl;
+
+	std::string method = split1(aux, ' ').first;
+	std::string end;
+	int nb;
+
+	if (method == "GET" || method == "DELETE")
+	{
+		end = "\r\n\r\n";
+		nb = 4;
+	}
+	else if (method == "POST")
+	{
+		int i = aux.find("boundary=");
+		if (i == -1)
+			end = "\r\n\r\n";
+		else
+		{
+			i = i + 9;
+			int f = aux.find("\r\n", i);
+
+			end = aux.substr(i, f - i) + "--\r\n";
+			nb = end.size();
+		}
+	}
+	else
+		throw std::invalid_argument("");
+
+
+	while (!aux.find(end))
     {
         buffer[bytes_read] = '\0';
         aux =+ buffer;
@@ -129,17 +170,21 @@ void WebServer::read_request(int epoll_fd, int fd, struct epoll_event event)
     }
 
 	this->requests.insert(make_pair(fd, aux));
-	//this->line_w = aux;
 
 	buffer[bytes_read] = 0;
-	std::cout << aux << std::endl;
-	std::cout << "bytes_read:" << sizeof(aux) << std::endl;
 
-	str += buffer;
-	if (!strcmp(&(str.c_str()[str.size() - 4]), "\r\n\r\n"))
+	str = aux;
+	
+	if (!strcmp(&(str.c_str()[str.size() - nb]), end.c_str()))
 	{
+		std::cout << "check fim\n";
 		if (epoll_out_fd(epoll_fd, fd, event))
 			throw Error("Epoll_ctl failed");
+	}
+	else
+	{
+		std::cout << "file not supported\n";
+		throw Error("");
 	}
 }
 
