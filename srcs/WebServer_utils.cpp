@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 16:54:14 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/18 12:54:09 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/18 15:23:27 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,10 +59,4 @@ void WebServer::close_conn(int epoll_fd, int fd)
 		throw Error("Epoll_ctl failed");
 	delete this->conn[fd];
 	close(fd);
-}
-
-void WebServer::sig_handler(int sig)
-{
-	(void)sig;
-	is_running = 0;
 }

@@ -6,11 +6,13 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 01:07:43 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/18 12:54:05 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/18 15:23:46 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <WebServer.hpp>
+
+
 
 WebServer::WebServer()
 {
@@ -23,6 +25,7 @@ WebServer::~WebServer()
 {
 	std::cout << "\r  ";
 	std::cout << "\033[31m" << std::endl;
+	std::cout << "                                                     " << std::endl;
 	std::cout << " ▒█████    █████▒ █████▒██▓     ██▓ ███▄    █ ▓█████ " << std::endl;
 	std::cout << "▒██▒  ██▒▓██   ▒▓██   ▒▓██▒    ▓██▒ ██ ▀█   █ ▓█   ▀ " << std::endl;
 	std::cout << "▒██░  ██▒▒████ ░▒████ ░▒██░    ▒██▒▓██  ▀█ ██▒▒███   " << std::endl;
@@ -161,12 +164,8 @@ void WebServer::listen(void)
 	while (is_running)
 	{
 		num_events = epoll_wait(epoll_fd, this->events.data(), this->max_events, -1);
-		if (num_events < 0) {
-			if (is_running)
-				throw Error("Epoll_wait failed.");
-			else
-				break ;
-		}
+		if (num_events < 0 || !is_running)
+			break;
 		for (int i = 0; i < num_events; i++)
 		{
 			conn = &this->events[i];
@@ -186,7 +185,6 @@ void WebServer::listen(void)
 				std::cout << "epoll out event" << std::endl;
 				send_response(epoll_fd, event_data->fd, *conn);
 			}
-			// I need to forcefully test this scnerario for better error handling.
 			else if (conn->events & EPOLLERR || conn->events & EPOLLHUP)
 			{
 				std::cout << "Conn. closed in " << event_data->fd << std::endl;
@@ -195,6 +193,16 @@ void WebServer::listen(void)
 		}
 		this->events.clear();
 	}
+	if (num_events < 0 && is_running)
+		throw Error("Epoll_wait failed.");
+}
+
+/*Signal Handler*/
+void WebServer::sig_handler(int sig)
+{
+	(void)sig;
+	is_running = 0;
+	std::cout << "is_running: " << is_running << std::endl;
 }
 
 /*Exception class*/

@@ -1,0 +1,51 @@
+==1899931== Memcheck, a memory error detector
+==1899931== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==1899931== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==1899931== Command: ./webserv
+==1899931== 
+==1899931== Conditional jump or move depends on uninitialised value(s)
+==1899931==    at 0x484ED28: strlen (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==1899931==    by 0x49BF4C7: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::operator=(char const*) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+==1899931==    by 0x40C6F5: WebServer::read_request(int, int, epoll_event) (WebServer.cpp:133)
+==1899931==    by 0x40CD43: WebServer::listen() (WebServer.cpp:182)
+==1899931==    by 0x40389E: main (main.cpp:24)
+==1899931==  Uninitialised value was created by a stack allocation
+==1899931==    at 0x40C5C4: WebServer::read_request(int, int, epoll_event) (WebServer.cpp:120)
+==1899931== 
+Interrupted system call
+==1899931== 
+==1899931== HEAP SUMMARY:
+==1899931==     in use at exit: 65,632 bytes in 2 blocks
+==1899931==   total heap usage: 839 allocs, 837 frees, 303,436 bytes allocated
+==1899931== 
+==1899931== 65,632 bytes in 2 blocks are definitely lost in loss record 1 of 1
+==1899931==    at 0x4848899: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==1899931==    by 0x4C8B30A: __alloc_dir (opendir.c:115)
+==1899931==    by 0x4C8B30A: opendir_tail (opendir.c:63)
+==1899931==    by 0x4C8B30A: opendir (opendir.c:86)
+==1899931==    by 0x406929: Req::send_file() (Req.cpp:194)
+==1899931==    by 0x407A85: Req::process_request() (Req.cpp:289)
+==1899931==    by 0x40C45C: WebServer::send_response(int, int, epoll_event) (WebServer.cpp:112)
+==1899931==    by 0x40CDBA: WebServer::listen() (WebServer.cpp:187)
+==1899931==    by 0x40389E: main (main.cpp:24)
+==1899931== 
+==1899931== LEAK SUMMARY:
+==1899931==    definitely lost: 65,632 bytes in 2 blocks
+==1899931==    indirectly lost: 0 bytes in 0 blocks
+==1899931==      possibly lost: 0 bytes in 0 blocks
+==1899931==    still reachable: 0 bytes in 0 blocks
+==1899931==         suppressed: 0 bytes in 0 blocks
+==1899931== 
+==1899931== ERROR SUMMARY: 3 errors from 2 contexts (suppressed: 0 from 0)
+==1899931== 
+==1899931== 2 errors in context 1 of 2:
+==1899931== Conditional jump or move depends on uninitialised value(s)
+==1899931==    at 0x484ED28: strlen (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==1899931==    by 0x49BF4C7: std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::operator=(char const*) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+==1899931==    by 0x40C6F5: WebServer::read_request(int, int, epoll_event) (WebServer.cpp:133)
+==1899931==    by 0x40CD43: WebServer::listen() (WebServer.cpp:182)
+==1899931==    by 0x40389E: main (main.cpp:24)
+==1899931==  Uninitialised value was created by a stack allocation
+==1899931==    at 0x40C5C4: WebServer::read_request(int, int, epoll_event) (WebServer.cpp:120)
+==1899931== 
+==1899931== ERROR SUMMARY: 3 errors from 2 contexts (suppressed: 0 from 0)
