@@ -62,15 +62,20 @@ class Req
 		void    	map_elements();
 		void    	get_info();
 
-
 		void		send_file();
 		void		create_file();
 		void		delete_file();
 
 		void		send_response(std::string error_number);
+		std::string	get_extension(std::string filename);
+		std::string	get_response_body(std::string code);
 		void		response_directory();
 
+
+		// utils
+		std::pair<std::string, std::string> split(std::string str, char c);
 		std::string	readFile();
+		std::string intToString(int value);
 
 	private:
 		std::string	line;

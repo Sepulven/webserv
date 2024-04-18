@@ -95,6 +95,9 @@ void WebServer::send_request(int epoll_fd, int fd, struct epoll_event event)
 	std::cout << "end 0\n";
 	this->requests.erase(fd);
 	std::cout << "end 1\n";
+
+	std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nSuccess!";
+    write(fd, response.c_str(), response.size()); // send file
 	
 	if (epoll_in_fd(epoll_fd, fd, event) < 0)
 		throw Error("Epoll_ctl failed");
@@ -135,32 +138,31 @@ void WebServer::read_request(int epoll_fd, int fd, struct epoll_event event)
 	aux = buffer;
 	std::cout << "this->request: " << aux << "." << std::endl;
 
-	std::string method = split1(aux, ' ').first;
-	std::string end;
-	int nb;
+	std::string end = "\r\n\r\n";
 
-	if (method == "GET" || method == "DELETE")
-	{
-		end = "\r\n\r\n";
-		nb = 4;
-	}
-	else if (method == "POST")
-	{
-		int i = aux.find("boundary=");
-		if (i == -1)
-			end = "\r\n\r\n";
-		else
-		{
-			i = i + 9;
-			int f = aux.find("\r\n", i);
+	// int nb = 4;
+	// std::string method = split1(aux, ' ').first;
+	// if (method == "GET" || method == "DELETE")
+	// {
+	// 	end = "\r\n\r\n";
+	// 	nb = 4;
+	// }
+	// else if (method == "POST")
+	// {
+	// 	int i = aux.find("boundary=");
+	// 	if (i == -1)
+	// 		end = "\r\n\r\n";
+	// 	else
+	// 	{
+	// 		i = i + 9;
+	// 		int f = aux.find("\r\n", i);
 
-			end = aux.substr(i, f - i) + "--\r\n";
-			nb = end.size();
-		}
-	}
-	else
-		throw std::invalid_argument("");
-
+	// 		end = aux.substr(i, f - i) + "--\r\n";
+	// 		nb = end.size();
+	// 	}
+	// }
+	// else
+	// 	throw std::invalid_argument("");
 
 	while (!aux.find(end))
     {
@@ -168,22 +170,20 @@ void WebServer::read_request(int epoll_fd, int fd, struct epoll_event event)
         aux =+ buffer;
         bytes_read = read(fd, buffer, sizeof(buffer));
     }
-
-	this->requests.insert(make_pair(fd, aux));
-
 	buffer[bytes_read] = 0;
-
 	str = aux;
-	
-	if (!strcmp(&(str.c_str()[str.size() - nb]), end.c_str()))
+
+	// if (!strcmp(&(str.c_str()[str.size() - nb]), end.c_str()))
+	if (aux.find(end))
 	{
+		this->requests.insert(make_pair(fd, aux));
 		std::cout << "check fim\n";
 		if (epoll_out_fd(epoll_fd, fd, event))
 			throw Error("Epoll_ctl failed");
 	}
 	else
 	{
-		std::cout << "file not supported\n";
+		std::cout << "file not supported 0\n";
 		throw Error("");
 	}
 }

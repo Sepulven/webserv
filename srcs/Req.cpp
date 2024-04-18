@@ -31,37 +31,6 @@ Req::Req(int connection, std::string line_w)
     this->error_pages["404"] = "./error/404.html";
 }
 
-std::pair<std::string, std::string> split(std::string str, char c)
-{
-    std::size_t found = str.find(c);
-    std::string s1 = str.substr(0, found);
-    std::string s2 = str.substr(found + 1);
-    
-    return std::make_pair(s1, s2);
-}
-
-std::string Req::readFile(void)
-{
-    // missing: looking for file in root (present in config file) ?
-
-    if (opendir(location.c_str()) != NULL && this->index != "")
-        this->file_to_open = this->index;
-    else
-        this->file_to_open = this->location;
-
-    std::ifstream file(file_to_open.c_str());
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-
-    return buffer.str();
-}
-
-std::string intToString(int value) {
-    std::stringstream ss;
-    ss << value;
-    return ss.str();
-}
-
 void    Req::map_elements()
 {
     long unsigned int i = 0;
@@ -111,7 +80,6 @@ void    Req::get_info()
     }
 }
 
-
 void    Req::response_directory()
 {
     std::cout << "listing" << std::endl;
@@ -146,35 +114,80 @@ void    Req::response_directory()
     write(this->con, response.c_str(), response.size());
 }
 
-void    Req::send_response(std::string code)
+std::string Req::get_extension(std::string str)
 {
-    std::string file_name;
-    std::string status;
-    std::string content;
-
-    if (code == "200")
+    std::string extension;
+    size_t i = str.find_last_of(".");
+    if (i == str.npos)
     {
-        content = this->readFile();
-        status = "OK";
+        std::cout << "file not supported\n";
+        this->send_response("400");
     }
     else
+        extension = str.substr(i);
+    return extension;
+}
+
+std::string Req::get_response_body(std::string code)
+{
+    std::string file_name;
+    std::string content;
+
+    if (code != "200")
     {
         file_name = this->error_pages[code];
-
         std::ifstream file(file_name.c_str());
         std::stringstream buffer;
         buffer << file.rdbuf();
         content = buffer.str();
     }
-    
-    if (code == "400")
-        status = "BAD REQUEST";
-    else if (code == "403")
-        status = "FORBIDDEN";
-    else if (code == "404")
-        status = "NOT FOUND";
+    else
+    {
+        if (method == "GET")
+            content = this->readFile();
+        else if (method == "POST")
+            content = "File uploaded successfully!";
+        else if (method == "DELETE")
+            content = "File deleted successfully!";
+    }
+    return content;
+}
 
-    std::string response = "HTTP/1.1 " + code + " " + status + "\nContent-Type: text/html\nContent-Length: " + intToString(content.length()) + "\r\n\r\n" + content;
+void    Req::send_response(std::string code)
+{
+    std::string file_name;
+    std::string status;
+    std::string extension = "";
+
+    std::string content = get_response_body(code);
+
+    if (code == "200")
+    {
+        status = "OK";
+        if (method == "GET")
+            extension = this->get_extension(this->file_to_open);
+        else
+            extension = this->get_extension(this->filename);
+    }
+    else
+    {
+        if (code == "400")
+            status = "BAD REQUEST";
+        else if (code == "403")
+            status = "FORBIDDEN";
+        else if (code == "404")
+            status = "NOT FOUND";
+        extension = ".html";
+    }
+
+    static std::map<std::string, std::string> content_type;
+    content_type[".txt"] = "text/plain";
+    content_type[".cpp"] = "text/plain";
+    content_type[".hpp"] = "text/plain";
+    content_type[".html"] = "text/html";
+    content_type[".pdf"] = "application/pdf";
+
+    std::string response = "HTTP/1.1 " + code + " " + status + "\r\nContent-Type: " + content_type[extension] + "\r\nContent-Length: " + intToString(content.length()) + "\r\n\r\n" + content;
     std::cout << ">>>>>>>>>>>>>>>\n" << response << std::endl;
 
     write(this->con, response.c_str(), response.size());
@@ -236,10 +249,7 @@ void    Req::create_file()
 
     c_file << this->body; // populate file
 
-    std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nFile uploaded successfully!";
-    std::cout << ">>>>>>>>>>>>>>>\n" << response << std::endl;
-
-    write(this->con, response.c_str(), response.size()); // send file
+    this->send_response("200");
 }
 
 void    Req::delete_file()
@@ -256,7 +266,9 @@ void    Req::delete_file()
     if (std::remove(location.c_str()) != 0)
         this->send_response("404");
     
-    std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nFile deleted successfully!";
+    std::string content = "File deleted successfully!";
+
+    std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: " + intToString(content.length()) + "\r\n\r\n" + content + "\r\n\r\n";
     std::cout << ">>>>>>>>>>>>>>>\n" << response << std::endl;
 
     write(this->con, response.c_str(), response.size()); // send file
@@ -269,11 +281,9 @@ void    Req::process_request(void)
     // post request status
     // moved temporarily and permanentely
     // method not allowed - new error or 400 ?
+    // not supported types files
 
     // check if opening any dir should open the index, when the index is defined
-
-    // infinite post in browser
-    // post with files different from txt
 
     this->map_elements();
 
