@@ -2,16 +2,8 @@
 
 Req::Req(int connection, std::string line_w)
 {
-    // char buffer[1024];
-    // int bytes_received = read(connection, buffer, sizeof(buffer));
     this->line = line_w;
 	std::cout << "<<<<<<<<<<<<<<<\n" <<  this->line << std::endl;
-    // while (!this->line.find("\r\n\r\n"))
-    // {
-    //     buffer[bytes_received] = '\0';
-    //     this->line =+ buffer;
-    //     bytes_received = read(connection, buffer, sizeof(buffer));
-    // }
 
     if (!this->line.size())
         this->send_response("400");
@@ -166,8 +158,10 @@ void    Req::send_response(std::string code)
         status = "OK";
         if (method == "GET")
             extension = this->get_extension(this->file_to_open);
-        else
+        else if (method == "POST")
             extension = this->get_extension(this->filename);
+        else if (method == "DELETE")
+            extension = this->get_extension(this->location);
     }
     else
     {
@@ -266,12 +260,14 @@ void    Req::delete_file()
     if (std::remove(location.c_str()) != 0)
         this->send_response("404");
     
-    std::string content = "File deleted successfully!";
+    // std::string content = "File deleted successfully!";
 
-    std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: " + intToString(content.length()) + "\r\n\r\n" + content + "\r\n\r\n";
-    std::cout << ">>>>>>>>>>>>>>>\n" << response << std::endl;
+    // std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: " + intToString(content.length()) + "\r\n\r\n" + content + "\r\n\r\n";
+    // std::cout << ">>>>>>>>>>>>>>>\n" << response << std::endl;
 
-    write(this->con, response.c_str(), response.size()); // send file
+    // write(this->con, response.c_str(), response.size()); // send file
+
+    this->send_response("200");
 }
 
 void    Req::process_request(void)
