@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ratavare <ratavare@student.42.fr>          +#+  +:+       +#+        */
+/*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/11 15:56:54 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/17 16:26:48 by ratavare         ###   ########.fr       */
+/*   Updated: 2024/04/18 12:26:39 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ public:
 	void	init_servers(void);
 	void	accept_connection(int, int);
 	void	read_request(int, int, t_event);
-	void	send_request(int, int, t_event);
+	void	send_response(int, int, t_event);
 	void	close_conn(int, int);
 	static void	sig_handler(int sig);
 

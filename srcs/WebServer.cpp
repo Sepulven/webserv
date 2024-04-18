@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ratavare <ratavare@student.42.fr>          +#+  +:+       +#+        */
+/*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 01:07:43 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/17 16:40:29 by ratavare         ###   ########.fr       */
+/*   Updated: 2024/04/18 12:26:57 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@ void WebServer::sig_handler(int sig)
 
 WebServer::WebServer()
 {
-	// We are going to create multiple server fds given the context;
 	this->max_events = 0;
 	this->init_servers();
 	signal(SIGINT, &WebServer::sig_handler);
@@ -29,7 +28,8 @@ WebServer::WebServer()
 WebServer::~WebServer()
 {
 	std::cout << "\r  ";
-	std::cout << "\033[31m" << std::endl << " ▒█████    █████▒ █████▒██▓     ██▓ ███▄    █ ▓█████ " << std::endl;
+	std::cout << "\033[31m" << std::endl;
+	std::cout << " ▒█████    █████▒ █████▒██▓     ██▓ ███▄    █ ▓█████ " << std::endl;
 	std::cout << "▒██▒  ██▒▓██   ▒▓██   ▒▓██▒    ▓██▒ ██ ▀█   █ ▓█   ▀ " << std::endl;
 	std::cout << "▒██░  ██▒▒████ ░▒████ ░▒██░    ▒██▒▓██  ▀█ ██▒▒███   " << std::endl;
 	std::cout << "▒██   ██░░▓█▒  ░░▓█▒  ░▒██░    ░██░▓██▒  ▐▌██▒▒▓█  ▄ " << std::endl;
@@ -106,7 +106,7 @@ void WebServer::accept_connection(int epoll_fd, int fd)
 		throw Error("Epoll_ctl failed");
 }
 
-void WebServer::send_request(int epoll_fd, int fd, struct epoll_event event)
+void WebServer::send_response(int epoll_fd, int fd, struct epoll_event event)
 {
 	Req req(fd, (this->requests)[fd]);
 	req.process_request();
@@ -139,14 +139,13 @@ void WebServer::read_request(int epoll_fd, int fd, struct epoll_event event)
 	std::string aux;
 	aux = buffer;
 	while (!aux.find("\r\n\r\n"))
-    {
-        buffer[bytes_read] = '\0';
-        aux =+ buffer;
-        bytes_read = read(fd, buffer, sizeof(buffer));
-    }
+	{
+		buffer[bytes_read] = '\0';
+		aux =+ buffer;
+		bytes_read = read(fd, buffer, sizeof(buffer));
+	}
 
 	this->requests.insert(make_pair(fd, aux));
-	//this->line_w = aux;
 
 	buffer[bytes_read] = 0;
 	std::cout << aux << std::endl;
@@ -192,7 +191,7 @@ void WebServer::listen(void)
 			else if (conn->events & EPOLLOUT)
 			{
 				std::cout << "epoll out event" << std::endl;
-				send_request(epoll_fd, event_data->fd, *conn);
+				send_response(epoll_fd, event_data->fd, *conn);
 			}
 			// I need to forcefully test this scnerario for better error handling.
 			else if (conn->events & EPOLLERR || conn->events & EPOLLHUP)
