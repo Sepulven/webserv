@@ -6,17 +6,11 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 01:07:43 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/18 12:26:57 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/18 12:54:05 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <WebServer.hpp>
-
-void WebServer::sig_handler(int sig)
-{
-	(void)sig;
-	is_running = 0;
-}
 
 WebServer::WebServer()
 {
@@ -40,6 +34,9 @@ WebServer::~WebServer()
 	std::cout << "    ░ ░                    ░  ░ ░           ░    ░  ░" << std::endl << "\033[0m";
 	for (std::vector<Server*>::iterator it = servers.begin(); it != servers.end(); it++)
 		delete *it;
+	for (std::map<int, t_events*>::iterator it = conn.begin(); it != conn.end(); it++)
+		close_conn(this->epoll_fd, it->second->fd);
+		// std::cout << it->second->fd << std::endl;
 }
 
 void	WebServer::init_servers(void)
@@ -77,11 +74,13 @@ void	WebServer::init_servers(void)
 		memset(&event, 0, sizeof(struct epoll_event));
 		event.events = EPOLLIN;
 		event.data.ptr = new t_events(vec[i]->socket, SERVER);
+		this->conn[vec[i]->socket] = static_cast<t_events*>(event.data.ptr);
 		if (epoll_add_fd(this->epoll_fd, vec[i]->socket, event))
 			throw Error("epoll_ctl failed.");
 		this->max_events += vec[i]->max_events;
 		std::cout << "[" << vec[i]->max_events << "] Listening on port: " << vec[i]->port << std::endl;
 	}
+
 	//We ensure that our vector won't change its memory area.
 	this->events.reserve(this->max_events);
 	this->servers = vec;
@@ -102,6 +101,7 @@ void WebServer::accept_connection(int epoll_fd, int fd)
 
 	event.events = EPOLLIN | EPOLLET;
 	event.data.ptr = new t_events(client_fd, CLIENT);
+	this->conn[client_fd] = static_cast<t_events*>(event.data.ptr);
 	if (WebServer::epoll_add_fd(epoll_fd, client_fd, event) < 0)
 		throw Error("Epoll_ctl failed");
 }
@@ -111,16 +111,9 @@ void WebServer::send_response(int epoll_fd, int fd, struct epoll_event event)
 	Req req(fd, (this->requests)[fd]);
 	req.process_request();
 	this->requests.erase(fd);
-	
+
 	if (epoll_in_fd(epoll_fd, fd, event) < 0)
 		throw Error("Epoll_ctl failed");
-}
-
-void WebServer::close_conn(int epoll_fd, int fd)
-{
-	if (epoll_del_fd(epoll_fd, fd) < 0)
-		throw Error("Epoll_ctl failed");
-	close(fd);
 }
 
 void WebServer::read_request(int epoll_fd, int fd, struct epoll_event event)

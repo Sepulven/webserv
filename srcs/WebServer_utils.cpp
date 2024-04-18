@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 16:54:14 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/15 16:54:31 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/18 12:54:09 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,14 +38,12 @@ int WebServer::epoll_add_fd(int epoll_fd, int fd, t_event event)
 
 int WebServer::epoll_in_fd(int epoll_fd, int fd, t_event event)
 {
-	// event.events = EPOLLIN | EPOLLERR | EPOLLHUP;
 	event.events = EPOLLIN | EPOLLET;
 	return (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event));
 }
 
 int WebServer::epoll_out_fd(int epoll_fd, int fd, t_event event)
 {
-	// event.events = EPOLLOUT | EPOLLERR | EPOLLHUP;
 	event.events = EPOLLOUT | EPOLLET;
 	return (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event));
 }
@@ -53,4 +51,18 @@ int WebServer::epoll_out_fd(int epoll_fd, int fd, t_event event)
 int WebServer::epoll_del_fd(int epoll_fd, int fd)
 {
 	return (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL));
+}
+
+void WebServer::close_conn(int epoll_fd, int fd)
+{
+	if (epoll_del_fd(epoll_fd, fd) < 0)
+		throw Error("Epoll_ctl failed");
+	delete this->conn[fd];
+	close(fd);
+}
+
+void WebServer::sig_handler(int sig)
+{
+	(void)sig;
+	is_running = 0;
 }

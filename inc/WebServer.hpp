@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/11 15:56:54 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/18 12:26:39 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/18 12:41:31 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,14 +55,15 @@ static volatile sig_atomic_t is_running = 1;
 class WebServer
 {
 private:
-	int max_events;
-	int epoll_fd;
+	int							max_events;
+	int							epoll_fd;
 	
-	std::vector<Server *> servers; 
-	std::vector<t_event> events;
+	std::vector<Server *>		servers; 
+	std::vector<t_event>		events;
 
 	std::string					line_w;
 	std::map<int, std::string>	requests;
+	std::map<int, t_events*>		conn;
 
 public:
 	WebServer();
