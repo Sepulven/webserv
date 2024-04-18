@@ -147,7 +147,6 @@ std::string Req::get_response_body(std::string code)
 
 void    Req::send_response(std::string code)
 {
-    std::string file_name;
     std::string status;
     std::string extension = "";
 
@@ -171,7 +170,8 @@ void    Req::send_response(std::string code)
             status = "FORBIDDEN";
         else if (code == "404")
             status = "NOT FOUND";
-        extension = ".html";
+        //extension = ".html";
+        extension = this->get_extension(this->error_pages[code]);
     }
 
     static std::map<std::string, std::string> content_type;

@@ -84,13 +84,12 @@ class Req
 		int	con;
 
 		std::string	method;
-		std::string	location;
+		std::string	location; // file specified in get or delete request
 		std::string	connection;
 		std::string cont_type;
 		std::string cont_len;
-		std::string	filename;
-
-		std::string	file_to_open;
+		std::string	filename; // file to create (post method)
+		std::string	file_to_open; // file to open in get, equivalent to location or index
 
 		// info from config file
 		bool		autoindex; // directory listing
