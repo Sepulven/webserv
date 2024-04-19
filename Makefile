@@ -1,7 +1,7 @@
 NAME		=	webserv
 CXX			=	c++
 CXXFLAGS 		=	-Wall -Werror -Wextra -std=c++98 #-g -fsanitize=address
-SRC			=	srcs/main.cpp srcs/Server.cpp srcs/Req.cpp srcs/Req_utils.cpp srcs/WebServer_utils.cpp srcs/WebServer.cpp
+SRC			=	srcs/main.cpp srcs/Server.cpp srcs/Req.cpp srcs/Res.cpp srcs/Req_utils.cpp srcs/WebServer_utils.cpp srcs/WebServer.cpp srcs/ConnStream.cpp
 
 INCLUDES	=	-I ./inc
 

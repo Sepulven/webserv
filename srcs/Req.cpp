@@ -8,7 +8,7 @@ Req::~Req()
 {
 }
 
-std::vector<std::string>	split(std::string &base, std::string delimitador)
+std::vector<std::string>	split(std::string &base, char delimitador)
 {
 	std::istringstream iss(base);
 	std::string token;
@@ -21,12 +21,12 @@ std::vector<std::string>	split(std::string &base, std::string delimitador)
 
 void	Req::set_header(std::vector<std::string>& header)
 {
-	std::string	&line;
+	std::string	line;
 	std::size_t	index = 0;
 	std::string	key;
 	std::string	value;
 	
-	std::size_t lengt = header.size();
+	std::size_t length = header.size();
 
 	for (size_t i = 1; i < length; i++)
 	{
@@ -40,7 +40,7 @@ void	Req::set_header(std::vector<std::string>& header)
 	}
 }
 
-void	Req::parse(void)
+void	Req::parser(void)
 {
 	std::vector<std::string> request = split(this->data, "\n\r\n\r");
 	std::vector<std::string> message_header = split(request[0], "\n");
@@ -49,21 +49,21 @@ void	Req::parse(void)
 
 	this->request_line = message_header[0];
 
-	std::vector<std::string> request_line_tokens = split(message_header[0], " ");
+	std::vector<std::string> request_line_tokens = split(message_header[0], "");
 
 	this->method = request_line_tokens[0];
 	this->http = request_line_tokens[1];
 	this->URL = request_line_tokens[2];
 
-	this->set_header(request_lines);
+	this->set_header(message_header);
 }
 
 int Req::read(int fd)
 {
-	char buffer[1025];
-	std::string& _data = &this->data;
+	char buffer[4096 + 1];
+	std::string& _data = this->data;
 
-	int bytes_read = read(fd, buffer, 1024);
+	int bytes_read = ::read(fd, buffer, 4096);
 
 	buffer[bytes_read] = '\0';
 	if (bytes_read <= 0)
@@ -72,12 +72,12 @@ int Req::read(int fd)
 	while (bytes_read > 0)
 	{
 		_data += buffer;
-		bytes_read = read(fd, buffer, 1024);
+		bytes_read = ::read(fd, buffer, 4096);
 		buffer[bytes_read] = '\0';
 	}
 	if (_data.find("/r/n/r/n"))
 	{
-		this->parse();
+		this->parser();
 		return (1);
 	}
 	return (0);

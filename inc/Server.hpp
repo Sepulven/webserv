@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 12:31:02 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/12 01:27:11 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/19 16:49:11 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,6 @@
 	All information about the server context must be hold in server class;
 	Since we are going to have multiple serve context definition;
 */
-#include <Req.hpp>
-#include <Res.hpp>
 
 class Server
 {

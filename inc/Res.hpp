@@ -1,13 +1,10 @@
 #pragma once
 
-#include "Req.hpp"
 
-class ConnStream;
 
 class Res
 {
 	private:
+		std::string a;
 	public:
-		std::string getTime(void) const;
-
 };

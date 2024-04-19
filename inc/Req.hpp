@@ -1,18 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Req.hpp                                            :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/04/10 13:36:32 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/19 16:22:52 by asepulve         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
-#ifndef REQ_HPP
-#define REQ_HPP
-
 #pragma once
 
 /*
@@ -30,15 +15,21 @@
 
 */
 
+
+/* C++ header */
 #include <iostream>
 #include <ostream>
-#include <unistd.h>
 #include <map>
-#include <fcntl.h>
 #include <sstream>
 #include <fstream>
 #include <cstdio>
+#include <vector>
+#include <string>
+/* C header */
+
 #include <dirent.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 /*Errors
 400 - bad request (request that was sent to the server has invalid syntax)
@@ -73,6 +64,8 @@ class Req
 		// Body
 		std::string body;
 
-};
+		int		read(int);
+		void	set_header(std::vector<std::string>&);
+		void	parser(void);
 
-#endif
+};
