@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 16:54:14 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/15 16:54:31 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/19 12:05:29 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,4 +53,28 @@ int WebServer::epoll_out_fd(int epoll_fd, int fd, t_event event)
 int WebServer::epoll_del_fd(int epoll_fd, int fd)
 {
 	return (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL));
+}
+
+/*
+	* Close a conn, and clean up the resources.
+*/
+
+void WebServer::close_conn(int epoll_fd, int fd)
+{
+	if (epoll_del_fd(epoll_fd, fd) < 0)
+		throw Error("Epoll_ctl failed");
+	close(fd);
+	delete this->streams[fd];
+}
+
+
+/***********************************/
+
+std::pair<std::string, std::string> split1(std::string str, char c)
+{
+    std::size_t found = str.find(c);
+    std::string s1 = str.substr(0, found);
+    std::string s2 = str.substr(found + 1);
+    
+    return std::make_pair(s1, s2);
 }

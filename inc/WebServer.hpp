@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/11 15:56:54 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/15 16:51:56 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/19 12:02:51 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,14 +33,13 @@
 #include <vector>
 #include <algorithm>
 
-// #include <sys/stat.h>
-// #include <sys/types.h>
+#include <Stream.hpp>
 
-typedef struct s_events {
+typedef struct s_event_data {
 	int fd;
 	char type;
-	s_events(int _fd, char _type) : fd(_fd), type(_type) {}
-} t_events;
+	s_event_data(int _fd, char _type) : fd(_fd), type(_type) {}
+} t_event_data;
 
 enum SOCKET_TYPE
 {
@@ -53,15 +52,16 @@ typedef struct epoll_event t_event;
 class WebServer
 {
 private:
-	int max_events;
-	int epoll_fd;
-	int is_running; // We are going to set is to false with a signal.
-	std::vector<Server *> servers; 
-	std::vector<t_event> events;
+	int							max_events;
+	int							epoll_fd;
+	int							is_running; // We are going to set is to false with a signal.
+	std::vector<Server *>		servers; 
+	std::vector<t_event>		events;
 
 	std::string					line_w;
 	std::map<int, std::string>	requests;
 
+	std::map<int, Stream *>		streams;
 public:
 	WebServer();
 	~WebServer();
@@ -73,7 +73,7 @@ public:
 	void	init_servers(void);
 	void	accept_connection(int, int);
 	void	read_request(int, int, t_event);
-	void	send_request(int, int, t_event);
+	void	send_response(int, int, t_event);
 	void	close_conn(int, int);
 
 	class Error : public std::exception
