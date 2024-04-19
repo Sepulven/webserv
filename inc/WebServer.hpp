@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/11 15:56:54 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/19 12:02:51 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/19 15:13:05 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@
 #include <vector>
 #include <algorithm>
 
-#include <Stream.hpp>
+#include <ConnStream.hpp>
 
 typedef struct s_event_data {
 	int fd;
@@ -61,7 +61,7 @@ private:
 	std::string					line_w;
 	std::map<int, std::string>	requests;
 
-	std::map<int, Stream *>		streams;
+	std::map<int, ConnStream *>		streams;
 public:
 	WebServer();
 	~WebServer();

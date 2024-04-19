@@ -6,7 +6,7 @@
 #include <iostream>
 #include <string>
 
-class Stream
+class ConnStream
 {
 protected:
 	std::string time;
@@ -17,14 +17,14 @@ public:
 	Req req;
 	Res res;
 
-	Stream();
-	virtual ~Stream();
+	ConnStream(int);
+	virtual ~ConnStream();
 };
 
-Stream::Stream()
+ConnStream::ConnStream()
 {
 }
 
-Stream::~Stream()
+ConnStream::~ConnStream()
 {
 }

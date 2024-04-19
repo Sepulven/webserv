@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 16:54:14 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/19 12:42:32 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/19 15:51:39 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,6 @@ std::pair<std::string, std::string> split1(std::string str, char c)
     std::size_t found = str.find(c);
     std::string s1 = str.substr(0, found);
     std::string s2 = str.substr(found + 1);
-    
+
     return std::make_pair(s1, s2);
 }

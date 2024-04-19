@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 01:07:43 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/19 12:32:27 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/19 16:00:53 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,12 +86,12 @@ void WebServer::accept_connection(int epoll_fd, int fd)
 
 	if (WebServer::epoll_add_fd(epoll_fd, client_fd, event) < 0)
 		throw Error("Epoll_ctl failed");
-	this->streams[client_fd] = new Stream();
+	this->streams[client_fd] = new ConnStream();
 }
 
 void WebServer::send_response(int epoll_fd, int fd, t_event event)
 {
-	int status == this->streams[fd].res.send(fd);
+	int status == this->streams[fd].res.send();
 
 	if (status == 1)
 	{
@@ -120,7 +120,7 @@ void WebServer::listen(void)
 	int num_events = 0;
 	int epoll_fd = this->epoll_fd; 
 	t_event *conn;
-	t_event_data* event_data
+	t_event_data* event_data;
 
 	while (WebServer::is_running)
 	{

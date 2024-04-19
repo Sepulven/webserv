@@ -2,7 +2,7 @@
 
 #include "Req.hpp"
 
-class Stream;
+class ConnStream;
 
 class Res
 {

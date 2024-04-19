@@ -226,8 +226,6 @@ void    Req::send_file()
 
 void    Req::create_file()
 {
-    // if (location[location.size() - 1] == '/') // directory
-    //     this->send_response("403");
 
     if (!this->post_allowed)
         this->send_response("400");
@@ -248,8 +246,6 @@ void    Req::create_file()
 
 void    Req::delete_file()
 {
-    // if (location[location.size() - 1] == '/') // directory
-    //     this->send_response("403");
 
     if (!this->delete_allowed)
         this->send_response("400");
@@ -259,53 +255,38 @@ void    Req::delete_file()
 
     if (std::remove(location.c_str()) != 0)
         this->send_response("404");
-    
-    // std::string content = "File deleted successfully!";
 
-    // std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: " + intToString(content.length()) + "\r\n\r\n" + content + "\r\n\r\n";
-    // std::cout << ">>>>>>>>>>>>>>>\n" << response << std::endl;
-
-    // write(this->con, response.c_str(), response.size()); // send file
 
     this->send_response("200");
 }
 
-void    Req::process_request(void)
+void	Req::process_request(void)
 {
-    // response header (check date, server, etc)
+	this->map_elements();
 
-    // post request status
-    // moved temporarily and permanentely
-    // method not allowed - new error or 400 ?
-    // not supported types files
-
-    // check if opening any dir should open the index, when the index is defined
-
-    this->map_elements();
-
-    try
+	try
 	{
-        if (this->method != "GET" && this->method != "POST" && this->method != "DELETE")
-            this->send_response("400");
+		if (this->method != "GET" && this->method != "POST" && this->method != "DELETE")
+			this->send_response("400");
 
-        this->get_info();
+		this->get_info();
 
-        std::cout << this->method << std::endl;
+		std::cout << this->method << std::endl;
 
-        if (this->redirect != "")
-        {
-            this->location = this->redirect;
-            std::cout << "Moved temporarily" << std::endl;
-        }
-        if (this->method == "GET")
-            this->send_file();
-        else if (this->method == "POST")
-        {
-            std::cout << "check post" << std::endl;
-            this->create_file();
-        }
-        else if (this->method == "DELETE")
-            this->delete_file();
+		if (this->redirect != "")
+		{
+			this->location = this->redirect;
+			std::cout << "Moved temporarily" << std::endl;
+		}
+		if (this->method == "GET")
+			this->send_file();
+		else if (this->method == "POST")
+		{
+			std::cout << "check post" << std::endl;
+			this->create_file();
+		}
+		else if (this->method == "DELETE")
+			this->delete_file();
 	}
 	catch (const std::exception& e)
 	{

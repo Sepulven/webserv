@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Req.hpp                                            :+:      :+:    :+:   */
+/*   buffReq.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/10 13:36:32 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/19 12:42:08 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/19 14:38:21 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,12 +71,10 @@ class Req
 		std::string	get_response_body(std::string code);
 		void		response_directory();
 
-
 		// utils
 		std::pair<std::string, std::string> split(std::string str, char c);
 		std::string	readFile();
 		std::string intToString(int value);
-
 	private:
 		std::string	line;
 		std::string	body;

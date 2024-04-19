@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/10 13:36:32 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/19 12:44:31 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/19 16:22:52 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,47 +57,22 @@ class Req
 	public:
 		Req();
 		~Req();
-		void		process_request();
-		void		map_elements();
-		void		get_info();
-
-		void		send_file();
-		void		create_file();
-		void		delete_file();
-
-		void		send_response(std::string error_number);
-		std::string	get_extension(std::string filename);
-		std::string	get_response_body(std::string code);
-		void		response_directory();
-
-
-		// utils
-		std::pair<std::string, std::string> split(std::string str, char c);
-		std::string	readFile();
-		std::string intToString(int value);
-
+	
 	private:
-		std::string	line;
-		std::string	body;
-		std::map<std::string, std::string>	elements;
-		int	con;
+		// Raw request;
+		std::string data;
 
-		std::string	method;
-		std::string	location; // file specified in get or delete request
-		std::string	connection;
-		std::string cont_type;
-		std::string cont_len;
-		std::string	filename; // file to create (post method)
-		std::string	file_to_open; // file to open in get, equivalent to location or index
+		// Request message header
+		std::string request_line;
+		std::string method;
+		std::string http;
+		std::string URL;
+		
+		std::map<std::string, std::string> header;
 
-		// info from config file
-		bool		autoindex; // directory listing
-		std::string	index; // default file
-		std::string	redirect;
-		bool		get_allowed;
-		bool		post_allowed;
-		bool		delete_allowed;
-		std::map<std::string, std::string>	error_pages;
+		// Body
+		std::string body;
+
 };
 
 #endif
