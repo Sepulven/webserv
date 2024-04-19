@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 01:07:43 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/19 12:03:41 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/19 12:32:27 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,6 +105,7 @@ void WebServer::send_response(int epoll_fd, int fd, t_event event)
 void WebServer::read_request(int epoll_fd, int fd, t_event event)
 {
 	int status == this->streams[fd].req.read(fd);
+
 	if (status == 1)
 	{
 		if (epoll_out_fd(epoll_fd, fd, event))

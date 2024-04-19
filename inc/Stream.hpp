@@ -11,10 +11,14 @@ class Stream
 protected:
 	std::string time;
 public:
-	Stream();
-	virtual ~Stream();
 	class Req;
 	class Res;
+
+	Req req;
+	Res res;
+
+	Stream();
+	virtual ~Stream();
 };
 
 Stream::Stream()

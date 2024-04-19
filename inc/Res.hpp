@@ -2,6 +2,8 @@
 
 #include "Req.hpp"
 
+class Stream;
+
 class Res
 {
 	private:
@@ -9,8 +11,3 @@ class Res
 		std::string getTime(void) const;
 
 };
-
-
-std::string &Res::getTime(void) const {
-	return (this->time);
-}

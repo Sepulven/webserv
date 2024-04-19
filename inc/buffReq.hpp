@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/10 13:36:32 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/19 12:44:31 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/19 12:42:08 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,8 @@
 #include <cstdio>
 #include <dirent.h>
 
+
+
 /*Errors
 400 - bad request (request that was sent to the server has invalid syntax)
 404 - not found 
@@ -55,8 +57,7 @@ are not enabled)
 class Req
 {
 	public:
-		Req();
-		~Req();
+		Req(int connection, std::string line_w);
 		void		process_request();
 		void		map_elements();
 		void		get_info();

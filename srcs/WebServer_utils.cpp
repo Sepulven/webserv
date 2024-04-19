@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 16:54:14 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/19 12:05:29 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/19 12:42:32 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,6 @@ int WebServer::epoll_del_fd(int epoll_fd, int fd)
 /*
 	* Close a conn, and clean up the resources.
 */
-
 void WebServer::close_conn(int epoll_fd, int fd)
 {
 	if (epoll_del_fd(epoll_fd, fd) < 0)
