@@ -8,31 +8,40 @@ Req::~Req()
 {
 }
 
-std::vector<std::string>	split(std::string &base, char delimitador)
+static std::vector<std::string> split(std::string& base, std::string delimiter)
 {
 	std::istringstream iss(base);
 	std::string token;
 	std::vector<std::string> tokens;
 
-	while (std::getline(iss, token, delimitador))
+	size_t pos = base.find(delimiter);
+	while (pos != std::string::npos)
+	{
+		token = base.substr(0, pos);
 		tokens.push_back(token);
-	return (tokens);
+		base.erase(0, pos + delimiter.length());
+
+		pos = base.find(delimiter); // Find next occurrence of the delimiter
+	}
+	tokens.push_back(base); // Add the remaining part after the last delimiter
+	return tokens;
 }
+
 
 void	Req::set_header(std::vector<std::string>& header)
 {
 	std::string	line;
-	std::size_t	index = 0;
+	std::size_t	i = 0;
 	std::string	key;
 	std::string	value;
 	
 	std::size_t length = header.size();
 
-	for (size_t i = 1; i < length; i++)
+	for (size_t j = 1; j < length; i++)
 	{
-		line = request_line[i];
+		line = request_line[j];
 
-		index = line.find(":");
+		i = line.find(":");
 		key = line.substr(0, i);
 		value = line.substr(i+1);
 

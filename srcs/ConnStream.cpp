@@ -1,6 +1,6 @@
 #include <ConnStream.hpp>
 
-ConnStream::ConnStream()
+ConnStream::ConnStream(int _fd) : fd(_fd)
 {
 	
 }

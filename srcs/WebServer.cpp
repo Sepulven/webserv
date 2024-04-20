@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 01:07:43 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/19 16:00:53 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/21 00:13:13 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,16 +82,16 @@ void WebServer::accept_connection(int epoll_fd, int fd)
 		throw Error("Couln't make socket fd non-blocking.");
 
 	event.events = EPOLLIN | EPOLLET;
-	event.data.ptr = new t_events(client_fd, CLIENT);
+	event.data.ptr = new t_event_data(client_fd, CLIENT);
 
 	if (WebServer::epoll_add_fd(epoll_fd, client_fd, event) < 0)
 		throw Error("Epoll_ctl failed");
-	this->streams[client_fd] = new ConnStream();
+	this->streams[client_fd] = new ConnStream(client_fd);
 }
 
 void WebServer::send_response(int epoll_fd, int fd, t_event event)
 {
-	int status == this->streams[fd].res.send();
+	int status = this->streams[fd]->res.send();
 
 	if (status == 1)
 	{
@@ -104,7 +104,7 @@ void WebServer::send_response(int epoll_fd, int fd, t_event event)
 
 void WebServer::read_request(int epoll_fd, int fd, t_event event)
 {
-	int status == this->streams[fd].req.read(fd);
+	int status = this->streams[fd]->req.read(fd);
 
 	if (status == 1)
 	{

@@ -45,11 +45,11 @@ are not enabled)
 
 class Req
 {
+	
+	private:
 	public:
 		Req();
 		~Req();
-	
-	private:
 		// Raw request;
 		std::string data;
 

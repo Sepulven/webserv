@@ -12,6 +12,7 @@ class ConnStream
 {
 protected:
 	std::string time;
+	int fd;
 public:
 	Req req;
 	Res res;
