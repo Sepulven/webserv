@@ -49,13 +49,14 @@ class ConnStream;
 
 class Req
 {
-	
+
 	private:
 	public:
 		Req(ConnStream *);
 		~Req();
 
 		ConnStream * stream;
+
 		// Raw request;
 		std::string data;
 

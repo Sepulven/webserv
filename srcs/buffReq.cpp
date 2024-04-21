@@ -10,39 +10,7 @@ Req::Req(int connection, std::string line_w)
 
     this->con = connection;
 
-    // defining elements from config file
-    this->autoindex = true;
-    this->index = "index.html";
-    this->redirect = "";
-    this->get_allowed = true;
-    this->post_allowed = true;
-    this->delete_allowed = true;
 
-    // define default error pages if not specified in file
-    this->error_pages["400"] = "./error/400.html";
-    this->error_pages["404"] = "./error/404.html";
-}
-
-void    Req::map_elements()
-{
-    long unsigned int i = 0;
-    long unsigned int f = this->line.find("\n");
-
-    std::string m = this->line.substr(0, f);
-    this->method = (split(m, ' ')).first;
-
-    i = f;
-    std::string rest = this->line.substr(f + 1);
-    f = rest.find("\n");
-    std::string aux = this->line.substr(i + 1, f - 1);
-    while (f < this->line.size())
-    {
-        this->elements.insert(split(aux, ':'));
-        i = f;
-        rest = rest.substr(f + 1);
-        f = rest.find("\n");
-        aux = rest.substr(0, f - 1);
-    }
 }
 
 void    Req::get_info()
@@ -194,7 +162,7 @@ void    Req::send_file()
 {
     if (!this->get_allowed)
         this->send_response("400");
-    
+
     if (location[0] == '/')
         location = "." + location;
 
@@ -229,7 +197,7 @@ void    Req::create_file()
 
     if (!this->post_allowed)
         this->send_response("400");
-    
+
     std::ofstream file; // check if files exists
     file.open(this->filename.c_str(), std::ios::in | std::ios::binary);
     if (file.is_open())
@@ -255,7 +223,6 @@ void    Req::delete_file()
 
     if (std::remove(location.c_str()) != 0)
         this->send_response("404");
-
 
     this->send_response("200");
 }

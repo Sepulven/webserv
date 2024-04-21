@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 12:31:02 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/19 16:49:11 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/21 20:20:15 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,8 @@ class Server
 		int			port;
 		int			max_events;
 		int			socket;
+		
+		
 		Server(std::string, std::string, int);
 		virtual ~Server();
 };
