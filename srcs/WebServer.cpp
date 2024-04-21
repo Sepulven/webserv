@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 01:07:43 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/21 00:13:13 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/21 00:23:29 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,7 @@ void WebServer::accept_connection(int epoll_fd, int fd)
 
 void WebServer::send_response(int epoll_fd, int fd, t_event event)
 {
-	int status = this->streams[fd]->res.send();
+	int status = this->streams[fd]->res->send();
 
 	if (status == 1)
 	{
@@ -104,7 +104,7 @@ void WebServer::send_response(int epoll_fd, int fd, t_event event)
 
 void WebServer::read_request(int epoll_fd, int fd, t_event event)
 {
-	int status = this->streams[fd]->req.read(fd);
+	int status = this->streams[fd]->req->read(fd);
 
 	if (status == 1)
 	{

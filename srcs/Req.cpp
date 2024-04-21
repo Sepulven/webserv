@@ -1,6 +1,6 @@
 #include <Req.hpp>
 
-Req::Req()
+Req::Req(ConnStream * _stream) : stream(_stream)
 {
 }
 
@@ -8,22 +8,23 @@ Req::~Req()
 {
 }
 
-static std::vector<std::string> split(std::string& base, std::string delimiter)
+static std::vector<std::string> split(const std::string& base, const std::string& delimiter)
 {
 	std::istringstream iss(base);
 	std::string token;
 	std::vector<std::string> tokens;
+	size_t startPos = 0;
 
-	size_t pos = base.find(delimiter);
+	size_t pos = base.find(delimiter, startPos);
 	while (pos != std::string::npos)
 	{
-		token = base.substr(0, pos);
+		token = base.substr(startPos, pos - startPos); 
 		tokens.push_back(token);
-		base.erase(0, pos + delimiter.length());
 
-		pos = base.find(delimiter); // Find next occurrence of the delimiter
+		startPos = pos + delimiter.length();
+		pos = base.find(delimiter, startPos);
 	}
-	tokens.push_back(base); // Add the remaining part after the last delimiter
+	tokens.push_back(base.substr(startPos));
 	return tokens;
 }
 
@@ -37,28 +38,29 @@ void	Req::set_header(std::vector<std::string>& header)
 	
 	std::size_t length = header.size();
 
-	for (size_t j = 1; j < length; i++)
+	std::cout << "here we are " << std::endl;
+	for (size_t j = 1; j < length; j++)
 	{
-		line = request_line[j];
+		line = header[j];
 
 		i = line.find(":");
 		key = line.substr(0, i);
 		value = line.substr(i+1);
-
 		this->header[key] = value;
 	}
 }
 
 void	Req::parser(void)
 {
-	std::vector<std::string> request = split(this->data, "\n\r\n\r");
+
+	std::vector<std::string> request = split(this->data, "\n\r");
 	std::vector<std::string> message_header = split(request[0], "\n");
 
 	this->body = request[1];
 
 	this->request_line = message_header[0];
 
-	std::vector<std::string> request_line_tokens = split(message_header[0], "");
+	std::vector<std::string> request_line_tokens = split(message_header[0], " ");
 
 	this->method = request_line_tokens[0];
 	this->http = request_line_tokens[1];

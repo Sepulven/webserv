@@ -18,7 +18,6 @@
 
 /* C++ header */
 #include <iostream>
-#include <ostream>
 #include <map>
 #include <sstream>
 #include <fstream>
@@ -30,6 +29,9 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <unistd.h>
+
+/* Classes */
+#include <ConnStream.hpp>
 
 /*Errors
 400 - bad request (request that was sent to the server has invalid syntax)
@@ -43,13 +45,17 @@ are not enabled)
 504 - gateway timeout
 */
 
+class ConnStream;
+
 class Req
 {
 	
 	private:
 	public:
-		Req();
+		Req(ConnStream *);
 		~Req();
+
+		ConnStream * stream;
 		// Raw request;
 		std::string data;
 

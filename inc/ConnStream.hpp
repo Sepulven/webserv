@@ -8,14 +8,17 @@
 #include <Req.hpp>
 #include <Res.hpp>
 
+class Req;
+class Res;
+
 class ConnStream
 {
 protected:
 	std::string time;
-	int fd;
 public:
-	Req req;
-	Res res;
+	int fd;
+	Req *req;
+	Res *res;
 
 	ConnStream(int);
 	virtual ~ConnStream();
