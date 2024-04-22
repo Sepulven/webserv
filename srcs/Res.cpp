@@ -81,11 +81,6 @@ void	Res::build_response(std::string code)
 	this->data += "\r\n\r\n";
 	this->data += content;
 	this->data += "\r\n\r\n";
-
-	std::cout << "this is the response:" << std::endl;
-	std::cout << data << std::endl;
-	std::cout << "--------------------------" << std::endl;
-	std::cout << "This is the content:" << content << std::endl;
 }
 
 void	Res::exec_delete(void)
@@ -108,6 +103,7 @@ void	Res::exec_get(void)
 
 	if (URL[0] == '/')
 		URL = "." + URL;
+	std::cout << "This is the URL::" << URL << std::endl;
 	int fd = open(URL.c_str(), O_RDONLY);
 	if (fd == -1)
 	{

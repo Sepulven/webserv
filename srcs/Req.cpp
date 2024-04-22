@@ -62,8 +62,8 @@ void	Req::parser(void)
 	std::vector<std::string> request_line_tokens = split(message_header[0], " ");
 
 	this->method = request_line_tokens[0];
-	this->http = request_line_tokens[1];
-	this->URL = request_line_tokens[2];
+	this->URL = request_line_tokens[1];
+	this->http = request_line_tokens[2];
 
 	this->set_header(message_header);
 }
