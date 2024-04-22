@@ -30,8 +30,6 @@ class Res
 		/* Set the status code */
 		std::map<std::string, std::string> status;
 		std::map<std::string, std::string> content_type;
-
-		void process_req(void);
 	
 		/* New version */
 		void exec_get(void);

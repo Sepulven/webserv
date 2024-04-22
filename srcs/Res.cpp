@@ -24,6 +24,7 @@ int Res::send(void)
 	methods.push_back("POST");
 	methods.push_back("DELETE");
 
+	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
 	std::cout << stream->req->data;
 	try
 	{
@@ -66,11 +67,11 @@ void	Res::build_response(std::string code)
 {
 	std::string ext = FileManager::get_extension(stream->req->URL);
 	std::string content;
+	std::stringstream ss;
 
 	this->code = code;
 
 	content = get_response_body();
-	std::stringstream ss;
 
 	ss << content.length();
 
@@ -79,6 +80,12 @@ void	Res::build_response(std::string code)
 	this->data += "Content-Length: " + ss.str()  + "\r\n";
 	this->data += "\r\n\r\n";
 	this->data += content;
+	this->data += "\r\n\r\n";
+
+	std::cout << "this is the response:" << std::endl;
+	std::cout << data << std::endl;
+	std::cout << "--------------------------" << std::endl;
+	std::cout << "This is the content:" << content << std::endl;
 }
 
 void	Res::exec_delete(void)
@@ -129,7 +136,3 @@ void	Res::exec_post(void)
 	build_response(FileManager::create_file(filename, stream->req->body));
 }
 
-void	Res::process_req(void)
-{
-
-}

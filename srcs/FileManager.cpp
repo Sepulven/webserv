@@ -31,9 +31,17 @@ std::string FileManager::get_filename(const std::string &filename)
 std::string FileManager::read_file(const std::string &filename)
 {
 	std::ifstream file(filename.c_str());
+	std::ifstream not_found("error/404.html");
 	std::stringstream buff;
 
-	buff << file.rdbuf();
+	if (!file.is_open())
+	{
+		if (!not_found.is_open())
+			std::cout << "WE COULND'T OPEN THE ERROR FILE" << std::endl;
+		buff << not_found.rdbuf();
+	}
+	if (file.is_open())
+		buff << file.rdbuf();
 	return (buff.str());
 }
 

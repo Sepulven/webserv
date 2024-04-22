@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <iostream>
 
 /*
 	* The only responsability of this class is to deal with the file system;
