@@ -15,19 +15,35 @@ Res::Res(ConnStream *_stream) : stream(_stream) {
 
 Res::~Res() { }
 
-int Res::send(void) const
+int Res::send(void)
 {
-	const char *httpResponse = "HTTP/1.1 200 OK\r\n"
-							   "Content-Type: text/plain\r\n"
-							   "Content-Length: 8\r\n"
-							   "\r\n"
-							   "Success!"
-							   "\r\n";
-	std::string response(httpResponse);
+	Req *req = stream->req;
+	std::vector<std::string> methods;
 
-	if (write(stream->fd, response.c_str(), response.size()) < 0)
-		return (-1);
-	return (1);
+	methods.push_back("GET");
+	methods.push_back("POST");
+	methods.push_back("DELETE");
+
+	std::cout << stream->req->data;
+	try
+	{
+		if (std::find(methods.begin(), methods.end(), req->method) == methods.end())
+			build_response("400");
+		if (req->method == "GET")
+			exec_get();
+		else if (req->method == "POST")
+			exec_post();
+		else if (req->method == "DELETE")
+			exec_delete();
+	}
+	catch (const std::exception &e)
+	{
+		std::cout << e.what() << std::endl;
+	}
+
+	std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+	std::cout << this->data;
+	return (write(stream->fd, this->data.c_str(), this->data.length()));
 }
 
 std::string	Res::get_response_body(void)
@@ -54,9 +70,13 @@ void	Res::build_response(std::string code)
 	this->code = code;
 
 	content = get_response_body();
+	std::stringstream ss;
+
+	ss << content.length();
+
 	this->data += "HTTP/1.1 " + code + " " + this->status[code] + "\r\n";
 	this->data += "Content-Type: " + this->content_type[ext] + "\r\n";
-	this->data += "Content-Length: " + content.length() + "\r\n";
+	this->data += "Content-Length: " + ss.str()  + "\r\n";
 	this->data += "\r\n\r\n";
 	this->data += content;
 }
@@ -90,11 +110,12 @@ void	Res::exec_get(void)
 	close(fd);
 	if (opendir(URL.c_str()))
 	{
-		directory_listing();
+		(void)URL;
+		// directory_listing();
 	}
 	else
 	{
-		if (open(location.c_str(), O_RDONLY) == -1)
+		if (open(URL.c_str(), O_RDONLY) == -1)
 			build_response("404");
 		build_response("200");
 	}
@@ -110,28 +131,5 @@ void	Res::exec_post(void)
 
 void	Res::process_req(void)
 {
-	Req *req = stream->req;
-	std::vector<std::string> methods;
 
-	methods.push_back("GET");
-	methods.push_back("POST");
-	methods.push_back("DELETE");
-
-	try
-	{
-		if (std::find(methods.begin(), methods.end(), req->method) == methods.end())
-			build_response("400");
-		if (req->method == "GET")
-			exec_get();
-		else if (req->method == "POST")
-			exec_post();
-		else if (req->method == "DELETE")
-			exec_delete();
-	}
-	catch (const std::exception &e)
-	{
-		std::cout << e.what() << std::endl;
-	}
-
-	write(stream->fd, this->data.c_str(), this->data.length());
 }

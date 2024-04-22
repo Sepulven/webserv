@@ -2,7 +2,7 @@
 
 /* C headers*/
 #include <unistd.h>
-
+#include <cstdlib>
 /* C++ headers*/
 #include <iostream>
 #include <algorithm>
@@ -24,7 +24,7 @@ class Res
 	private:
 		ConnStream *stream;
 		/*Status*/
-		std::string& code;
+		std::string code;
 		std::string data; // Response
 
 		/* Set the status code */
@@ -48,5 +48,5 @@ class Res
 		Res(ConnStream *);
 		~Res();
 
-		int send(void) const;
+		int send(void);
 };
