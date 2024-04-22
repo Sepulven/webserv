@@ -22,48 +22,49 @@ int Res::send(void) const
 void Res::send_response(std::string code)
 {
 	(void)code;
-	// std::string status;
-	// std::string extension = "";
 
-	// std::string content = get_response_body(code);
+// 	std::string status;
+// 	std::string extension = "";
 
-	// if (code == "200")
-	// {
-	// 	status = "OK";
-	// 	if (method == "GET")
-	// 		extension = this->get_extension(this->file_to_open);
-	// 	else if (method == "POST")
-	// 		extension = this->get_extension(this->filename);
-	// 	else if (method == "DELETE")
-	// 		extension = this->get_extension(this->location);
-	// }
-	// else
-	// {
-	// 	if (code == "400")
-	// 		status = "BAD REQUEST";
-	// 	else if (code == "403")
-	// 		status = "FORBIDDEN";
-	// 	else if (code == "404")
-	// 		status = "NOT FOUND";
-	// 	// extension = ".html";
-	// 	extension = this->get_extension(this->error_pages[code]);
-	// }
+// 	std::string content = get_response_body(code);
 
-	// static std::map<std::string, std::string> content_type;
-	// content_type[".txt"] = "text/plain";
-	// content_type[".cpp"] = "text/plain";
-	// content_type[".hpp"] = "text/plain";
-	// content_type[".html"] = "text/html";
-	// content_type[".pdf"] = "application/pdf";
+// 	if (code == "200")
+// 	{
+// 		status = "OK";
+// 		if (method == "GET")
+// 			extension = this->get_extension(this->file_to_open);
+// 		else if (method == "POST")
+// 			extension = this->get_extension(this->filename);
+// 		else if (method == "DELETE")
+// 			extension = this->get_extension(this->location);
+// 	}
+// 	else
+// 	{
+// 		if (code == "400")
+// 			status = "BAD REQUEST";
+// 		else if (code == "403")
+// 			status = "FORBIDDEN";
+// 		else if (code == "404")
+// 			status = "NOT FOUND";
+// 		// extension = ".html";
+// 		extension = this->get_extension(this->error_pages[code]);
+// 	}
 
-	// std::string response = "HTTP/1.1 " + code + " " + status + "\r\nContent-Type: " + content_type[extension] + "\r\nContent-Length: " + intToString(content.length()) + "\r\n\r\n" + content;
-	// std::cout << ">>>>>>>>>>>>>>>\n"
-	// 		  << response << std::endl;
+// 	static std::map<std::string, std::string> content_type;
+// 	content_type[".txt"] = "text/plain";
+// 	content_type[".cpp"] = "text/plain";
+// 	content_type[".hpp"] = "text/plain";
+// 	content_type[".html"] = "text/html";
+// 	content_type[".pdf"] = "application/pdf";
 
-	// write(stream->fd, response.c_str(), response.size());
+// 	std::string response = "HTTP/1.1 " + code + " " + status + "\r\nContent-Type: " + content_type[extension] + "\r\nContent-Length: " + intToString(content.length()) + "\r\n\r\n" + content;
+// 	std::cout << ">>>>>>>>>>>>>>>\n"
+// 			  << response << std::endl;
 
-	// if (code != "200")
-	// 	throw std::invalid_argument("");
+// 	write(stream->fd, response.c_str(), response.size());
+
+// 	if (code != "200")
+// 		throw std::invalid_argument("");
 }
 
 void Res::send_file(void)

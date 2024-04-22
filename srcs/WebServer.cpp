@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 01:07:43 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/21 00:23:29 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/22 00:43:16 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,20 +22,20 @@ WebServer::WebServer()
 
 WebServer::~WebServer()
 {
-
 }
 
-void	WebServer::init_servers(void)
+void WebServer::init_servers(void)
 {
 	struct sockaddr_in server_addr;
 	struct epoll_event event;
-	std::vector<Server*> vec;
+	int server_fd;
+	std::vector<ServerContext *> vec;
 
-	vec.push_back(new Server("asepulve.com.br", "localhost", 8080));
-	vec.push_back(new Server("ratavare.com.br", "localhost", 8088));
-	vec.push_back(new Server("mvicent.com.br", "localhost", 8888));
+	vec.push_back(new ServerContext("asepulve.com.br", "localhost", 8080));
+	vec.push_back(new ServerContext("ratavare.com.br", "localhost", 8088));
+	vec.push_back(new ServerContext("mvicent.com.br", "localhost", 8888));
+
 	this->epoll_fd = epoll_create1(0);
-
 	if (this->epoll_fd < 0)
 		throw Error("Epoll_create1 failed.");
 	for (size_t i = 0; i < vec.size(); i++)
@@ -45,29 +45,30 @@ void	WebServer::init_servers(void)
 		server_addr.sin_addr.s_addr = vec[i]->domain;
 		server_addr.sin_port = htons(vec[i]->port);
 
-		vec[i]->socket = socket(AF_INET, SOCK_STREAM, 0);
-		if (vec[i]->socket < 0)
+		server_fd = socket(AF_INET, SOCK_STREAM, 0);
+		vec[i]->socket = server_fd;
+		if (server_fd < 0)
 			throw Error("Socket failed.");
-		if (sfd_non_blocking(vec[i]->socket) < 0)
+		if (sfd_non_blocking(server_fd) < 0)
 			throw Error("Couldn't make the server socket non-blocking.");
-		if (set_reuseaddr(vec[i]->socket) < 0)
+		if (set_reuseaddr(server_fd) < 0)
 			throw Error("Setsockopt failed");
-		if (bind(vec[i]->socket, &server_addr) < 0)
+		if (bind(server_fd, &server_addr) < 0)
 			throw Error("Bind failed.");
-		if (::listen(vec[i]->socket, vec[i]->max_events) < 0)
+		if (::listen(server_fd, vec[i]->max_events) < 0)
 			throw Error("Listen failed.");
 
 		memset(&event, 0, sizeof(struct epoll_event));
 		event.events = EPOLLIN;
-		event.data.ptr = new t_event_data(vec[i]->socket, SERVER);
-		if (epoll_add_fd(this->epoll_fd, vec[i]->socket, event))
+		event.data.ptr = new t_event_data(server_fd, SERVER);
+		if (epoll_add_fd(this->epoll_fd, server_fd, event))
 			throw Error("epoll_ctl failed.");
 		this->max_events += vec[i]->max_events;
+		this->servers[server_fd] = vec[i];
 		std::cout << "[" << vec[i]->max_events << "] Listening on port: " << vec[i]->port << std::endl;
 	}
 	this->events.reserve(this->max_events);
 }
-
 
 void WebServer::accept_connection(int epoll_fd, int fd)
 {
@@ -86,7 +87,7 @@ void WebServer::accept_connection(int epoll_fd, int fd)
 
 	if (WebServer::epoll_add_fd(epoll_fd, client_fd, event) < 0)
 		throw Error("Epoll_ctl failed");
-	this->streams[client_fd] = new ConnStream(client_fd);
+	this->streams[client_fd] = new ConnStream(client_fd, servers[fd]);
 }
 
 void WebServer::send_response(int epoll_fd, int fd, t_event event)
@@ -118,9 +119,9 @@ void WebServer::read_request(int epoll_fd, int fd, t_event event)
 void WebServer::listen(void)
 {
 	int num_events = 0;
-	int epoll_fd = this->epoll_fd; 
+	int epoll_fd = this->epoll_fd;
 	t_event *conn;
-	t_event_data* event_data;
+	t_event_data *event_data;
 
 	while (WebServer::is_running)
 	{
@@ -130,7 +131,7 @@ void WebServer::listen(void)
 		for (int i = 0; i < num_events; i++)
 		{
 			conn = &this->events[i];
-			event_data = static_cast<t_event_data*>(conn->data.ptr);
+			event_data = static_cast<t_event_data *>(conn->data.ptr);
 			if ((event_data->type == SERVER) && (conn->events & EPOLLIN))
 				accept_connection(epoll_fd, event_data->fd);
 			else if (conn->events & EPOLLIN)
@@ -142,13 +143,15 @@ void WebServer::listen(void)
 		}
 		this->events.clear();
 	}
-	std::cout << std::endl << std::endl << "SERVER DIED" << std::endl;
+	std::cout << std::endl
+			  << std::endl
+			  << "SERVER DIED" << std::endl;
 }
 
 /*Exception class*/
 WebServer::Error::Error(const char *_msg) : msg(_msg) {}
 
-const char * WebServer::Error::what() const throw()
+const char *WebServer::Error::what() const throw()
 {
-    return (msg);
+	return (msg);
 }

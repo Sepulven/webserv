@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.hpp                                         :+:      :+:    :+:   */
+/*   ServerContext.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 12:31:02 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/21 20:20:15 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/22 00:17:52 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,9 @@
 /* C++ headers*/
 #include <string>
 
+/* Classes */
+#include <Route.hpp>
+
 /*
 	Server contexts:
 
@@ -27,9 +30,9 @@
 	Since we are going to have multiple serve context definition;
 */
 
-class Server
+class ServerContext
 {
-	private:	
+	private:
 
 	public:
 		std::string	name;
@@ -38,8 +41,10 @@ class Server
 		int			port;
 		int			max_events;
 		int			socket;
-		
-		
-		Server(std::string, std::string, int);
-		virtual ~Server();
+
+		//Location Context are name route;
+		std::map<std::string, Route *> router;
+
+		ServerContext(std::string, std::string, int);
+		virtual ~ServerContext();
 };

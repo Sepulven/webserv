@@ -1,7 +1,10 @@
 NAME		=	webserv
 CXX			=	c++
 CXXFLAGS 		=	-Wall -Werror -Wextra -std=c++98 #-g -fsanitize=address
-SRC			=	srcs/main.cpp srcs/Server.cpp srcs/Req.cpp srcs/Res.cpp srcs/WebServer_utils.cpp srcs/WebServer.cpp srcs/ConnStream.cpp
+SRCS			=	main.cpp ServerContext.cpp Req.cpp Res.cpp WebServer_utils.cpp \
+				WebServer.cpp ConnStream.cpp Route.cpp  FileManager.cpp
+
+SRC			=	$(addprefix srcs/,$(SRCS)) 
 
 INCLUDES	=	-I ./inc
 

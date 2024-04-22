@@ -38,7 +38,6 @@ void	Req::set_header(std::vector<std::string>& header)
 	
 	std::size_t length = header.size();
 
-	std::cout << "here we are " << std::endl;
 	for (size_t j = 1; j < length; j++)
 	{
 		line = header[j];
