@@ -21,7 +21,7 @@ int Res::send(void)
 	std::vector<std::string> methods;
 
 	methods.push_back("GET");
-	methods.push_back("POST");
+	// methods.push_back("POST");
 	methods.push_back("DELETE");
 
 	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
@@ -30,7 +30,7 @@ int Res::send(void)
 	{
 		if (std::find(methods.begin(), methods.end(), req->method) == methods.end())
 			build_response("400");
-		if (req->method == "GET")
+		else if (req->method == "GET")
 			exec_get();
 		else if (req->method == "POST")
 			exec_post();

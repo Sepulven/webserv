@@ -26,3 +26,6 @@ fclean: clean
 		@rm -rf ${NAME}
 
 re: fclean ${NAME}
+
+run: re
+	./${NAME}
