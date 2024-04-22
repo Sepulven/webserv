@@ -1,6 +1,17 @@
 #include <Res.hpp>
 
-Res::Res(ConnStream *_stream) : stream(_stream) { }
+Res::Res(ConnStream *_stream) : stream(_stream) {
+	status["200"] = "OK";
+	status["400"] = "BAD REQUEST";
+	status["403"] = "FORBIDDEN";
+	status["404"] = "NOT FOUND";
+
+	content_type[".txt"] = "text/plain";
+	content_type[".cpp"] = "text/plain";
+	content_type[".hpp"] = "text/plain";
+	content_type[".html"] = "text/html";
+	content_type[".pdf"] = "application/pdf";
+}
 
 Res::~Res() { }
 
@@ -19,126 +30,49 @@ int Res::send(void) const
 	return (1);
 }
 
-void Res::send_response(std::string code)
+std::string	Res::get_response_body(void)
 {
-	(void)code;
+	std::string filename = FileManager::get_filename(stream->req->URL);
 
-// 	std::string status;
-// 	std::string extension = "";
+	// if (code != "200")
+	// 	return (FileManager::read(filename));
 
-// 	std::string content = get_response_body(code);
-
-// 	if (code == "200")
-// 	{
-// 		status = "OK";
-// 		if (method == "GET")
-// 			extension = this->get_extension(this->file_to_open);
-// 		else if (method == "POST")
-// 			extension = this->get_extension(this->filename);
-// 		else if (method == "DELETE")
-// 			extension = this->get_extension(this->location);
-// 	}
-// 	else
-// 	{
-// 		if (code == "400")
-// 			status = "BAD REQUEST";
-// 		else if (code == "403")
-// 			status = "FORBIDDEN";
-// 		else if (code == "404")
-// 			status = "NOT FOUND";
-// 		// extension = ".html";
-// 		extension = this->get_extension(this->error_pages[code]);
-// 	}
-
-// 	static std::map<std::string, std::string> content_type;
-// 	content_type[".txt"] = "text/plain";
-// 	content_type[".cpp"] = "text/plain";
-// 	content_type[".hpp"] = "text/plain";
-// 	content_type[".html"] = "text/html";
-// 	content_type[".pdf"] = "application/pdf";
-
-// 	std::string response = "HTTP/1.1 " + code + " " + status + "\r\nContent-Type: " + content_type[extension] + "\r\nContent-Length: " + intToString(content.length()) + "\r\n\r\n" + content;
-// 	std::cout << ">>>>>>>>>>>>>>>\n"
-// 			  << response << std::endl;
-
-// 	write(stream->fd, response.c_str(), response.size());
-
-// 	if (code != "200")
-// 		throw std::invalid_argument("");
+	if (stream->req->method == "GET")
+		return (FileManager::read(filename));
+	if (stream->req->method == "POST")
+		return ("File Uploaded Successfully!");
+	if (stream->req->method == "DELETE")
+		return ("File Deleted Successfully!");
+	return ("The method is not even an option, how does it work?");
 }
 
-void Res::send_file(void)
+void	Res::build_response(std::string code)
 {
-	std::string path;
-	DIR *dir;
+	std::string ext = FileManager::get_extension(stream->req->URL);
+	std::string content;
 
-	// Check if the req. is allowed or not for this route;
+	this->code = code;
 
-	// Concactenate the ., me must check from the config file
-	if (stream->req->URL[0] == '/')
-		path = "." + stream->req->URL[0];
+	content = get_response_body();
+	this->data += "HTTP/1.1 " + code + " " + this->status[code] + "\r\n";
+	this->data += "Content-Type: " + this->content_type[ext] + "\r\n";
+	this->data += "Content-Length: " + content.length() + "\r\n";
+	this->data += "\r\n\r\n";
+	this->data += content;
+}
 
-	if (open(path.c_str(), O_RDONLY) == -1)
-		this->send_response("404");
+void	Res::exec_delete(void)
+{
+	std::string path = stream->req->URL;
 
-	dir = opendir(path.c_str());
-	if (dir != NULL) // directory
-	{
-		// If there is a index file defined in the config, sends it;
-		if ("")
-		{
-			if (open(path.c_str(), O_RDONLY) == -1)
-				this->send_response("404");
-			this->send_response("200");
-		}
-		// If directory listing is active do it;
-		else if (false) //this->autoindex
-			this->directory_listing();
-		// Doesn't have permission;
-		else
-			this->send_response("403");
-	}
-	// send file;
+	//TODO: Check for permissions;
+
+	if (path[0] == '/')
+		path = path.substr(1);
+	if (std::remove(path.c_str()) != 0)
+		build_response("404");
 	else
-	{
-		if (open(path.c_str(), O_RDONLY) == -1)
-			this->send_response("404");
-		this->send_response("200");
-	}
-}
-
-void Res::create_file(void)
-{
-	// if (!this->post_allowed)
-	// 	this->send_response("400");
-
-	// std::ofstream file; // check if files exists
-	// file.open(this->filename.c_str(), std::ios::in | std::ios::binary);
-	// if (file.is_open())
-	// 	this->send_response("400");
-
-	// std::ofstream c_file(this->filename.c_str()); // create file
-	// if (!c_file)
-	// 	this->send_response("400");
-
-	// c_file << this->body; // populate file
-
-	this->send_response("200");
-}
-
-void Res::delete_file(void)
-{
-
-	// if (!this->delete_allowed)
-	// 	this->send_response("400");
-
-	// if (this->location[0] == '/')
-	// 	location = location.substr(1);
-
-	// if (std::remove(location.c_str()) != 0)
-	// 	send_response("404");
-
-	send_response("200");
+		build_response("200");
 }
 
 void Res::process_req(void)
@@ -159,10 +93,12 @@ void Res::process_req(void)
 		else if (req->method == "POST")
 			create_file();
 		else if (req->method == "DELETE")
-			delete_file();
+			exec_delete();
 	}
 	catch (const std::exception &e)
 	{
 		std::cout << e.what() << std::endl;
 	}
+
+	write(stream->fd, this->data.c_str(), this->data.length());
 }

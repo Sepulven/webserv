@@ -1,5 +1,9 @@
 #pragma once
 
+/* C++ headers */
+
+#include <fstream>
+#include <sstream>
 #include <string>
 
 /*
@@ -8,9 +12,12 @@
 
 class FileManager
 {
-private:
-public:
-	FileManager(/* args */);
-	~FileManager();
-	static std::string get_extension(const std::string &);
+	private:
+	public:
+		FileManager(/* args */);
+		~FileManager();
+
+		static std::string get_extension(const std::string &);
+		static std::string get_filename(const std::string &);
+		static std::string read(const std::string &);
 };
