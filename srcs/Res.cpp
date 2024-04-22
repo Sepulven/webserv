@@ -38,7 +38,7 @@ std::string	Res::get_response_body(void)
 	// 	return (FileManager::read(filename));
 
 	if (stream->req->method == "GET")
-		return (FileManager::read(filename));
+		return (FileManager::read_file(filename));
 	if (stream->req->method == "POST")
 		return ("File Uploaded Successfully!");
 	if (stream->req->method == "DELETE")
@@ -75,7 +75,40 @@ void	Res::exec_delete(void)
 		build_response("200");
 }
 
-void Res::process_req(void)
+void	Res::exec_get(void)
+{
+	std::string URL = stream->req->URL;
+
+	if (URL[0] == '/')
+		URL = "." + URL;
+	int fd = open(URL.c_str(), O_RDONLY);
+	if (fd == -1)
+	{
+		build_response("404");
+		return ;
+	}
+	close(fd);
+	if (opendir(URL.c_str()))
+	{
+		directory_listing();
+	}
+	else
+	{
+		if (open(location.c_str(), O_RDONLY) == -1)
+			build_response("404");
+		build_response("200");
+	}
+}
+
+void	Res::exec_post(void)
+{
+	// Cheks for permission;
+	std::string filename = FileManager::get_filename(stream->req->URL);
+
+	build_response(FileManager::create_file(filename, stream->req->body));
+}
+
+void	Res::process_req(void)
 {
 	Req *req = stream->req;
 	std::vector<std::string> methods;
@@ -87,11 +120,11 @@ void Res::process_req(void)
 	try
 	{
 		if (std::find(methods.begin(), methods.end(), req->method) == methods.end())
-			send_response("400");
+			build_response("400");
 		if (req->method == "GET")
-			send_file();
+			exec_get();
 		else if (req->method == "POST")
-			create_file();
+			exec_post();
 		else if (req->method == "DELETE")
 			exec_delete();
 	}
