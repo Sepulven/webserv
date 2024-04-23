@@ -17,6 +17,14 @@ Res::~Res() { }
 
 
 /*
+	* Log the response on sthe stdout;
+*/
+void Res::log(void) const {
+	std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+	std::cout << this->data;
+}
+
+/*
 	* Must check for the permissions before executing;
 	* Must handle in case of the URL is a a directory;
 */
@@ -29,15 +37,6 @@ int Res::send(void)
 	methods.push_back("POST");
 	methods.push_back("DELETE");
 
-	// std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
-	// std::cout << stream->req->file_path << std::endl
-	// 		  << stream->req->filename << std::endl
-	// 		  << stream->req->file_ext << std::endl
-	// 		  << stream->req->query_string << std::endl
-	// 		  ;
-
-	// std::cout << "********************************" << std::endl;
-	// std::cout << stream->req->data;
 	try
 	{
 		if (std::find(methods.begin(), methods.end(), req->method) == methods.end())
@@ -53,9 +52,6 @@ int Res::send(void)
 	{
 		std::cout << e.what() << std::endl;
 	}
-
-	// std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
-	// std::cout << this->data;
 	return (write(stream->fd, this->data.c_str(), this->data.length()));
 }
 

@@ -8,6 +8,23 @@ Req::~Req()
 {
 }
 
+
+/*
+	* Log the response on sthe stdout;
+*/
+void Res::log(void) const {
+		std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+		std::cout << stream->req->file_path << std::endl
+				<< stream->req->filename << std::endl
+				<< stream->req->file_ext << std::endl
+				<< stream->req->query_string << std::endl
+				;
+
+		std::cout << "********************************" << std::endl;
+		std::cout << stream->req->data;
+}
+
+
 static std::vector<std::string> split(const std::string& base, const std::string& delimiter)
 {
 	std::istringstream iss(base);
