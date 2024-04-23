@@ -32,7 +32,7 @@ std::string FileManager::get_filename(const std::string &filename)
 	* Reads file given a path;
 	* If path starts with '/', jumps it;
 
-	TODO: Get the error page from the defined ones;
+	TODO: Get the error page from the route;
 */
 std::string FileManager::read_file(const std::string &path)
 {

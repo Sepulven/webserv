@@ -15,6 +15,11 @@ Res::Res(ConnStream *_stream) : stream(_stream) {
 
 Res::~Res() { }
 
+
+/*
+	* Must check for the permissions before executing;
+	* Must handle in case of the URL is a a directory;
+*/
 int Res::send(void)
 {
 	Req *req = stream->req;
@@ -24,15 +29,15 @@ int Res::send(void)
 	methods.push_back("POST");
 	methods.push_back("DELETE");
 
-	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
-	std::cout << stream->req->file_path << std::endl
-			  << stream->req->filename << std::endl
-			  << stream->req->file_ext << std::endl
-			  << stream->req->query_string << std::endl
-			  ;
+	// std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+	// std::cout << stream->req->file_path << std::endl
+	// 		  << stream->req->filename << std::endl
+	// 		  << stream->req->file_ext << std::endl
+	// 		  << stream->req->query_string << std::endl
+	// 		  ;
 
-	std::cout << "********************************" << std::endl;
-	std::cout << stream->req->data;
+	// std::cout << "********************************" << std::endl;
+	// std::cout << stream->req->data;
 	try
 	{
 		if (std::find(methods.begin(), methods.end(), req->method) == methods.end())
@@ -49,8 +54,8 @@ int Res::send(void)
 		std::cout << e.what() << std::endl;
 	}
 
-	std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
-	std::cout << this->data;
+	// std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+	// std::cout << this->data;
 	return (write(stream->fd, this->data.c_str(), this->data.length()));
 }
 
@@ -93,8 +98,6 @@ void	Res::build_response(std::string code)
 void	Res::exec_delete(void)
 {
 	std::string path = stream->req->URL;
-
-	//TODO: Check for permissions;
 
 	if (path[0] == '/')
 		path = path.substr(1);

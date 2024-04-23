@@ -35,7 +35,7 @@ void	Req::set_header(std::vector<std::string>& header)
 	std::size_t	i = 0;
 	std::string	key;
 	std::string	value;
-	
+
 	std::size_t length = header.size();
 
 	for (size_t j = 1; j < length; j++)
@@ -59,10 +59,12 @@ void	Req::set_URL_data(std::string& URL)
 
 	query_string = URL.substr(file_path.length());
 
+	// * Sets the filename
 	pos = file_path.find_last_of('/');
 	if (pos != std::string::npos)
 		filename = file_path.substr(pos + 1);
 
+	// * Sets the path_type
 	if (stat(file_path.c_str(), &fileStat) < -1)
 		path_type = _NONE;
 	if (S_ISDIR(fileStat.st_mode))
@@ -72,17 +74,14 @@ void	Req::set_URL_data(std::string& URL)
 	else
 		path_type = _NONE;
 
-	if (path_type == _FILE)
-	{
-		pos = filename.find_last_of('.');
-		if (pos == std::string::npos)
-			file_ext = ".txt";
-		else
-			file_ext = filename.substr(pos);
-	}
+	// * Sets the file extension, if it is a file
+	pos = filename.find_last_of('.');
+	if (path_type == _FILE && pos == std::string::npos)
+		file_ext = ".txt";
+	else if (path_type == _FILE)
+		file_ext = filename.substr(pos);
 	else
 		file_ext = "";
-
 }
 
 void	Req::parser(void)

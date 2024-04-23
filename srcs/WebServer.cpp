@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 01:07:43 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/22 11:19:26 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/23 15:35:12 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,11 +94,8 @@ void WebServer::send_response(int epoll_fd, int fd, t_event event)
 {
 	int status = this->streams[fd]->res->send();
 
-	if (status == 1)
-	{
-		if (epoll_in_fd(epoll_fd, fd, event) < 0)
-			throw Error("Epoll_ctl failed");
-	}
+	if ((status > 0) && epoll_in_fd(epoll_fd, fd, event) < 0)
+		throw Error("Epoll_ctl failed");
 	if (status == -1)
 		close_conn(epoll_fd, fd);
 }
@@ -107,11 +104,8 @@ void WebServer::read_request(int epoll_fd, int fd, t_event event)
 {
 	int status = this->streams[fd]->req->read(fd);
 
-	if (status == 1)
-	{
-		if (epoll_out_fd(epoll_fd, fd, event))
-			throw Error("Epoll_ctl failed");
-	}
+	if ((status == 1) && epoll_out_fd(epoll_fd, fd, event))
+		throw Error("Epoll_ctl failed");
 	if (status == -1)
 		this->close_conn(epoll_fd, fd);
 }
