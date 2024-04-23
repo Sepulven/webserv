@@ -12,16 +12,16 @@ Req::~Req()
 /*
 	* Log the response on sthe stdout;
 */
-void Res::log(void) const {
+void Req::log(void) const {
 		std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
-		std::cout << stream->req->file_path << std::endl
-				<< stream->req->filename << std::endl
-				<< stream->req->file_ext << std::endl
-				<< stream->req->query_string << std::endl
+		std::cout << file_path << std::endl
+				<< filename << std::endl
+				<< file_ext << std::endl
+				<< query_string << std::endl
 				;
 
 		std::cout << "********************************" << std::endl;
-		std::cout << stream->req->data;
+		std::cout << data;
 }
 
 
@@ -72,16 +72,15 @@ void	Req::set_URL_data(std::string& URL)
 	struct stat fileStat;
 	size_t pos;
 
-	file_path = vec[0];
+	file_path = vec[0].substr(1); // * Removes the first slash
 
-	query_string = URL.substr(file_path.length());
+	query_string = URL.substr(file_path.length() + 1);
 
 	// * Sets the filename
 	pos = file_path.find_last_of('/');
 	if (pos != std::string::npos)
 		filename = file_path.substr(pos + 1);
 
-	// * Sets the path_type
 	if (stat(file_path.c_str(), &fileStat) < -1)
 		path_type = _NONE;
 	if (S_ISDIR(fileStat.st_mode))

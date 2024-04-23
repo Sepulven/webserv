@@ -8,6 +8,7 @@
 #include <algorithm>
 
 /* Classes */
+#include <Req.hpp>
 #include <ConnStream.hpp>
 
 enum RES_STATUS {
@@ -23,29 +24,22 @@ class Res
 {
 	private:
 		ConnStream *stream;
-		/*Status*/
-		std::string code;
-		std::string data; // Response
 
-		/* Set the status code */
+		/* Status */
+
 		std::map<std::string, std::string> status;
 		std::map<std::string, std::string> content_type;
-	
-		/* New version */
+		std::string code;
+		std::string content; // * What is going to get rendered
+		std::string data; // * Final Result
+
 		void exec_get(void);
 		void exec_post(void);
 		void exec_delete(void);
-
-
-		std::string get_response_body(void);
-
-		void directory_listing(void);
-		void build_response(std::string);
 	public:
 		Res(ConnStream *);
 		~Res();
 
 		int send(void);
-
-		void log(void) const;
+		void log(void) const; // * Logs the the response
 };

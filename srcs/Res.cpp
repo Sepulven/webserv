@@ -32,108 +32,72 @@ int Res::send(void)
 {
 	Req *req = stream->req;
 	std::vector<std::string> methods;
+	std::stringstream ss;	
 
 	methods.push_back("GET");
 	methods.push_back("POST");
 	methods.push_back("DELETE");
 
-	try
-	{
-		if (std::find(methods.begin(), methods.end(), req->method) == methods.end())
-			build_response("400");
-		else if (req->method == "GET")
-			exec_get();
-		else if (req->method == "POST")
-			exec_post();
-		else if (req->method == "DELETE")
-			exec_delete();
-	}
-	catch (const std::exception &e)
-	{
-		std::cout << e.what() << std::endl;
-	}
+	// * We are going to check for permission before doing anything
+	if (req->method == "GET")
+		exec_get();
+	else if (req->method == "POST")
+		exec_post();
+	else if (req->method == "DELETE")
+		exec_delete();
+
+	ss << "HTTP/1.1 " << code << " " << this->status[code] << "\r\n";
+	ss << "Content-Type: " << content_type[stream->req->file_ext] <<  "\r\n";
+	ss << "Content-Length: " << content.length() << "\r\n";
+	ss << "\r\n\r\n";
+	ss << content;
+	ss << "\r\n\r\n";
+
+	this->data = ss.str();
 	return (write(stream->fd, this->data.c_str(), this->data.length()));
-}
-
-std::string	Res::get_response_body(void)
-{
-	std::string path = stream->req->file_path;
-
-	// if (code != "200")
-	// 	return (FileManager::read(filename));
-
-	if (stream->req->method == "GET")
-		return (FileManager::read_file(path));
-	if (stream->req->method == "POST")
-		return ("File Uploaded Successfully!");
-	if (stream->req->method == "DELETE")
-		return ("File Deleted Successfully!");
-	return ("The method is not even an option, how does it work?");
-}
-
-void	Res::build_response(std::string code)
-{
-	std::string ext = FileManager::get_extension(stream->req->URL);
-	std::string content;
-	std::stringstream ss;
-
-	this->code = code;
-
-	content = get_response_body();
-
-	ss << content.length();
-
-	this->data += "HTTP/1.1 " + code + " " + this->status[code] + "\r\n";
-	this->data += "Content-Type: " + this->content_type[ext] + "\r\n";
-	this->data += "Content-Length: " + ss.str()  + "\r\n";
-	this->data += "\r\n\r\n";
-	this->data += content;
-	this->data += "\r\n\r\n";
 }
 
 void	Res::exec_delete(void)
 {
-	std::string path = stream->req->URL;
+	std::string path = stream->req->file_path;
 
 	if (path[0] == '/')
 		path = path.substr(1);
 	if (std::remove(path.c_str()) != 0)
-		build_response("404");
+	{
+		this->content = "We couldn't find the file to be deleted!";		
+		this->code = "404";
+	}
 	else
-		build_response("200");
+	{
+		this->content = "We've deleted the file succesfully!";
+		this->code = "200";
+	}
 }
 
 void	Res::exec_get(void)
 {
-	std::string URL = stream->req->URL;
-
-	if (URL[0] == '/')
-		URL = "." + URL;
-	int fd = open(URL.c_str(), O_RDONLY);
-	if (fd == -1)
+	if (stream->req->path_type == _FILE)
 	{
-		build_response("404");
-		return ;
+		this->content = FileManager::read_file(stream->req->file_path);
+		this->code = "200";
 	}
-	close(fd);
-	if (opendir(URL.c_str()))
+	if (stream->req->path_type == _DIRECTORY)
 	{
-		(void)URL;
-		// directory_listing();
+		this->content = FileManager::directory_listing(stream->req->file_path);
+		this->code = "200";
 	}
-	else
+	if (stream->req->path_type == _NONE)
 	{
-		if (open(URL.c_str(), O_RDONLY) == -1)
-			build_response("404");
-		build_response("200");
+		std::cout << "Here we are" << std::endl;
+		this->content = FileManager::read_file("errors/404.html");
+		this->code = "404";
 	}
 }
 
 void	Res::exec_post(void)
 {
-	// Cheks for permission;
-	std::string filename = FileManager::get_filename(stream->req->URL);
-
-	build_response(FileManager::create_file(filename, stream->req->body));
+	this->code = "200";
+	this->content = FileManager::create_file(stream->req->filename, stream->req->body);
 }
 

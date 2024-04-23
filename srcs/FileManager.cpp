@@ -8,7 +8,7 @@ FileManager::~FileManager()
 {
 }
 
-std::string FileManager::get_extension(const std::string &filename)
+std::string FileManager::get_extension(const std::string filename)
 {
 	size_t dotPos = filename.find_last_of('.');
 
@@ -18,7 +18,7 @@ std::string FileManager::get_extension(const std::string &filename)
 		return filename.substr(dotPos);
 }
 
-std::string FileManager::get_filename(const std::string &filename)
+std::string FileManager::get_filename(const std::string filename)
 {
 	size_t dotPos = filename.find_last_of('/');
 
@@ -34,12 +34,13 @@ std::string FileManager::get_filename(const std::string &filename)
 
 	TODO: Get the error page from the route;
 */
-std::string FileManager::read_file(const std::string &path)
+std::string FileManager::read_file(const std::string path)
 {
 	std::ifstream file;
 	std::ifstream not_found("error/404.html");
 	std::stringstream buff;
 
+	std::cout << "PATH: " <<  path << std::endl;
 	file.open(&path.c_str()[path.c_str()[0] == '/']);
 
 	if (!file.is_open())
@@ -54,7 +55,7 @@ std::string FileManager::read_file(const std::string &path)
 	return (buff.str());
 }
 
-std::string FileManager::create_file(const std::string& filename, const std::string& content)
+std::string FileManager::create_file(const std::string filename, const std::string content)
 {
 	std::ofstream file;
 
@@ -67,4 +68,9 @@ std::string FileManager::create_file(const std::string& filename, const std::str
 	
 	content_file << content;
 	return ("200");
+}
+
+std::string FileManager::directory_listing(const std::string)
+{
+	return ("Nuts");
 }
