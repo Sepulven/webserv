@@ -15,7 +15,6 @@
 
 */
 
-
 /* C++ header */
 #include <iostream>
 #include <map>
@@ -24,6 +23,8 @@
 #include <cstdio>
 #include <vector>
 #include <string>
+#include <filesystem>
+
 /* C header */
 
 #include <dirent.h>
@@ -35,7 +36,7 @@
 
 /*Errors
 400 - bad request (request that was sent to the server has invalid syntax)
-404 - not found 
+404 - not found
 
 401 - unauthorized (user tries to access a resource that is protected by HTTP authentication)
 403 - forbidden (lack of permission to access the requested resource,
@@ -45,17 +46,23 @@ are not enabled)
 504 - gateway timeout
 */
 
+enum PATH_TYPE
+{
+	_DIRECTORY = 'd',
+	_FILE = 'f',
+	_NONE = 'n'
+};
+
 class ConnStream;
 
 class Req
 {
-
 	private:
 	public:
 		Req(ConnStream *);
 		~Req();
 
-		ConnStream * stream;
+		ConnStream *stream;
 
 		// Raw request;
 		std::string data;
@@ -65,14 +72,22 @@ class Req
 		std::string method;
 		std::string http;
 		std::string URL;
-		
+
 		std::map<std::string, std::string> header;
 
 		// Body
 		std::string body;
 
-		int		read(int);
-		void	set_header(std::vector<std::string>&);
-		void	parser(void);
+		// Parse URL data
+		std::string file_path;
+		std::string filename;
+		std::string file_ext;
+		std::string query_string;
 
+		enum PATH_TYPE path_type;
+
+		int read(int);
+		void set_URL_data(std::string &);
+		void set_header(std::vector<std::string> &);
+		void parser(void);
 };

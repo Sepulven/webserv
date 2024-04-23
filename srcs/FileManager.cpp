@@ -28,14 +28,23 @@ std::string FileManager::get_filename(const std::string &filename)
 		return filename.substr(dotPos + 1);
 }
 
-std::string FileManager::read_file(const std::string &filename)
+/*
+	* Reads file given a path;
+	* If path starts with '/', jumps it;
+
+	TODO: Get the error page from the defined ones;
+*/
+std::string FileManager::read_file(const std::string &path)
 {
-	std::ifstream file(filename.c_str());
+	std::ifstream file;
 	std::ifstream not_found("error/404.html");
 	std::stringstream buff;
 
+	file.open(&path.c_str()[path.c_str()[0] == '/']);
+
 	if (!file.is_open())
 	{
+		std::cout << path.c_str() << std::endl;
 		if (!not_found.is_open())
 			std::cout << "WE COULND'T OPEN THE ERROR FILE" << std::endl;
 		buff << not_found.rdbuf();

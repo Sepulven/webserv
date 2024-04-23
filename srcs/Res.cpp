@@ -21,10 +21,17 @@ int Res::send(void)
 	std::vector<std::string> methods;
 
 	methods.push_back("GET");
-	// methods.push_back("POST");
+	methods.push_back("POST");
 	methods.push_back("DELETE");
 
 	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+	std::cout << stream->req->file_path << std::endl
+			  << stream->req->filename << std::endl
+			  << stream->req->file_ext << std::endl
+			  << stream->req->query_string << std::endl
+			  ;
+
+	std::cout << "********************************" << std::endl;
 	std::cout << stream->req->data;
 	try
 	{
@@ -49,13 +56,13 @@ int Res::send(void)
 
 std::string	Res::get_response_body(void)
 {
-	std::string filename = FileManager::get_filename(stream->req->URL);
+	std::string path = stream->req->file_path;
 
 	// if (code != "200")
 	// 	return (FileManager::read(filename));
 
 	if (stream->req->method == "GET")
-		return (FileManager::read_file(filename));
+		return (FileManager::read_file(path));
 	if (stream->req->method == "POST")
 		return ("File Uploaded Successfully!");
 	if (stream->req->method == "DELETE")
@@ -103,7 +110,6 @@ void	Res::exec_get(void)
 
 	if (URL[0] == '/')
 		URL = "." + URL;
-	std::cout << "This is the URL::" << URL << std::endl;
 	int fd = open(URL.c_str(), O_RDONLY);
 	if (fd == -1)
 	{

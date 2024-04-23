@@ -40,7 +40,6 @@ class Res
 		std::string get_response_body(void);
 
 		void directory_listing(void);
-
 		void build_response(std::string);
 	public:
 		Res(ConnStream *);

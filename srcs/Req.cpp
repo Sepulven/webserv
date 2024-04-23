@@ -49,6 +49,42 @@ void	Req::set_header(std::vector<std::string>& header)
 	}
 }
 
+void	Req::set_URL_data(std::string& URL)
+{
+	std::vector<std::string> vec = split(URL, "?");
+	struct stat fileStat;
+	size_t pos;
+
+	file_path = vec[0];
+
+	query_string = URL.substr(file_path.length());
+
+	pos = file_path.find_last_of('/');
+	if (pos != std::string::npos)
+		filename = file_path.substr(pos + 1);
+
+	if (stat(file_path.c_str(), &fileStat) < -1)
+		path_type = _NONE;
+	if (S_ISDIR(fileStat.st_mode))
+		path_type = _DIRECTORY;
+	else if (S_ISREG(fileStat.st_mode))
+		path_type = _FILE;
+	else
+		path_type = _NONE;
+
+	if (path_type == _FILE)
+	{
+		pos = filename.find_last_of('.');
+		if (pos == std::string::npos)
+			file_ext = ".txt";
+		else
+			file_ext = filename.substr(pos);
+	}
+	else
+		file_ext = "";
+
+}
+
 void	Req::parser(void)
 {
 
@@ -65,6 +101,7 @@ void	Req::parser(void)
 	this->URL = request_line_tokens[1];
 	this->http = request_line_tokens[2];
 
+	this->set_URL_data(this->URL);
 	this->set_header(message_header);
 }
 
