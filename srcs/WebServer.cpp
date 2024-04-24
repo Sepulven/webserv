@@ -1,15 +1,33 @@
 #include <WebServer.hpp>
 
+
+
 WebServer::WebServer()
 {
-	// We are going to create multiple server fds given the context;
 	this->max_events = 0;
 	this->init_servers();
-	this->is_running = 1;
+	signal(SIGINT, &WebServer::sig_handler);
 }
 
 WebServer::~WebServer()
 {
+	std::cout << "\r  ";
+	std::cout << "\033[31m" << std::endl;
+	std::cout << "                                                     " << std::endl;
+	std::cout << " ▒█████    █████▒ █████▒██▓     ██▓ ███▄    █ ▓█████ " << std::endl;
+	std::cout << "▒██▒  ██▒▓██   ▒▓██   ▒▓██▒    ▓██▒ ██ ▀█   █ ▓█   ▀ " << std::endl;
+	std::cout << "▒██░  ██▒▒████ ░▒████ ░▒██░    ▒██▒▓██  ▀█ ██▒▒███   " << std::endl;
+	std::cout << "▒██   ██░░▓█▒  ░░▓█▒  ░▒██░    ░██░▓██▒  ▐▌██▒▒▓█  ▄ " << std::endl;
+	std::cout << "░ ████▓▒░░▒█░   ░▒█░   ░██████▒░██░▒██░   ▓██░░▒████▒" << std::endl;
+	std::cout << "░ ▒░▒░▒░  ▒ ░    ▒ ░   ░ ▒░▓  ░░▓  ░ ▒░   ▒ ▒ ░░ ▒░ ░" << std::endl;
+	std::cout << "  ░ ▒ ▒░  ░      ░     ░ ░ ▒  ░ ▒ ░░ ░░   ░ ▒░ ░ ░  ░" << std::endl;
+	std::cout << "░ ░ ░ ▒   ░ ░    ░ ░     ░ ░    ▒ ░   ░   ░ ░    ░   " << std::endl;
+	std::cout << "    ░ ░                    ░  ░ ░           ░    ░  ░" << std::endl << "\033[0m";
+	for (std::vector<Server*>::iterator it = servers.begin(); it != servers.end(); it++)
+		delete *it;
+	for (std::map<int, t_events*>::iterator it = conn.begin(); it != conn.end(); it++)
+		close_conn(this->epoll_fd, it->second->fd);
+		// std::cout << it->second->fd << std::endl;
 }
 
 void WebServer::init_servers(void)
@@ -56,6 +74,7 @@ void WebServer::init_servers(void)
 		std::cout << "[" << vec[i]->max_events << "] Listening on port: " << vec[i]->port << std::endl;
 	}
 	this->events.reserve(this->max_events);
+	this->servers = vec;
 }
 
 void WebServer::accept_connection(int epoll_fd, int fd)
@@ -105,11 +124,11 @@ void WebServer::listen(void)
 	t_event *conn;
 	t_event_data *event_data;
 
-	while (WebServer::is_running)
+	while (is_running)
 	{
 		num_events = epoll_wait(epoll_fd, this->events.data(), this->max_events, -1);
-		if (num_events < 0)
-			throw Error("Epoll_wait failed.");
+		if (num_events < 0 || !is_running)
+			break;
 		for (int i = 0; i < num_events; i++)
 		{
 			conn = &this->events[i];
