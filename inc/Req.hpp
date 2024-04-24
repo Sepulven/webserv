@@ -84,6 +84,8 @@ class Req
 		std::string file_ext;
 		std::string query_string;
 
+		std::string cgi_path;
+
 		enum PATH_TYPE path_type;
 
 		int read(int);

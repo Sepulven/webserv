@@ -3,10 +3,11 @@
 /* C headers*/
 #include <unistd.h>
 #include <cstdlib>
+#include <sys/wait.h>
 /* C++ headers*/
 #include <iostream>
 #include <algorithm>
-
+#include <cstring>
 /* Classes */
 #include <Req.hpp>
 #include <ConnStream.hpp>
@@ -32,7 +33,8 @@ class Res
 		std::string code;
 		std::string content; // * What is going to get rendered
 		std::string data; // * Final Result
-
+ 
+		int  exec_CGI(void);
 		void exec_get(void);
 		void exec_post(void);
 		void exec_delete(void);

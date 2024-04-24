@@ -39,7 +39,12 @@ int Res::send(void)
 	methods.push_back("DELETE");
 
 	// * We are going to check for permission before doing anything
-	if (req->method == "GET")
+	std::cout << req->file_path << std::endl;
+	std::cout << req->cgi_path << std::endl;
+	req->log();
+	if (req->file_path == req->cgi_path)
+        return (this->exec_CGI());
+	else if (req->method == "GET")
 		exec_get();
 	else if (req->method == "POST")
 		exec_post();
@@ -56,7 +61,67 @@ int Res::send(void)
 
 	// * Clean up the resources for next reading
 	stream->req->data = "";
+	stream->req->method = "";
 	return (write(stream->fd, this->data.c_str(), this->data.length()));
+}
+
+int    Res::exec_CGI(void)
+{
+	Req *req = stream->req;
+    // if (location[0] == '/')
+    //     location = "." + location;
+    // if (location.find('?'))
+    //     location = split(location, '?').first;
+
+    char *argv0 = const_cast<char *>("/usr/bin/python3");
+    char *argv1 = const_cast<char *>(req->file_path.c_str());
+    char *const argv[] = {argv0, argv1, NULL};
+
+    int pipe_fd[2];
+    pipe(pipe_fd);
+
+    pid_t pid = fork();
+
+    if (pid == 0) { // Child process
+
+        std::vector<std::string> request;
+        request.push_back("path=" + req->file_path);
+        request.push_back("method=" + req->method);
+        request.push_back("body=" + req->body);
+        request.push_back("content-type=" + content_type[req->file_ext]);
+        request.push_back("content-lenght=" + req->body.length());
+
+        char **envp = new char*[request.size() + 1];
+        size_t i = 0;
+        for (i = 0; i < request.size(); i++) {
+            envp[i] = new char[request[i].size() + 1];
+            std::strcpy((char *)envp[i], request[i].c_str());
+        }
+        envp[i] = NULL;
+		std::cout << "check 0 cgi\n";
+        close(pipe_fd[0]); // Close read end
+        dup2(pipe_fd[1], STDOUT_FILENO); // Redirect stdout to the write end
+        execve(argv[0], argv, envp);
+    }
+    else { // Parent process
+        close(pipe_fd[1]); // Close write end
+
+        // Read output from the pipe
+        char buffer[4096];
+        ssize_t bytes_read;
+        std::string content;
+        while ((bytes_read = read(pipe_fd[0], buffer, sizeof(buffer))) > 0)
+            content = content + buffer;
+
+        close(pipe_fd[0]); // Close read end
+        
+        int status;
+        waitpid(pid, &status, 0); // Wait for the child process to finish
+		std::cout << ">>>>>>>>" << content.length() <<">>>>>>>\n" << content;
+
+		return(write(stream->fd, content.c_str(), content.length()));
+    }
+	return 1;
 }
 
 void	Res::exec_delete(void)
