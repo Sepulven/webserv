@@ -7,22 +7,34 @@ WebServer::WebServer()
 	this->max_events = 0;
 	this->init_servers();
 	signal(SIGINT, &WebServer::sig_handler);
+
+	std::cout << "\r" << "\033[32m" << std::endl
+		<<  "                                                  " << std::endl
+		<<  " ▒█████   ███▄    █  ██▓     ██▓ ███▄    █ ▓█████ " << std::endl
+		<<  "▒██▒  ██▒ ██ ▀█   █ ▓██▒    ▓██▒ ██ ▀█   █ ▓█   ▀ " << std::endl
+		<<  "▒██░  ██▒▓██  ▀█ ██▒▒██░    ▒██▒▓██  ▀█ ██▒▒███   " << std::endl
+		<<  "▒██   ██░▓██▒  ▐▌██▒▒██░    ░██░▓██▒  ▐▌██▒▒▓█  ▄ " << std::endl
+		<<  "░ ████▓▒░▒██░   ▓██░░██████▒░██░▒██░   ▓██░░▒████▒" << std::endl
+		<<  "░ ▒░▒░▒░ ░ ▒░   ▒ ▒ ░ ▒░▓  ░░▓  ░ ▒░   ▒ ▒ ░░ ▒░ ░" << std::endl
+		<<  "  ░ ▒ ▒░ ░ ░░   ░ ▒░░ ░ ▒  ░ ▒ ░░ ░░   ░ ▒░ ░ ░  ░" << std::endl
+		<<  "░ ░ ░ ▒     ░   ░ ░   ░ ░    ▒ ░   ░   ░ ░    ░   " << std::endl
+		<<  "    ░ ░           ░     ░  ░ ░           ░    ░  ░" << std::endl
+		<<  "                                                  " << std::endl << "\033[0m";
 }
 
 WebServer::~WebServer()
 {
-	std::cout << "\r  ";
-	std::cout << "\033[31m" << std::endl;
-	std::cout << "                                                     " << std::endl;
-	std::cout << " ▒█████    █████▒ █████▒██▓     ██▓ ███▄    █ ▓█████ " << std::endl;
-	std::cout << "▒██▒  ██▒▓██   ▒▓██   ▒▓██▒    ▓██▒ ██ ▀█   █ ▓█   ▀ " << std::endl;
-	std::cout << "▒██░  ██▒▒████ ░▒████ ░▒██░    ▒██▒▓██  ▀█ ██▒▒███   " << std::endl;
-	std::cout << "▒██   ██░░▓█▒  ░░▓█▒  ░▒██░    ░██░▓██▒  ▐▌██▒▒▓█  ▄ " << std::endl;
-	std::cout << "░ ████▓▒░░▒█░   ░▒█░   ░██████▒░██░▒██░   ▓██░░▒████▒" << std::endl;
-	std::cout << "░ ▒░▒░▒░  ▒ ░    ▒ ░   ░ ▒░▓  ░░▓  ░ ▒░   ▒ ▒ ░░ ▒░ ░" << std::endl;
-	std::cout << "  ░ ▒ ▒░  ░      ░     ░ ░ ▒  ░ ▒ ░░ ░░   ░ ▒░ ░ ░  ░" << std::endl;
-	std::cout << "░ ░ ░ ▒   ░ ░    ░ ░     ░ ░    ▒ ░   ░   ░ ░    ░   " << std::endl;
-	std::cout << "    ░ ░                    ░  ░ ░           ░    ░  ░" << std::endl << "\033[0m";
+	std::cout << "\r" << "\033[31m" << std::endl
+		 << "                                                     " << std::endl
+		 << " ▒█████    █████▒ █████▒██▓     ██▓ ███▄    █ ▓█████ " << std::endl
+		 << "▒██▒  ██▒▓██   ▒▓██   ▒▓██▒    ▓██▒ ██ ▀█   █ ▓█   ▀ " << std::endl
+		 << "▒██░  ██▒▒████ ░▒████ ░▒██░    ▒██▒▓██  ▀█ ██▒▒███   " << std::endl
+		 << "▒██   ██░░▓█▒  ░░▓█▒  ░▒██░    ░██░▓██▒  ▐▌██▒▒▓█  ▄ " << std::endl
+		 << "░ ████▓▒░░▒█░   ░▒█░   ░██████▒░██░▒██░   ▓██░░▒████▒" << std::endl
+		 << "░ ▒░▒░▒░  ▒ ░    ▒ ░   ░ ▒░▓  ░░▓  ░ ▒░   ▒ ▒ ░░ ▒░ ░" << std::endl
+		 << "  ░ ▒ ▒░  ░      ░     ░ ░ ▒  ░ ▒ ░░ ░░   ░ ▒░ ░ ░  ░" << std::endl
+		 << "░ ░ ░ ▒   ░ ░    ░ ░     ░ ░    ▒ ░   ░   ░ ░    ░   " << std::endl
+		 << "    ░ ░                    ░  ░ ░           ░    ░  ░" << std::endl << "\033[0m";
 	for (std::map<int, ServerContext*>::iterator it = servers.begin(); it != servers.end(); it++)
 		delete it->second;
 	for (std::map<int, ConnStream*>::iterator it = streams.begin(); it != streams.end(); it++)
@@ -151,7 +163,6 @@ void WebServer::sig_handler(int sig)
 {
 	(void)sig;
 	is_running = 0;
-	std::cout << "is_running: " << is_running << std::endl;
 }
 
 

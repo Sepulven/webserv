@@ -30,15 +30,16 @@ class Res
 
 		std::map<std::string, std::string> status;
 		std::map<std::string, std::string> content_type;
-		std::string code;
-		std::string content; // * What is going to get rendered
-		std::string data; // * Final Result
  
 		int  exec_CGI(void);
 		void exec_get(void);
 		void exec_post(void);
 		void exec_delete(void);
 	public:
+		std::string code;
+		std::string content; // * What is going to get rendered
+		std::string data; // * Final Result
+
 		Res(ConnStream *);
 		~Res();
 

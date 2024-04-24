@@ -42,8 +42,9 @@ int Res::send(void)
 	std::cout << req->file_path << std::endl;
 	std::cout << req->cgi_path << std::endl;
 	req->log();
+
 	if (req->file_path == req->cgi_path)
-        return (this->exec_CGI());
+		return (this->exec_CGI());
 	else if (req->method == "GET")
 		exec_get();
 	else if (req->method == "POST")
@@ -58,10 +59,6 @@ int Res::send(void)
 	ss << content;
 
 	this->data = ss.str();
-
-	// * Clean up the resources for next reading
-	stream->req->data = "";
-	stream->req->method = "";
 	return (write(stream->fd, this->data.c_str(), this->data.length()));
 }
 
@@ -98,7 +95,6 @@ int    Res::exec_CGI(void)
             std::strcpy((char *)envp[i], request[i].c_str());
         }
         envp[i] = NULL;
-		std::cout << "check 0 cgi\n";
         close(pipe_fd[0]); // Close read end
         dup2(pipe_fd[1], STDOUT_FILENO); // Redirect stdout to the write end
         execve(argv[0], argv, envp);

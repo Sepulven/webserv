@@ -14,7 +14,6 @@ int main(void)
 	catch (const std::exception& e)
 	{
 		std::cout << RED_TEXT << "ERROR: " << e.what() << RESET_COLOR << std::endl;
-		perror("");
 	}
 }
 

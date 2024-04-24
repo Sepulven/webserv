@@ -20,6 +20,9 @@ class ConnStream
 	protected:
 		std::string time;
 	public:
+		ConnStream(int, ServerContext *);
+		virtual ~ConnStream();
+
 		int fd;
 
 		Req *req;
@@ -30,6 +33,5 @@ class ConnStream
 
 		ServerContext *server;
 
-		ConnStream(int, ServerContext *);
-		virtual ~ConnStream();
+		void clean_conn();
 };
