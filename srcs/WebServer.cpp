@@ -21,11 +21,10 @@ WebServer::~WebServer()
 	std::cout << "  ░ ▒ ▒░  ░      ░     ░ ░ ▒  ░ ▒ ░░ ░░   ░ ▒░ ░ ░  ░" << std::endl;
 	std::cout << "░ ░ ░ ▒   ░ ░    ░ ░     ░ ░    ▒ ░   ░   ░ ░    ░   " << std::endl;
 	std::cout << "    ░ ░                    ░  ░ ░           ░    ░  ░" << std::endl << "\033[0m";
-	for (std::vector<Server*>::iterator it = servers.begin(); it != servers.end(); it++)
-		delete *it;
-	for (std::map<int, t_events*>::iterator it = conn.begin(); it != conn.end(); it++)
+	for (std::map<int, ServerContext*>::iterator it = servers.begin(); it != servers.end(); it++)
+		delete it->second;
+	for (std::map<int, ConnStream*>::iterator it = streams.begin(); it != streams.end(); it++)
 		close_conn(this->epoll_fd, it->second->fd);
-		// std::cout << it->second->fd << std::endl;
 }
 
 void WebServer::init_servers(void)
@@ -72,7 +71,6 @@ void WebServer::init_servers(void)
 		std::cout << "[" << vec[i]->max_events << "] Listening on port: " << vec[i]->port << std::endl;
 	}
 	this->events.reserve(this->max_events);
-	this->servers = vec;
 }
 
 void WebServer::accept_connection(int epoll_fd, int fd)
@@ -142,10 +140,18 @@ void WebServer::listen(void)
 		}
 		this->events.clear();
 	}
-	std::cout << std::endl
-			  << std::endl
-			  << "SERVER DIED" << std::endl;
+	if (num_events < 0 && is_running)
+		throw Error("Epoll_wait failed.");
 }
+
+/*Signal Handler*/
+void WebServer::sig_handler(int sig)
+{
+	(void)sig;
+	is_running = 0;
+	std::cout << "is_running: " << is_running << std::endl;
+}
+
 
 /*Exception class*/
 WebServer::Error::Error(const char *_msg) : msg(_msg) {}

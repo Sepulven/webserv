@@ -45,7 +45,6 @@ class WebServer
 	private:
 		int max_events;
 		int epoll_fd;
-		int is_running; // We are going to set it to false with a signal.
 		std::map<int, ServerContext *> servers;
 	
 		std::vector<t_event> events; // epoll_events
@@ -65,13 +64,15 @@ class WebServer
 
 		class Error : public std::exception
 		{
-		private:
-			const char *msg;
-			virtual const char *what() const throw();
+			private:
+				const char *msg;
+				virtual const char *what() const throw();
 
-		public:
-			Error(const char *_msg);
+			public:
+				Error(const char *_msg);
 		};
+
+		static void	sig_handler(int sig); // * Handles Ctrl + c
 
 		static int sfd_non_blocking(int);
 		static int set_reuseaddr(int);

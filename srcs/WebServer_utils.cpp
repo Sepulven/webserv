@@ -51,14 +51,3 @@ void WebServer::close_conn(int epoll_fd, int fd)
 	close(fd);
 	delete this->streams[fd];
 }
-
-/***********************************/
-
-std::pair<std::string, std::string> split1(std::string str, char c)
-{
-	std::size_t found = str.find(c);
-	std::string s1 = str.substr(0, found);
-	std::string s2 = str.substr(found + 1);
-
-	return std::make_pair(s1, s2);
-}
