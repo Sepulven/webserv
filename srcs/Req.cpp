@@ -67,6 +67,7 @@ void	Req::set_header(std::vector<std::string>& header)
 }
 
 /*
+	TODO: Fix edgy cases of the extension ex.: .a ; a. ; a..a ; a..
 	* Parsing on the URL;
 */
 void	Req::set_URL_data(std::string& URL)
