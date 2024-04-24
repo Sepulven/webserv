@@ -6,7 +6,7 @@
 /*   By: ratavare <ratavare@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 01:07:43 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/17 16:40:29 by ratavare         ###   ########.fr       */
+/*   Updated: 2024/04/19 17:30:50 by ratavare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,6 @@ void	WebServer::init_servers(void)
 	for (size_t i = 0; i < vec.size(); i++)
 	{
 		memset(&server_addr, 0, sizeof(struct sockaddr_in));
-		server_addr.sin_family = AF_INET;
 		server_addr.sin_addr.s_addr = vec[i]->domain;
 		server_addr.sin_port = htons(vec[i]->port);
 
