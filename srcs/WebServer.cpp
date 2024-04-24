@@ -113,6 +113,7 @@ void WebServer::send_response(int epoll_fd, int fd, t_event event)
 
 	if ((status > 0) && epoll_in_fd(epoll_fd, fd, event) < 0)
 		throw Error("Epoll_ctl failed");
+	this->streams[fd]->clean_conn();
 	if (status == -1)
 		close_conn(epoll_fd, fd);
 }
