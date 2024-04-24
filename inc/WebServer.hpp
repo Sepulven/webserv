@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   WebServer.hpp                                      :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/04/11 15:56:54 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/22 00:42:23 by asepulve         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #pragma once
 
 #include <ServerContext.hpp>
@@ -49,6 +37,8 @@ enum SOCKET_TYPE
 };
 
 typedef struct epoll_event t_event;
+
+static volatile sig_atomic_t is_running = 1;
 
 class WebServer
 {
