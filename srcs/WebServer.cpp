@@ -1,7 +1,5 @@
 #include <WebServer.hpp>
 
-
-
 WebServer::WebServer()
 {
 	this->max_events = 0;

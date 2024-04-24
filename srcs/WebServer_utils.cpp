@@ -26,14 +26,12 @@ int WebServer::epoll_add_fd(int epoll_fd, int fd, t_event event)
 
 int WebServer::epoll_in_fd(int epoll_fd, int fd, t_event event)
 {
-	// event.events = EPOLLIN | EPOLLERR | EPOLLHUP;
 	event.events = EPOLLIN | EPOLLET;
 	return (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event));
 }
 
 int WebServer::epoll_out_fd(int epoll_fd, int fd, t_event event)
 {
-	// event.events = EPOLLOUT | EPOLLERR | EPOLLHUP;
 	event.events = EPOLLOUT | EPOLLET;
 	return (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event));
 }
@@ -44,8 +42,8 @@ int WebServer::epoll_del_fd(int epoll_fd, int fd)
 }
 
 /*
-	* Close a conn, and clean up the resources.
-*/
+ * Close a conn, and clean up the resources.
+ */
 void WebServer::close_conn(int epoll_fd, int fd)
 {
 	if (epoll_del_fd(epoll_fd, fd) < 0)
@@ -54,14 +52,13 @@ void WebServer::close_conn(int epoll_fd, int fd)
 	delete this->streams[fd];
 }
 
-
 /***********************************/
 
 std::pair<std::string, std::string> split1(std::string str, char c)
 {
-    std::size_t found = str.find(c);
-    std::string s1 = str.substr(0, found);
-    std::string s2 = str.substr(found + 1);
+	std::size_t found = str.find(c);
+	std::string s1 = str.substr(0, found);
+	std::string s2 = str.substr(found + 1);
 
-    return std::make_pair(s1, s2);
+	return std::make_pair(s1, s2);
 }
