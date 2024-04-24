@@ -77,7 +77,6 @@ def GET():
 if __name__ == "__main__" :
     path = os.environ.get('path')
     method = os.environ.get('method')
-    print(method)
     cont_type = os.environ.get('content-type')
 
     response = ""
@@ -85,7 +84,6 @@ if __name__ == "__main__" :
 
     # content type extension (present in envp)
     # read and disply error pages
-    # check
 
     if method == "GET":
         response = GET()
