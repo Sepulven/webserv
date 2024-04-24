@@ -66,6 +66,9 @@ void	Req::set_header(std::vector<std::string>& header)
 	}
 }
 
+/*
+	* Parsing on the URL;
+*/
 void	Req::set_URL_data(std::string& URL)
 {
 	std::vector<std::string> vec = split(URL, "?");
@@ -76,11 +79,13 @@ void	Req::set_URL_data(std::string& URL)
 
 	query_string = URL.substr(file_path.length() + 1);
 
-	// * Sets the filename
 	pos = file_path.find_last_of('/');
 	if (pos != std::string::npos)
+		filename = file_path;
+	else
 		filename = file_path.substr(pos + 1);
 
+	// * Sets the file_type - related to how the request is going to get treated
 	if (stat(file_path.c_str(), &fileStat) < -1)
 		path_type = _NONE;
 	if (S_ISDIR(fileStat.st_mode))
@@ -98,13 +103,14 @@ void	Req::set_URL_data(std::string& URL)
 		file_ext = filename.substr(pos);
 	else
 		file_ext = "";
+
 }
 
 void	Req::parser(void)
 {
 
-	std::vector<std::string> request = split(this->data, "\n\r");
-	std::vector<std::string> message_header = split(request[0], "\n");
+	std::vector<std::string> request = split(this->data, "\r\n\r\n");
+	std::vector<std::string> message_header = split(request[0], "\r\n");
 
 	this->body = request[1];
 
@@ -137,11 +143,10 @@ int Req::read(int fd)
 		bytes_read = ::read(fd, buffer, 4096);
 		buffer[bytes_read] = '\0';
 	}
-	if (_data.find("/r/n/r/n"))
-	{
-		this->parser();
-		return (1);
-	}
-	return (0);
+
+	if (!_data.find("/r/n/r/n"))
+		return (0);
+	this->parser();
+	return (1);
 }
 

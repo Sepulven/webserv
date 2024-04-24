@@ -49,11 +49,13 @@ int Res::send(void)
 	ss << "HTTP/1.1 " << code << " " << this->status[code] << "\r\n";
 	ss << "Content-Type: " << content_type[stream->req->file_ext] <<  "\r\n";
 	ss << "Content-Length: " << content.length() << "\r\n";
-	ss << "\r\n\r\n";
+	ss << "\r\n";
 	ss << content;
-	ss << "\r\n\r\n";
 
 	this->data = ss.str();
+
+	// * Clean up the resources for next reading
+	stream->req->data = "";
 	return (write(stream->fd, this->data.c_str(), this->data.length()));
 }
 
@@ -89,7 +91,6 @@ void	Res::exec_get(void)
 	}
 	if (stream->req->path_type == _NONE)
 	{
-		std::cout << "Here we are" << std::endl;
 		this->content = FileManager::read_file("errors/404.html");
 		this->code = "404";
 	}

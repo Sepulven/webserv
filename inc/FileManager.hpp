@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <dirent.h>
 
 /* C headers */
 #include <sys/stat.h>
