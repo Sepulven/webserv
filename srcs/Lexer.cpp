@@ -24,6 +24,8 @@ int	Lexer::countIdent(std::string line) {
 }
 
 std::string Lexer::trimLine(std::string line) {
+	if (line.empty() || *line.begin() == '#')
+		return std::string();
 	std::string::iterator it = line.end() - 1;
 	while (*it != '#') {
 		if (it == line.begin())
@@ -35,11 +37,11 @@ std::string Lexer::trimLine(std::string line) {
 	return (line.substr(0, lastNonSpace + 1));
 }
 
-token Lexer::new_token(std::string content, int identLevel) {
-	token new_token;
-	new_token.content = content;
-	new_token.identLevel = identLevel;
-	return new_token;
+token Lexer::newToken(std::string content, int identLevel) {
+	token newToken;
+	newToken.content = content;
+	newToken.identLevel = identLevel;
+	return newToken;
 }
 
 void Lexer::tokenize(std::string filePath) {
@@ -48,7 +50,8 @@ void Lexer::tokenize(std::string filePath) {
 		throw Error("Invalid config file path");
 	std::string line;
 	while (std::getline(inputFile, line)) {
-		if (*line.begin() != '#' && !line.empty())
-			tokens.push_back(new_token(trimLine(line), countIdent(line)));
+		std::string newLine = trimLine(line);
+		if (!newLine.empty())
+			tokens.push_back(newToken(newLine, countIdent(newLine)));
 	}
 }

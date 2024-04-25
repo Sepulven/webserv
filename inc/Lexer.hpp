@@ -24,7 +24,7 @@ public:
 
 	int			countIdent(std::string line);
 	std::string	trimLine(std::string line);
-	token		new_token(std::string content, int identLevel);
+	token		newToken(std::string content, int identLevel);
 
 
 	static void printTokens(std::list<token> tokens);

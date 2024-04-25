@@ -18,8 +18,8 @@ server:
         root: /www/about
         index: about.html       # default file to open if the request is the dir
         dir_listing: on         # 'on' or 'off'
-
-server:
+ #dfgdsfg
+server2:
     listen:
         host: localhost
         port: 2020
