@@ -1,28 +1,12 @@
 #include <FileManager.hpp>
 
+//* Utils
+static std::vector<std::string> split(const std::string& , const std::string& );
+
+
 FileManager::FileManager(/* args */) {}
 
 FileManager::~FileManager() {}
-
-std::string FileManager::get_extension(const std::string filename)
-{
-	size_t dotPos = filename.find_last_of('.');
-
-	if (dotPos == std::string::npos || dotPos == filename.length() - 1)
-		return (".txt");
-	else
-		return filename.substr(dotPos);
-}
-
-std::string FileManager::get_filename(const std::string filename)
-{
-	size_t dotPos = filename.find_last_of('/');
-
-	if (dotPos == std::string::npos || dotPos == filename.length() - 1)
-		return ("/");
-	else
-		return filename.substr(dotPos + 1);
-}
 
 /*
 	* Reads file given a path;
@@ -53,23 +37,8 @@ std::string FileManager::read_file(const std::string path)
 }
 
 /*
-	TODO: Add better error handling;
-*/
-std::string FileManager::create_file(const std::string filename, const std::string content)
-{
-	std::ofstream file;
-
-	file.open(filename.c_str(), std::ios::in | std::ios::binary);
-	std::ofstream content_file(filename.c_str());
-
-	content_file << content;
-	file.close();
-	return ("200");
-}
-
-
-/*
 	* Creates an html file with the list of the files and directories;
+	TODO: Add better styling to the html page;
 */
 std::string FileManager::directory_listing(const std::string path)
 {
@@ -92,4 +61,62 @@ std::string FileManager::directory_listing(const std::string path)
 
 	closedir(dir);
 	return (ss.str());
+}
+
+/*
+	TODO: Add better error handling;
+*/
+std::string FileManager::create_file(const std::string filename, const std::string content)
+{
+	std::ofstream file;
+
+	file.open(filename.c_str(), std::ios::in | std::ios::binary);
+	std::ofstream content_file(filename.c_str());
+
+	content_file << content;
+	file.close();
+	return ("200");
+}
+
+/*
+	* aaa
+*/
+std::string FileManager::create_files(const std::string &body, const std::string & boundary, const std::string dir)
+{
+	std::vector<std::string> files = split(body, boundary);
+	std::string filename;
+	std::string file;
+	size_t n_files = files.size();
+
+	(void)dir;
+
+	for (size_t i = 0; i < n_files; i++)
+	{
+			std::cout 
+					<< "[" << i << "]" << std::endl
+					<< files[i]
+					<< "**************************************" << std::endl;
+	}
+	return ("200");
+}
+
+// * Utils
+static std::vector<std::string> split(const std::string& base, const std::string& delimiter)
+{
+	std::istringstream iss(base);
+	std::string token;
+	std::vector<std::string> tokens;
+	size_t startPos = 0;
+
+	size_t pos = base.find(delimiter, startPos);
+	while (pos != std::string::npos)
+	{
+		token = base.substr(startPos, pos - startPos); 
+		tokens.push_back(token);
+
+		startPos = pos + delimiter.length();
+		pos = base.find(delimiter, startPos);
+	}
+	tokens.push_back(base.substr(startPos));
+	return tokens;
 }

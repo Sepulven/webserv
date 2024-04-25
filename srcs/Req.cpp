@@ -129,6 +129,10 @@ void	Req::parser(void)
 	this->set_header(message_header);
 }
 
+/*
+ * Refactor it for the chunked;
+ * Refactor based on the bad connections;
+*/
 int Req::read(int fd)
 {
 	char buffer[4096 + 1];

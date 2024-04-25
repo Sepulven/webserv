@@ -39,7 +39,6 @@ int Res::send(void)
 	methods.push_back("DELETE");
 
 	// * We are going to check for permission before doing anything
-	std::cout << "REQ: " << req->file_path << " x " << req->cgi_path << std::endl;
 	if (req->cgi_path != "" && req->file_path == req->cgi_path)
 		return (this->exec_CGI());
 	else if (req->method == "GET")
@@ -56,7 +55,6 @@ int Res::send(void)
 	ss << content;
 
 	this->data = ss.str();
-	this->log();
 	return (write(stream->fd, this->data.c_str(), this->data.length()));
 }
 
@@ -83,7 +81,7 @@ int    Res::exec_CGI(void)
         request.push_back("method=" + req->method);
         request.push_back("body=" + req->body);
         request.push_back("content-type=" + content_type[req->file_ext]);
-        request.push_back("content-lenght=" + req->body.length());
+        // request.push_back("content-lenght=" + req->body.length());
 
         char **envp = new char*[request.size() + 1];
         size_t i = 0;
@@ -167,9 +165,41 @@ void	Res::exec_get(void)
 	}
 }
 
+/*
+ * * Only deals with content-type multipart/form-data
+ * If the request body are files, saves them;
+ * If the request body are regular form data, does nothing;
+
+ TODO: Lower case header properties;
+*/
 void	Res::exec_post(void)
 {
-	this->code = "200";
+	const std::string & content_type = stream->req->header["Content-Type"];
+	std::string boundary;
+
+	std::cout << "Content-Length:" << stream->req->header["Content-Length"] << std::endl;
+	std::cout << std::endl << std::endl << std::endl << stream->req->body << std::endl << std::endl << std::endl;
+
+
+
+	if (content_type.find("multipart/form-data;") == 1)
+	{
+		// * I am assuming that the boundary is well formated and it is there;
+		boundary = content_type.substr(content_type.find("=") + 1);
+
+		// * In case the boundary is inside quotes;
+		if (boundary[0] == '"' && boundary[boundary.length() - 1] == '"')
+		{
+			boundary.erase(0, 1);
+			boundary.erase(boundary.length() - 1, 1);
+		}
+		this->code = FileManager::create_files(stream->req->body, boundary, "server_uploaded_files");
+		this->content = "What should be the content when we upload a file?";
+	}
+	else
+	{
+		this->code = "405";
+		this->content = "We can't execute this type of request";
+	}
 	this->content = FileManager::create_file(stream->req->filename, stream->req->body);
 }
-
