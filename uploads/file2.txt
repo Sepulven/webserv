@@ -1,7 +1,0 @@
------------------------------1433945908929188061378748502
-Content-Disposition: form-data; name="file-content"; filename="file2.txt"
-Content-Type: text/plain
-
-13451345134
-
------------------------------1433945908929188061378748502--

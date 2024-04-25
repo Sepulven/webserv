@@ -96,8 +96,16 @@ int    Res::exec_CGI(void)
         close(pipe_fd[0]); // Close read end
         dup2(pipe_fd[1], STDOUT_FILENO); // Redirect stdout to the write end
 
+		int dev_null = open("/dev/null", O_WRONLY);
+		dup2(dev_null, STDERR_FILENO);
+		close(dev_null);
+
         execve(argv[0], argv, envp);
 		delete []envp;
+
+		// std::string content = "HTTP/1.1 500 Internal Server Error\nContent-Type:text/plain\nContent-Length: 13\r\n\r\nExecve failed\n";
+		// std::cout << content << std::endl;
+		// write(stream->fd, content.c_str(), content.length())
 
 		exit(EXIT_FAILURE);
     }
@@ -111,17 +119,12 @@ int    Res::exec_CGI(void)
         while ((bytes_read = read(pipe_fd[0], buffer, sizeof(buffer))) > 0)
             content = content + buffer;
 
+        int status;
         close(pipe_fd[0]); // Close read end
-
+        waitpid(pid, &status, 0); // Wait for the child process to finish
 		if (content == "")
 			content = "HTTP/1.1 500 Internal Server Error\nContent-Type:text/plain\nContent-Length: 20\r\n\r\nError running script\n";
-		
-		std::cout << content << std::endl;
-        
-        int status;
-        waitpid(pid, &status, 0); // Wait for the child process to finish
-		std::cout << ">>>>>>>>" << content.length() <<">>>>>>>\n" << content;
-
+		std::cout << ">>>>>>>>>>>>>>>\n" << content;
 		return(write(stream->fd, content.c_str(), content.length()));
     }
 	return 1;

@@ -82,7 +82,6 @@ if __name__ == "__main__" :
     response = ""
     header = ""
 
-    # content type extension (present in envp)
     # read and disply error pages
 
     if method == "GET":
@@ -97,6 +96,7 @@ if __name__ == "__main__" :
             # response = errorPage(status)
             response == "400 Error\n"
             header = 'HTTP/1.1 400 Bad Request\nContent-Type:text/plain' + f'\nContent-Length: {len(response)}' + '\r\n\r\n'
+
 
     print(header)
     if response:
