@@ -191,7 +191,12 @@ void	Res::exec_post(void)
 			boundary.erase(0, 1);
 			boundary.erase(boundary.length() - 1, 1);
 		}
-		this->code = FileManager::create_files(stream->req->body, boundary, "server_uploaded_files");
+		this->code = FileManager::create_files(stream->req->body, boundary, "			private:
+				const char *msg;
+				virtual const char *what() const throw();
+
+			public:
+				Error(const char *_msg);");
 		this->content = "What should be the content when we upload a file?";
 	}
 	else

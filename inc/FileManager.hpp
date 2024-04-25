@@ -32,7 +32,6 @@ class FileManager
 		static std::string directory_listing(const std::string);
 
 		// * Post method
-		static std::string create_file(const std::string, const std::string);
 		static std::string create_files(const std::string &, const std::string&, const std::string);
 };
 

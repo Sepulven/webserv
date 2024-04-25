@@ -64,23 +64,10 @@ std::string FileManager::directory_listing(const std::string path)
 }
 
 /*
-	TODO: Add better error handling;
-*/
-std::string FileManager::create_file(const std::string filename, const std::string content)
-{
-	std::ofstream file;
+	TODO: Filename must be previous filename get_random_filename + extension
 
-	file.open(filename.c_str(), std::ios::in | std::ios::binary);
-	std::ofstream content_file(filename.c_str());
-
-	content_file << content;
-	file.close();
-	return ("200");
-}
-
-
-/*
-	* aaa
+	! Edgy cases with pdf, images, binaries;
+	! Edgy case, can't create file;
 */
 std::string FileManager::create_files(const std::string &body, const std::string & boundary, const std::string dir)
 {
@@ -89,16 +76,11 @@ std::string FileManager::create_files(const std::string &body, const std::string
 	std::ofstream out_file;
 	size_t n_files = files.size();
 
-	(void)dir;
-
 	for (size_t i = 1; i < n_files - 1; i++)
 	{
 		filename = dir + "/" + get_random_filename();
 
-		std::cout << "[" << i <<"]" <<  filename << std::endl;
 		out_file.open(filename.c_str(), std::ios::out);
-		if (out_file.is_open())
-			std::cout << files[i].substr(files[i].find("\r\n\r\n")) << std::endl; 
 		out_file << files[i].substr(files[i].find("\r\n\r\n"));
 		out_file.close();
 	}
