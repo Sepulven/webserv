@@ -38,6 +38,8 @@ def POST():
     if files[0] == "":
         files = files[1:]
 
+    # erase lsat boundary (check split problem)
+    # this might bring problems if the splits works correctly
     i = b_len + 3
     f = len(files[-1])
     files[-1] = files[-1][0:f - i]
@@ -45,8 +47,7 @@ def POST():
     upload_dir = "uploads/"
     entries = os.listdir(upload_dir)
 
-    for file in files:
-        print("file")
+    for file in files: # loop to create each file
         filename_match = re.search(r'filename="(.*?)"', file) # get filename
         if filename_match:
             filename = filename_match.group(1)
@@ -58,25 +59,8 @@ def POST():
         file_path = os.path.join(upload_dir, filename)
         f = open(file_path, 'w')
         pos = file.find("\r\n\r\n") + 4
-        content = file[pos:]
+        content = file[pos:] # get file content
         f.write(content)
-        print("end")
-
-    # ver se ficheiro ja existe, mudar o nome se existir
-    # criar ficheiro e escrever content
-
-    # upload_dir = "uploads/"
-    # entries = os.listdir(upload_dir)
-    # for i in entries:
-    #     if i == filename:
-    #         name = filename.split('.')[0]
-    #         ext = filename.split('.')[1]
-    #         filename = name + "_" + str(int(time.time())) + "." + ext
-    #         break
-            
-    # file_path = os.path.join(upload_dir, filename)
-    # f = open(file_path, 'w') 
-    # f.write(body)
     
     return 200
 
