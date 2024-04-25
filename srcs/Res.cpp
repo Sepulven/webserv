@@ -20,7 +20,7 @@ Res::~Res() { }
 	* Log the response on sthe stdout;
 */
 void Res::log(void) const {
-	std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+	std::cout << "\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 	std::cout << this->data;
 }
 
@@ -39,7 +39,6 @@ int Res::send(void)
 	methods.push_back("DELETE");
 
 	// * We are going to check for permission before doing anything
-	std::cout << "REQ: " << req->file_path << " x " << req->cgi_path << std::endl;
 	if (req->cgi_path != "" && req->file_path == req->cgi_path)
 		return (this->exec_CGI());
 	else if (req->method == "GET")
@@ -79,11 +78,12 @@ int    Res::exec_CGI(void)
 
     if (pid == 0) { // Child process
         std::vector<std::string> request;
+        request.push_back("request=" + req->data);
         request.push_back("path=" + req->file_path);
         request.push_back("method=" + req->method);
         request.push_back("body=" + req->body);
         request.push_back("content-type=" + content_type[req->file_ext]);
-        request.push_back("content-lenght=" + req->body.length());
+        // request.push_back("content-lenght=" + req->body.length());
 
         char **envp = new char*[request.size() + 1];
         size_t i = 0;
@@ -96,9 +96,9 @@ int    Res::exec_CGI(void)
         close(pipe_fd[0]); // Close read end
         dup2(pipe_fd[1], STDOUT_FILENO); // Redirect stdout to the write end
 
-		int dev_null = open("/dev/null", O_WRONLY);
-		dup2(dev_null, STDERR_FILENO);
-		close(dev_null);
+		// int dev_null = open("/dev/null", O_WRONLY);
+		// dup2(dev_null, STDERR_FILENO); // redirecting stderr to /dev/null
+		// close(dev_null);
 
         execve(argv[0], argv, envp);
 		delete []envp;
@@ -117,14 +117,14 @@ int    Res::exec_CGI(void)
         ssize_t bytes_read;
         std::string content = "";
         while ((bytes_read = read(pipe_fd[0], buffer, sizeof(buffer))) > 0)
-            content = content + buffer;
+            content.append(buffer, bytes_read);
 
         int status;
         close(pipe_fd[0]); // Close read end
         waitpid(pid, &status, 0); // Wait for the child process to finish
 		if (content == "")
 			content = "HTTP/1.1 500 Internal Server Error\nContent-Type:text/plain\nContent-Length: 20\r\n\r\nError running script\n";
-		std::cout << ">>>>>>>>>>>>>>>\n" << content;
+		std::cout << "\n>>>>>>>>>>>>>>>\n" << content;
 		return(write(stream->fd, content.c_str(), content.length()));
     }
 	return 1;

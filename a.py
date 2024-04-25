@@ -16,6 +16,8 @@ content_type = {
 
 def POST():
     body = os.environ.get("body")
+    request = os.environ.get("request")
+
     filename_match = re.search(r'filename="(.*?)"', body)
     if filename_match:
         filename = filename_match.group(1)
@@ -25,22 +27,57 @@ def POST():
     if not filename:
         return 400
 
-    extension = '.' + filename.split('.')[1]
-    if not content_type[extension]:
-        return 400
+    # find boundary in header
+    bound_start = request.find("boundary=")
+    bound_end = request.find("\n", bound_start + 9)
+    boundary = "--" + request[bound_start + 9:bound_end]
+    b_len = len(boundary)
+
+    # get n bodies of files
+    files = body.split(boundary)
+    if files[0] == "":
+        files = files[1:]
+
+    i = b_len + 3
+    f = len(files[-1])
+    files[-1] = files[-1][0:f - i]
 
     upload_dir = "uploads/"
     entries = os.listdir(upload_dir)
-    for i in entries:
-        if i == filename:
-            name = filename.split('.')[0]
-            ext = filename.split('.')[1]
-            filename = name + "_" + str(int(time.time())) + "." + ext
-            break
+
+    for file in files:
+        filename_match = re.search(r'filename="(.*?)"', body) # get filename
+        if filename_match:
+            filename = filename_match.group(1)
+        for i in entries: # change file name if it already exists
+            if i == filename:
+                name = filename.split('.')[0]
+                ext = filename.split('.')[1]
+                filename = name + "_" + str(int(time.time())) + "." + ext
+                break
+        
+        file_path = os.path.join(upload_dir, filename)
+        f = open(file_path, 'w')
+        pos = file.find("\r\n\r\n") + 4
+        content = file[pos:]
+        f.write(content)
+
+    # ver se ficheiro ja existe, mudar o nome se existir
+    # criar ficheiro e escrever content
+
+    # upload_dir = "uploads/"
+    # entries = os.listdir(upload_dir)
+    # for i in entries:
+    #     if i == filename:
+    #         name = filename.split('.')[0]
+    #         ext = filename.split('.')[1]
+    #         filename = name + "_" + str(int(time.time())) + "." + ext
+    #         break
             
-    file_path = os.path.join(upload_dir, filename)
-    f = open(file_path, 'w') 
-    f.write(body)
+    # file_path = os.path.join(upload_dir, filename)
+    # f = open(file_path, 'w') 
+    # f.write(body)
+    
     return 200
 
 def GET():
@@ -52,7 +89,7 @@ def GET():
 
     res += '<form method="post" enctype="multipart/form-data">\n'
     res += '<label for="file-content">Choose a simple file (text only):</label><br>\n'
-    res += '<input type="file" name="file-content" accept=".txt,.css,.scss,.html,.js,.svg" required>\n'
+    res += '<input type="file" name="file-content" accept=".txt,.css,.scss,.html,.js,.svg" required multiple>\n'
     res += '<input class="submit-button" type="submit" value="Upload">\n'
     res += '</form>\n'
 
@@ -70,7 +107,7 @@ def GET():
         res += '</ul>'
 
     res += "</body>\n"
-    res += "</html>\n"
+    res += "</html>"
 
     return res
 
@@ -91,12 +128,11 @@ if __name__ == "__main__" :
         status = POST()
         if status == 200:
             response = "File uploaded successfully!"
-            header = f'HTTP/1.1 200 OK\nContent-Type:text/plain\n' + f'Content-Length: {len(response)}' + '\r\n\r\n'
+            header = f'HTTP/1.1 200 OK\nContent-Type:text/plain\n' + f'Content-Length: {len(response)}' + '\r\n'
         elif status == 400:
             # response = errorPage(status)
-            response == "400 Error\n"
+            response == "400 Error"
             header = 'HTTP/1.1 400 Bad Request\nContent-Type:text/plain' + f'\nContent-Length: {len(response)}' + '\r\n\r\n'
-
 
     print(header)
     if response:

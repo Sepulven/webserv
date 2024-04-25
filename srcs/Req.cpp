@@ -116,7 +116,7 @@ void	Req::parser(void)
 	// this->body = request[1];
 	size_t pos = this->data.find("\r\n\r\n");
 	this->body = this->data.substr(pos + 4);
-
+    print(files)
 	this->request_line = message_header[0];
 
 	std::vector<std::string> request_line_tokens = split(message_header[0], " ");
