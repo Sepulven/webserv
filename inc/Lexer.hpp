@@ -17,8 +17,8 @@ class Lexer
 private:
 	std::list<token> tokens;
 public:
-	Lexer();
-	~Lexer();
+				Lexer();
+				~Lexer();
 
 	void		tokenize(std::string filePath);
 
@@ -27,7 +27,7 @@ public:
 	token		newToken(std::string content, int identLevel);
 
 
-	static void printTokens(std::list<token> tokens);
+	static void 	 printTokens(std::list<token> tokens);
 	std::list<token> getTokens(void);
 
 	class Error : public std::exception
