@@ -20,7 +20,7 @@ Res::~Res() { }
 	* Log the response on sthe stdout;
 */
 void Res::log(void) const {
-	std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+	std::cout << "<Log Response><>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 	std::cout << this->data;
 }
 
@@ -31,12 +31,7 @@ void Res::log(void) const {
 int Res::send(void)
 {
 	Req *req = stream->req;
-	std::vector<std::string> methods;
 	std::stringstream ss;	
-
-	methods.push_back("GET");
-	methods.push_back("POST");
-	methods.push_back("DELETE");
 
 	// * We are going to check for permission before doing anything
 	if (req->cgi_path != "" && req->file_path == req->cgi_path)
@@ -177,8 +172,6 @@ void	Res::exec_post(void)
 	const std::string & content_type = stream->req->header["Content-Type"];
 	std::string boundary;
 
-	// std::cout << "Content-Length:" << stream->req->header["Content-Length"] << std::endl;
-	// std::cout << std::endl << std::endl << std::endl << stream->req->body << std::endl << std::endl << std::endl;
 
 	if (content_type.find("multipart/form-data;") == 1)
 	{
@@ -191,12 +184,7 @@ void	Res::exec_post(void)
 			boundary.erase(0, 1);
 			boundary.erase(boundary.length() - 1, 1);
 		}
-		this->code = FileManager::create_files(stream->req->body, boundary, "			private:
-				const char *msg;
-				virtual const char *what() const throw();
-
-			public:
-				Error(const char *_msg);");
+		this->code = FileManager::create_files(stream->req->body, boundary,"server_uploaded_files");
 		this->content = "What should be the content when we upload a file?";
 	}
 	else
@@ -204,5 +192,4 @@ void	Res::exec_post(void)
 		this->code = "405";
 		this->content = "We can't execute this type of request";
 	}
-	this->content = FileManager::create_file(stream->req->filename, stream->req->body);
 }

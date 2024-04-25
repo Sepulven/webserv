@@ -9,7 +9,6 @@
 #include <Req.hpp>
 #include <Res.hpp>
 #include <FileManager.hpp>
-#include <Route.hpp>
 #include <ServerContext.hpp>
 
 class Req;
@@ -29,7 +28,6 @@ class ConnStream
 		Res *res;
 
 		FileManager file;
-		Route *route;
 
 		ServerContext *server;
 

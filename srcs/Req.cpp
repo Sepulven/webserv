@@ -77,15 +77,16 @@ void	Req::set_URL_data(std::string& URL)
 	size_t pos;
 
 	file_path = vec[0].substr(1); // * Removes the first slash
-
 	query_string = URL.substr(file_path.length() + 1);
+
+	if (file_path.length() == 0)
+		file_path = ".";
 
 	pos = file_path.find_last_of('/');
 	if (pos != std::string::npos)
 		filename = file_path;
 	else
 		filename = file_path.substr(pos + 1);
-
 	// * Sets the file_type - related to how the request is going to get treated
 	if (stat(file_path.c_str(), &fileStat) < -1)
 		path_type = _NONE;
