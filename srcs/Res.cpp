@@ -177,10 +177,8 @@ void	Res::exec_post(void)
 	const std::string & content_type = stream->req->header["Content-Type"];
 	std::string boundary;
 
-	std::cout << "Content-Length:" << stream->req->header["Content-Length"] << std::endl;
-	std::cout << std::endl << std::endl << std::endl << stream->req->body << std::endl << std::endl << std::endl;
-
-
+	// std::cout << "Content-Length:" << stream->req->header["Content-Length"] << std::endl;
+	// std::cout << std::endl << std::endl << std::endl << stream->req->body << std::endl << std::endl << std::endl;
 
 	if (content_type.find("multipart/form-data;") == 1)
 	{

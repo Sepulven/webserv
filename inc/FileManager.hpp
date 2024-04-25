@@ -11,6 +11,7 @@
 
 /* C headers */
 #include <sys/stat.h>
+#include <sys/time.h>
 
 /*
 	* The only responsability of this class is to deal with the file system;
@@ -34,3 +35,5 @@ class FileManager
 		static std::string create_file(const std::string, const std::string);
 		static std::string create_files(const std::string &, const std::string&, const std::string);
 };
+
+std::string get_random_filename(void) ;

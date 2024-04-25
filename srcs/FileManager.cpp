@@ -78,26 +78,41 @@ std::string FileManager::create_file(const std::string filename, const std::stri
 	return ("200");
 }
 
+
 /*
 	* aaa
 */
 std::string FileManager::create_files(const std::string &body, const std::string & boundary, const std::string dir)
 {
-	std::vector<std::string> files = split(body, boundary);
+	std::vector<std::string> files = split(body, "--" +	 boundary);
 	std::string filename;
-	std::string file;
+	std::ofstream out_file;
 	size_t n_files = files.size();
 
 	(void)dir;
 
-	for (size_t i = 0; i < n_files; i++)
+	for (size_t i = 1; i < n_files - 1; i++)
 	{
-			std::cout 
-					<< "[" << i << "]" << std::endl
-					<< files[i]
-					<< "**************************************" << std::endl;
+		filename = dir + "/" + get_random_filename();
+
+		std::cout << "[" << i <<"]" <<  filename << std::endl;
+		out_file.open(filename.c_str(), std::ios::out);
+		if (out_file.is_open())
+			std::cout << files[i].substr(files[i].find("\r\n\r\n")) << std::endl; 
+		out_file << files[i].substr(files[i].find("\r\n\r\n"));
+		out_file.close();
 	}
 	return ("200");
+}
+
+std::string get_random_filename(void) 
+{
+	struct timeval		t;
+	std::stringstream filename;
+
+	gettimeofday(&t, NULL);
+	filename << (t.tv_sec * 1000) + (t.tv_usec / 1000);
+	return (filename.str());
 }
 
 // * Utils
