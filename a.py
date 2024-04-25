@@ -46,7 +46,8 @@ def POST():
     entries = os.listdir(upload_dir)
 
     for file in files:
-        filename_match = re.search(r'filename="(.*?)"', body) # get filename
+        print("file")
+        filename_match = re.search(r'filename="(.*?)"', file) # get filename
         if filename_match:
             filename = filename_match.group(1)
         for i in entries: # change file name if it already exists
@@ -54,13 +55,12 @@ def POST():
                 name = filename.split('.')[0]
                 ext = filename.split('.')[1]
                 filename = name + "_" + str(int(time.time())) + "." + ext
-                break
-        
         file_path = os.path.join(upload_dir, filename)
         f = open(file_path, 'w')
         pos = file.find("\r\n\r\n") + 4
         content = file[pos:]
         f.write(content)
+        print("end")
 
     # ver se ficheiro ja existe, mudar o nome se existir
     # criar ficheiro e escrever content
