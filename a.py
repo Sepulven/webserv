@@ -92,11 +92,11 @@ if __name__ == "__main__" :
         status = POST()
         if status == 200:
             response = "File uploaded successfully!"
-            header = f'HTTP/1.1 200 OK\nContent-Type: {cont_type}\n' + f'Content-Length: {len(response)}' + '\r\n\r\n'
+            header = f'HTTP/1.1 200 OK\nContent-Type:text/plain\n' + f'Content-Length: {len(response)}' + '\r\n\r\n'
         elif status == 400:
             # response = errorPage(status)
             response == "400 Error\n"
-            header = 'HTTP/1.1 400 Bad Request' + f'\nContent-Length: {len(response)}' + '\r\n\r\n'
+            header = 'HTTP/1.1 400 Bad Request\nContent-Type:text/plain' + f'\nContent-Length: {len(response)}' + '\r\n\r\n'
 
     print(header)
     if response:

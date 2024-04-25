@@ -92,9 +92,14 @@ int    Res::exec_CGI(void)
             std::strcpy((char *)envp[i], request[i].c_str());
         }
         envp[i] = NULL;
+
         close(pipe_fd[0]); // Close read end
         dup2(pipe_fd[1], STDOUT_FILENO); // Redirect stdout to the write end
+
         execve(argv[0], argv, envp);
+		delete []envp;
+
+		exit(EXIT_FAILURE);
     }
     else { // Parent process
         close(pipe_fd[1]); // Close write end
@@ -102,11 +107,16 @@ int    Res::exec_CGI(void)
         // Read output from the pipe
         char buffer[4096];
         ssize_t bytes_read;
-        std::string content;
+        std::string content = "";
         while ((bytes_read = read(pipe_fd[0], buffer, sizeof(buffer))) > 0)
             content = content + buffer;
 
         close(pipe_fd[0]); // Close read end
+
+		if (content == "")
+			content = "HTTP/1.1 500 Internal Server Error\nContent-Type:text/plain\nContent-Length: 20\r\n\r\nError running script\n";
+		
+		std::cout << content << std::endl;
         
         int status;
         waitpid(pid, &status, 0); // Wait for the child process to finish
