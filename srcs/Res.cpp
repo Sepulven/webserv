@@ -39,11 +39,8 @@ int Res::send(void)
 	methods.push_back("DELETE");
 
 	// * We are going to check for permission before doing anything
-	std::cout << req->file_path << std::endl;
-	std::cout << req->cgi_path << std::endl;
-	req->log();
-
-	if (req->file_path == req->cgi_path)
+	std::cout << "REQ: " << req->file_path << " x " << req->cgi_path << std::endl;
+	if (req->cgi_path != "" && req->file_path == req->cgi_path)
 		return (this->exec_CGI());
 	else if (req->method == "GET")
 		exec_get();
@@ -59,6 +56,7 @@ int Res::send(void)
 	ss << content;
 
 	this->data = ss.str();
+	this->log();
 	return (write(stream->fd, this->data.c_str(), this->data.length()));
 }
 
@@ -80,7 +78,6 @@ int    Res::exec_CGI(void)
     pid_t pid = fork();
 
     if (pid == 0) { // Child process
-
         std::vector<std::string> request;
         request.push_back("path=" + req->file_path);
         request.push_back("method=" + req->method);

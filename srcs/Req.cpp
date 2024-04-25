@@ -25,7 +25,6 @@ void Req::log(void) const {
 		std::cout << data;
 }
 
-
 static std::vector<std::string> split(const std::string& base, const std::string& delimiter)
 {
 	std::istringstream iss(base);
@@ -114,7 +113,9 @@ void	Req::parser(void)
 	std::vector<std::string> request = split(this->data, "\r\n\r\n");
 	std::vector<std::string> message_header = split(request[0], "\r\n");
 
-	this->body = request[1];
+	// this->body = request[1];
+	size_t pos = this->data.find("\r\n\r\n");
+	this->body = this->data.substr(pos + 4);
 
 	this->request_line = message_header[0];
 

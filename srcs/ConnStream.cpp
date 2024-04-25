@@ -33,10 +33,9 @@ void ConnStream::clean_conn()
 	req->file_ext = "";
 	req->query_string = "";
 
-	req->cgi_path = "";
+	// req->cgi_path = "";
 
 	res->code = "";
 	res->content = "";
 	res->data = ""; 
-
 }
