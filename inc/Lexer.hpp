@@ -16,17 +16,16 @@ class Lexer
 {
 private:
 	std::list<token> tokens;
+	std::string		 trimComments(std::string line);
+	void			 trimIdent(std::string& content);
+	int				 countIdent(std::string line);
+	token			 newToken(std::string content, int identLevel);
+
 public:
-				Lexer();
-				~Lexer();
+					 Lexer();
+					 ~Lexer();
 
-	void		tokenize(std::string filePath);
-
-	int			countIdent(std::string line);
-	std::string	trimLine(std::string line);
-	token		newToken(std::string content, int identLevel);
-
-
+	void			 tokenize(std::string filePath);
 	static void 	 printTokens(std::list<token> tokens);
 	std::list<token> getTokens(void);
 

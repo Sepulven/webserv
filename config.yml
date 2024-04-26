@@ -13,12 +13,13 @@ server:
         403: error/403.html
         400: error/400.html
     max_cbsize: 2m
+    max_conn: 10
     route /about:               # to do: HTTP redirect, 
         http_methods: GET POST
         root: /www/about
         index: about.html       # default file to open if the request is the dir
         dir_listing: on         # 'on' or 'off'
- #dfgdsfg
+
 server2:
     listen:
         host: localhost
@@ -29,3 +30,4 @@ server2:
     error_pages:
         400: error/400.html
     max_cbsize: 1m
+    max_conn: 5
