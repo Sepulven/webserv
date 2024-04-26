@@ -22,7 +22,7 @@ void Req::log(void) const {
 				;
 
 		std::cout << "********************************" << std::endl;
-		std::cout << data;
+		// std::cout << data;
 }
 
 static std::vector<std::string> split(const std::string& base, const std::string& delimiter)
@@ -108,6 +108,18 @@ void	Req::set_URL_data(std::string& URL)
 
 }
 
+void	Req::set_raw_body(size_t pos)
+{
+	size_t length = this->data.length();
+	std::basic_string<uint8_t> data = this->data;
+	for (size_t i = pos; i < length; i++)
+	{
+		std::cout << static_cast<unsigned char>(data[i]) << std::endl;
+		this->raw_body.push_back(static_cast<int>(data[i]));
+	}
+
+}
+
 void	Req::parser(void)
 {
 
@@ -117,6 +129,7 @@ void	Req::parser(void)
 	// this->body = request[1];
 	size_t pos = this->data.find("\r\n\r\n");
 	this->body = this->data.substr(pos + 4);
+	this->set_raw_body(pos);
 
 	this->request_line = message_header[0];
 
@@ -136,8 +149,8 @@ void	Req::parser(void)
 */
 int Req::read(int fd)
 {
-	char buffer[4096 + 1];
-	std::string& _data = this->data;
+	unsigned char buffer[4096 + 1];
+	std::basic_string<unsigned char>& _data = this->data;
 
 	int bytes_read = ::read(fd, buffer, 4096);
 

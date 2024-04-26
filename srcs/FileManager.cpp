@@ -76,11 +76,12 @@ std::string FileManager::create_files(const std::string &body, const std::string
 	std::ofstream out_file;
 	size_t n_files = files.size();
 
+	std::cout << body << std::endl;
 	for (size_t i = 1; i < n_files - 1; i++)
 	{
 		filename = dir + "/" + get_random_filename();
-
-		out_file.open(filename.c_str(), std::ios::out);
+		// std::cout << files[i] << std::endl;
+		out_file.open(filename.c_str(), std::ios::binary | std::ios::trunc);
 		out_file << files[i].substr(files[i].find("\r\n\r\n"));
 		out_file.close();
 	}

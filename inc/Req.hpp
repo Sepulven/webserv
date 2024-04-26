@@ -65,7 +65,7 @@ class Req
 		ConnStream *stream;
 
 		// Raw request;
-		std::string data;
+		std::basic_string<unsigned char> data;
 
 		// Request message header
 		std::string request_line;
@@ -89,6 +89,7 @@ class Req
 		enum PATH_TYPE path_type;
 
 		int read(int);
+		void set_raw_body(size_t);
 		void set_URL_data(std::string &);
 		void set_header(std::vector<std::string> &);
 		void parser(void);
