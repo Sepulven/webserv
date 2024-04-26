@@ -1,6 +1,12 @@
 #include "Lexer.hpp"
 
-Lexer::Lexer() {}
+Lexer::Lexer() {
+	std::string tmp[] = {"server", "listen", "host", "port", "server_name",
+	"root", "index", "error_pages", "max_cbsize", "max_conn", "route", "http_methods",
+	"dir_listing"};
+	for (int i = 0; i < 13; i++)
+		types.push_back(tmp[i]);
+}
 
 Lexer::~Lexer() {}
 
@@ -19,7 +25,7 @@ int	Lexer::countIdent(std::string line) {
 	for (std::string::iterator it = line.begin(); *it == ' '; it++)
 		count++;
 	if (count % 4 != 0)
-		throw Error("Bad identation in config file");
+		return -1;
 	return (count / 4);
 }
 
@@ -40,6 +46,10 @@ std::string Lexer::trimComments(std::string line) {
 void Lexer::trimIdent(std::string& content) {
 	size_t i = content.find_first_not_of(' ');
 	content = content.substr(i);
+}
+
+void Lexer::identifyToken(token& token) {
+
 }
 
 token Lexer::newToken(std::string content, int identLevel) {

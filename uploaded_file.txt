@@ -1,7 +1,0 @@
-Content-Disposition: form-data; name="file"; filename="uploaded_file.txt"
-Content-Type: text/plain
-
-hello world!
-
------------------------------149257843522332530631126422700--
-Ëÿ

@@ -2,19 +2,7 @@
 
 #include "Lexer.hpp"
 #include <utility>
-
-enum nodeType {
-	HOST,
-	PORT,
-	NAME,
-	ROOT,
-	INDEX,
-	ERROR_PAGE,
-	MAX_CBSIZE,
-	MAX_CONN,
-	METHOD,
-	DIR_LISTING
-};
+#include <map>
 
 typedef struct s_route {
 	std::list<std::string> httpMethods;
@@ -38,12 +26,12 @@ typedef struct s_server {
 class Parser
 {
 private:
-	std::list<token> tokens;
-	std::list<t_server> serversConf;
+	std::list<t_server> serverNodes;
+	std::map<int, bool> nodeCheck;
 public:
 	Parser();
 	~Parser();
-
-	void parse(std::list<token> tokens);
-
+	
+	bool	checkIndent(token token);
+	void	parse(std::list<token> tokens);
 };

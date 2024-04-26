@@ -6,7 +6,7 @@
 /*   By: ratavare <ratavare@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 12:28:28 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/25 17:19:16 by ratavare         ###   ########.fr       */
+/*   Updated: 2024/04/26 15:24:22 by ratavare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ int main(void)
 	catch (const std::exception& e)
 	{
 		std::cout << RED_TEXT << "ERROR: " << e.what() << RESET_COLOR << std::endl;
-		perror("");
+		// perror("");
 	}
 }
 
