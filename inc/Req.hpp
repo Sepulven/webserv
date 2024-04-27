@@ -77,7 +77,6 @@ class Req
 
 		// Body
 		std::size_t content_length;
-		std::string body;
 		std::basic_string<uint8_t> raw_body;
 
 		// Parse URL data

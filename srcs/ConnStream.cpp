@@ -25,7 +25,7 @@ void ConnStream::clean_conn()
 	req->http = "";
 	req->URL = "";
 
-	req->body = "";
+	req->raw_body.resize(0);
 
 	// Parse URL data
 	req->file_path = "";

@@ -75,7 +75,7 @@ int    Res::exec_CGI(void)
         std::vector<std::string> request;
         request.push_back("path=" + req->file_path);
         request.push_back("method=" + req->method);
-        request.push_back("body=" + req->body);
+        // request.push_back("body=" + req->raw_body);
         request.push_back("content-type=" + content_type[req->file_ext]);
         // request.push_back("content-lenght=" + req->body.length());
 
@@ -185,7 +185,7 @@ void	Res::exec_post(void)
 			boundary.erase(0, 1);
 			boundary.erase(boundary.length() - 1, 1);
 		}
-		this->code = FileManager::create_files(stream->req->body, boundary,"server_uploaded_files");
+		this->code = FileManager::create_files(stream->req->raw_body, boundary, "server_uploaded_files");
 		this->content = "What should be the content when we upload a file?";
 	}
 	else

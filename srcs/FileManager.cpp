@@ -1,11 +1,10 @@
 #include <FileManager.hpp>
 
+static std::vector<std::basic_string<uint8_t> > split(const std::basic_string<uint8_t>& base, const std::string& _d);
+
+FileManager::FileManager() {}
+
 //* Utils
-static std::vector<std::string> split(const std::string& , const std::string& );
-
-
-FileManager::FileManager(/* args */) {}
-
 FileManager::~FileManager() {}
 
 /*
@@ -15,6 +14,7 @@ FileManager::~FileManager() {}
 	TODO: Get the error page from the route;
 	TODO: Set the correct status code;
 */
+
 std::string FileManager::read_file(const std::string path)
 {
 	std::ifstream file;
@@ -63,26 +63,58 @@ std::string FileManager::directory_listing(const std::string path)
 	return (ss.str());
 }
 
+
+// * Utils
+static std::vector<std::basic_string<uint8_t> > split(const std::basic_string<uint8_t>& base, const std::string& _d)
+{
+	std::basic_string<uint8_t> token;
+	std::basic_string<uint8_t> delimitador(_d.begin(), _d.end());
+	std::vector<std::basic_string<uint8_t> > tokens;
+	size_t startPos = 0;
+
+	size_t pos = base.find(delimitador, startPos);
+	while (pos != std::string::npos)
+	{
+		token = base.substr(startPos, pos - startPos); 
+		tokens.push_back(token);
+
+		startPos = pos + delimitador.length();
+		pos = base.find(delimitador, startPos);
+	}
+	tokens.push_back(base.substr(startPos));
+	return tokens;
+}
+
 /*
 	TODO: Filename must be previous filename get_random_filename + extension
 
 	! Edgy cases with pdf, images, binaries;
 	! Edgy case, can't create file;
 */
-std::string FileManager::create_files(const std::string &body, const std::string & boundary, const std::string dir)
+std::string FileManager::create_files(const std::basic_string<uint8_t>& body, const std::string & boundary, const std::string dir)
 {
-	std::vector<std::string> files = split(body, "--" +	 boundary);
+	std::vector<std::basic_string<uint8_t> > files = split(body, "--" +	 boundary);
+
 	std::string filename;
 	std::ofstream out_file;
+
+	const uint8_t crlf[] = {'\r', '\n', '\r', '\n'};
+	std::basic_string<uint8_t> pattern(crlf, 4);
+
+	std::basic_string<uint8_t> file;
+
 	size_t n_files = files.size();
 
-	std::cout << body << std::endl;
 	for (size_t i = 1; i < n_files - 1; i++)
 	{
 		filename = dir + "/" + get_random_filename();
-		// std::cout << files[i] << std::endl;
+	
+		file = files[i].substr(files[i].find(pattern));
+	
 		out_file.open(filename.c_str(), std::ios::binary | std::ios::trunc);
-		out_file << files[i].substr(files[i].find("\r\n\r\n"));
+
+		out_file.write(reinterpret_cast<const char*>(file.data()), file.length());
+
 		out_file.close();
 	}
 	return ("200");
@@ -98,23 +130,3 @@ std::string get_random_filename(void)
 	return (filename.str());
 }
 
-// * Utils
-static std::vector<std::string> split(const std::string& base, const std::string& delimiter)
-{
-	std::istringstream iss(base);
-	std::string token;
-	std::vector<std::string> tokens;
-	size_t startPos = 0;
-
-	size_t pos = base.find(delimiter, startPos);
-	while (pos != std::string::npos)
-	{
-		token = base.substr(startPos, pos - startPos); 
-		tokens.push_back(token);
-
-		startPos = pos + delimiter.length();
-		pos = base.find(delimiter, startPos);
-	}
-	tokens.push_back(base.substr(startPos));
-	return tokens;
-}

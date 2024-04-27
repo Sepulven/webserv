@@ -12,7 +12,7 @@ INCLUDES	=	-I ./inc
 
 OBJ			=	$(SRC:.cpp=.o)
 %.o: %.cpp
-	@${CXX} ${CXXFLAGS}  ${INCLUDES} -c $< -o $@
+	@${CXX} ${CXXFLAGS} ${INCLUDES} -c $< -o $@
 
 all: $(NAME)
 

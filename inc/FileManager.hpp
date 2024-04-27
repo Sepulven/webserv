@@ -10,6 +10,7 @@
 #include <vector>
 
 /* C headers */
+#include <stdint.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 
@@ -32,7 +33,7 @@ class FileManager
 		static std::string directory_listing(const std::string);
 
 		// * Post method
-		static std::string create_files(const std::string &, const std::string&, const std::string);
+		static std::string create_files(const std::basic_string<uint8_t> &, const std::string&, const std::string);
 };
 
 std::string get_random_filename(void) ;
