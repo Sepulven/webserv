@@ -109,7 +109,7 @@ std::string FileManager::create_files(const std::basic_string<uint8_t>& body, co
 	{
 		filename = dir + "/" + get_random_filename();
 	
-		file = files[i].substr(files[i].find(pattern));
+		file = files[i].substr(files[i].find(pattern) + pattern.length());
 	
 		out_file.open(filename.c_str(), std::ios::binary | std::ios::trunc);
 
