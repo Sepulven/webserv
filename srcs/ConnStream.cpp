@@ -17,7 +17,7 @@ void ConnStream::clean_conn()
 	// * Clean all variable before the new request is received
 
 	// Raw request;
-	req->data = "";
+	req->data.resize(0);
 
 	// Request message header
 	req->request_line = "";

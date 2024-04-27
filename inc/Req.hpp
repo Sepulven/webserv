@@ -26,7 +26,7 @@
 #include <filesystem>
 
 /* C header */
-
+#include <stdint.h>
 #include <dirent.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -65,7 +65,7 @@ class Req
 		ConnStream *stream;
 
 		// Raw request;
-		std::basic_string<unsigned char> data;
+		std::basic_string<uint8_t> data;
 
 		// Request message header
 		std::string request_line;
@@ -76,7 +76,9 @@ class Req
 		std::map<std::string, std::string> header;
 
 		// Body
+		std::size_t content_length;
 		std::string body;
+		std::basic_string<uint8_t> raw_body;
 
 		// Parse URL data
 		std::string file_path;

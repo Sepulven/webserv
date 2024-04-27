@@ -9,6 +9,15 @@ Req::~Req()
 {
 }
 
+static void print_uint(const std::basic_string<uint8_t> &str)
+{
+	std::basic_string<uint8_t>::const_iterator it = str.begin();
+	std::basic_string<uint8_t>::const_iterator ite = str.end();
+
+	std::cout << "This is some binaries: " << std::endl << std::endl;
+	for (; it != ite; it++)
+		std::cout << static_cast<unsigned char>(*it);
+}
 
 /*
 	* Log the response on sthe stdout;
@@ -21,8 +30,8 @@ void Req::log(void) const {
 				<< query_string << std::endl
 				;
 
+		print_uint(data);
 		std::cout << "********************************" << std::endl;
-		// std::cout << data;
 }
 
 static std::vector<std::string> split(const std::string& base, const std::string& delimiter)
@@ -112,6 +121,7 @@ void	Req::set_raw_body(size_t pos)
 {
 	size_t length = this->data.length();
 	std::basic_string<uint8_t> data = this->data;
+
 	for (size_t i = pos; i < length; i++)
 	{
 		std::cout << static_cast<unsigned char>(data[i]) << std::endl;
@@ -122,18 +132,19 @@ void	Req::set_raw_body(size_t pos)
 
 void	Req::parser(void)
 {
-
-	std::vector<std::string> request = split(this->data, "\r\n\r\n");
+	std::string _data(this->data.begin(), this->data.end());
+	size_t end_header_pos = _data.find("\r\n\r\n");
+	std::vector<std::string> request = split(_data, "\r\n\r\n");
 	std::vector<std::string> message_header = split(request[0], "\r\n");
 
-	// this->body = request[1];
-	size_t pos = this->data.find("\r\n\r\n");
-	this->body = this->data.substr(pos + 4);
-	this->set_raw_body(pos);
+
+	print_uint(this->data);
 
 	this->request_line = message_header[0];
 
 	std::vector<std::string> request_line_tokens = split(message_header[0], " ");
+
+	std::cout << "Message Header: " << message_header[0] << std::endl;
 
 	this->method = request_line_tokens[0];
 	this->URL = request_line_tokens[1];
@@ -141,6 +152,12 @@ void	Req::parser(void)
 
 	this->set_URL_data(this->URL);
 	this->set_header(message_header);
+
+	this->content_length = std::atoi(this->header["Content-length"].c_str());
+	if (end_header_pos != std::string::npos)
+		this->raw_body.append(this->data.begin() + end_header_pos + 4, this->data.end());
+	std::cout << "This is the content length: " << content_length << std::endl
+			  << "This is the body length: " << this->raw_body.length() << std::endl;
 }
 
 /*
@@ -149,25 +166,27 @@ void	Req::parser(void)
 */
 int Req::read(int fd)
 {
-	unsigned char buffer[4096 + 1];
-	std::basic_string<unsigned char>& _data = this->data;
+	uint8_t buffer[4096 + 1];
+	std::basic_string<uint8_t>& _data = this->data;
+	const uint8_t crlf[] = {'\r', '\n', '\r', '\n'};
+	std::basic_string<uint8_t> pattern(crlf, 4);
 
 	int bytes_read = ::read(fd, buffer, 4096);
 
-	buffer[bytes_read] = '\0';
-	if (bytes_read <= 0)
+	if (bytes_read <= 0) // * Closes the connection
 		return -1;
 
 	while (bytes_read > 0)
 	{
-		_data += buffer;
+		_data.append(buffer, buffer + bytes_read);
+		if (method == "" && _data.find(pattern) != std::string::npos)
+			this->parser();
+		else if (method != "")
+			raw_body.append(buffer, buffer + bytes_read);
 		bytes_read = ::read(fd, buffer, 4096);
-		buffer[bytes_read] = '\0';
 	}
-
-	if (!_data.find("/r/n/r/n"))
-		return (0);
-	this->parser();
-	return (1);
+	if (_data.find(pattern) != std::string::npos && raw_body.length() >= this->content_length)
+		return (1);
+	return (0);
 }
 

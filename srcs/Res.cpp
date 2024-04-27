@@ -33,6 +33,7 @@ int Res::send(void)
 	Req *req = stream->req;
 	std::stringstream ss;	
 
+	// req->log();
 	// * We are going to check for permission before doing anything
 	if (req->cgi_path != "" && req->file_path == req->cgi_path)
 		return (this->exec_CGI());

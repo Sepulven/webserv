@@ -1,6 +1,9 @@
 #pragma once
 
 
+/* C headers */
+#include <stdint.h>
+
 /* C++ headers */
 #include <iostream>
 #include <string>
