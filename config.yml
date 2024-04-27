@@ -20,7 +20,7 @@ server:
         index: about.html       # default file to open if the request is the dir
         dir_listing: on         # 'on' or 'off'
 
-server2:
+server:
     listen:
         host: localhost
         port: 2020

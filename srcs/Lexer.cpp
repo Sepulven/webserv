@@ -5,7 +5,7 @@ Lexer::Lexer() {
 	"root", "index", "error_pages", "max_cbsize", "max_conn", "route", "http_methods",
 	"dir_listing"};
 	for (int i = 0; i < 13; i++)
-		types.push_back(tmp[i]);
+		types.insert(std::make_pair(tmp[i], i));
 }
 
 Lexer::~Lexer() {}
@@ -13,7 +13,8 @@ Lexer::~Lexer() {}
 void Lexer::printTokens(std::list<token> tokens) {
 	std::cout << "============Lexer============" << std::endl << std::endl;
 	for (std::list<token>::iterator it = tokens.begin(); it != tokens.end(); it++)
-		std::cout << it->content << "$ | ident level: " << it->identLevel << std::endl;
+		std::cout << it->content << " | type: " << it->type 
+		<< " | ident level: " << it->identLevel << std::endl;
 }
 
 std::list<token> Lexer::getTokens(void) {return this->tokens;}
@@ -48,8 +49,17 @@ void Lexer::trimIdent(std::string& content) {
 	content = content.substr(i);
 }
 
-void Lexer::identifyToken(token& token) {
-
+int Lexer::identifyToken(token& token) {
+	if (!std::strncmp(token.content.c_str(), "route", 5))
+		return 10;
+	size_t i = token.content.find_first_of(":");
+	std::string tmp = token.content.substr(0, i);
+	for (std::map<std::string, int>::iterator it = types.begin();
+	it != types.end(); it++) {
+		if (!std::strcmp(tmp.c_str(), it->first.c_str()))
+			return it->second;
+	}
+	return -1;
 }
 
 token Lexer::newToken(std::string content, int identLevel) {
@@ -69,6 +79,7 @@ void Lexer::tokenize(std::string filePath) {
 		if (!newLine.empty()) {
 			tokens.push_back(newToken(newLine, countIdent(newLine)));
 			trimIdent((tokens.back().content));
+			tokens.back().type = identifyToken(tokens.back());
 		}
 	}
 }

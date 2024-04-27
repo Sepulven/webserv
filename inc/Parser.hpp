@@ -2,7 +2,6 @@
 
 #include "Lexer.hpp"
 #include <utility>
-#include <map>
 
 typedef struct s_route {
 	std::list<std::string> httpMethods;
