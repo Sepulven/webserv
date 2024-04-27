@@ -33,7 +33,6 @@ int Res::send(void)
 	Req *req = stream->req;
 	std::stringstream ss;	
 
-	// req->log();
 	// * We are going to check for permission before doing anything
 	if (req->cgi_path != "" && req->file_path == req->cgi_path)
 		return (this->exec_CGI());
@@ -45,7 +44,7 @@ int Res::send(void)
 		exec_delete();
 
 	ss << "HTTP/1.1 " << code << " " << this->status[code] << "\r\n";
-	ss << "Content-Type: " << content_type[stream->req->file_ext] <<  "\r\n";
+	ss << "Content-Type: " << content_type[req->file_ext] <<  "\r\n";
 	ss << "Content-Length: " << content.length() << "\r\n";
 	ss << "\r\n";
 	ss << content;
@@ -186,7 +185,10 @@ void	Res::exec_post(void)
 			boundary.erase(boundary.length() - 1, 1);
 		}
 		this->code = FileManager::create_files(stream->req->raw_body, boundary, "server_uploaded_files");
-		this->content = "What should be the content when we upload a file?";
+		if (this->code == "201")
+			this->content = "What should be the content when we upload a file?";
+		else
+			this->content = "Error while dealing with your post request!";
 	}
 	else
 	{

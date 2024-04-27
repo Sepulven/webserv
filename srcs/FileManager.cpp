@@ -38,7 +38,6 @@ std::string FileManager::read_file(const std::string path)
 
 /*
 	* Creates an html file with the list of the files and directories;
-	TODO: Add better styling to the html page;
 */
 std::string FileManager::directory_listing(const std::string path)
 {
@@ -46,8 +45,9 @@ std::string FileManager::directory_listing(const std::string path)
 	DIR* dir = opendir(path.c_str());
 	struct dirent* entry;
 
-	ss <<"<!DOCTYPE html><html lang=\"en\"><html><head><title>Directory Listing</title></head><body><h1>Directory Listing</h1><ul>";
-
+	ss << "<!DOCTYPE html><html lang='en'>"
+		<< "<html><head><title>Directory Listing</title></head>" 
+		<< "<body><h1>Directory Listing</h1><ul>";
 	entry = readdir(dir);
 	while (entry)
 	{
@@ -56,9 +56,7 @@ std::string FileManager::directory_listing(const std::string path)
 			<< "</li>" << std::endl;
 		entry = readdir(dir);
 	}
-
 	ss << "</ul></body></html>" << std::endl;
-
 	closedir(dir);
 	return (ss.str());
 }
@@ -85,39 +83,42 @@ static std::vector<std::basic_string<uint8_t> > split(const std::basic_string<ui
 	return tokens;
 }
 
-/*
-	TODO: Filename must be previous filename get_random_filename + extension
+// static void print_uint(const std::basic_string<uint8_t> &str)
+// {
+// 	std::basic_string<uint8_t>::const_iterator it = str.begin();
+// 	std::basic_string<uint8_t>::const_iterator ite = str.end();
 
-	! Edgy cases with pdf, images, binaries;
-	! Edgy case, can't create file;
+// 	for (; it != ite; it++)
+// 		std::cout << static_cast<unsigned char>(*it);
+// }
+
+/*
+	* Don't add the extension, as we can't figure out what is the extension;
+	* In case the file creation 
 */
 std::string FileManager::create_files(const std::basic_string<uint8_t>& body, const std::string & boundary, const std::string dir)
 {
 	std::vector<std::basic_string<uint8_t> > files = split(body, "--" +	 boundary);
-
-	std::string filename;
-	std::ofstream out_file;
-
-	const uint8_t crlf[] = {'\r', '\n', '\r', '\n'};
-	std::basic_string<uint8_t> pattern(crlf, 4);
-
+	uint8_t clrf[] = {'\r', '\n', '\r', '\n'};
+	std::basic_string<uint8_t> pattern(clrf, 4);
 	std::basic_string<uint8_t> file;
+	std::ofstream out_file;
+	std::string filename;
 
-	size_t n_files = files.size();
-
-	for (size_t i = 1; i < n_files - 1; i++)
+	for (size_t i = 1; i < files.size() - 1; i++)
 	{
-		filename = dir + "/" + get_random_filename();
-	
 		file = files[i].substr(files[i].find(pattern) + pattern.length());
-	
-		out_file.open(filename.c_str(), std::ios::binary | std::ios::trunc);
+		filename = dir + "/" + get_random_filename() + (char)(i+48);
 
-		out_file.write(reinterpret_cast<const char*>(file.data()), file.length());
-
+		out_file.open(filename.c_str(), std::ios::binary);
+		if (!out_file.is_open())
+			return ("500");
+		out_file.write((const char*)&file[0], file.length());
+		if (out_file.fail())
+			return ("500");
 		out_file.close();
 	}
-	return ("200");
+	return ("201");
 }
 
 std::string get_random_filename(void) 

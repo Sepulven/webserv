@@ -14,7 +14,6 @@ static void print_uint(const std::basic_string<uint8_t> &str)
 	std::basic_string<uint8_t>::const_iterator it = str.begin();
 	std::basic_string<uint8_t>::const_iterator ite = str.end();
 
-	std::cout << "This is some binaries: " << std::endl << std::endl;
 	for (; it != ite; it++)
 		std::cout << static_cast<unsigned char>(*it);
 }
@@ -137,14 +136,9 @@ void	Req::parser(void)
 	std::vector<std::string> request = split(_data, "\r\n\r\n");
 	std::vector<std::string> message_header = split(request[0], "\r\n");
 
-
-	print_uint(this->data);
-
 	this->request_line = message_header[0];
 
 	std::vector<std::string> request_line_tokens = split(message_header[0], " ");
-
-	std::cout << "Message Header: " << message_header[0] << std::endl;
 
 	this->method = request_line_tokens[0];
 	this->URL = request_line_tokens[1];
@@ -156,8 +150,6 @@ void	Req::parser(void)
 	this->content_length = std::atoi(this->header["Content-length"].c_str());
 	if (end_header_pos != std::string::npos)
 		this->raw_body.append(this->data.begin() + end_header_pos + 4, this->data.end());
-	std::cout << "This is the content length: " << content_length << std::endl
-			  << "This is the body length: " << this->raw_body.length() << std::endl;
 }
 
 /*
