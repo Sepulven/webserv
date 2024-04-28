@@ -4,6 +4,7 @@ ConnStream::ConnStream(int _fd, ServerContext *_server) : fd(_fd), server(_serve
 {
 	this->req = new Req(this);
 	this->res = new Res(this);
+	this->set_time();
 }
 
 ConnStream::~ConnStream()
@@ -38,4 +39,13 @@ void ConnStream::clean_conn()
 	res->code = "";
 	res->content = "";
 	res->data = ""; 
+}
+
+void ConnStream::set_time(void)
+{
+	struct timeval		t;
+
+	gettimeofday(&t, NULL);
+	this->last_action = (t.tv_sec * 1000) + (t.tv_usec / 1000);
+	this->close_conn_time = this->last_action + 20000; // * The connection can last 20 seconds without events;
 }

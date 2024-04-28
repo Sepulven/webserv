@@ -20,7 +20,8 @@ class Res;
 class ConnStream
 {
 	protected:
-		std::string time;
+		long long last_action;
+		long long close_conn_time;
 	public:
 		ConnStream(int, ServerContext *);
 		virtual ~ConnStream();
@@ -34,5 +35,6 @@ class ConnStream
 
 		ServerContext *server;
 
+		void set_time(void);
 		void clean_conn();
 };

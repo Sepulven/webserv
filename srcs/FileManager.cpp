@@ -14,7 +14,6 @@ FileManager::~FileManager() {}
 	TODO: Get the error page from the route;
 	TODO: Set the correct status code;
 */
-
 std::string FileManager::read_file(const std::string path)
 {
 	std::ifstream file;
@@ -83,18 +82,8 @@ static std::vector<std::basic_string<uint8_t> > split(const std::basic_string<ui
 	return tokens;
 }
 
-// static void print_uint(const std::basic_string<uint8_t> &str)
-// {
-// 	std::basic_string<uint8_t>::const_iterator it = str.begin();
-// 	std::basic_string<uint8_t>::const_iterator ite = str.end();
-
-// 	for (; it != ite; it++)
-// 		std::cout << static_cast<unsigned char>(*it);
-// }
-
 /*
 	* Don't add the extension, as we can't figure out what is the extension;
-	* In case the file creation 
 */
 std::string FileManager::create_files(const std::basic_string<uint8_t>& body, const std::string & boundary, const std::string dir)
 {

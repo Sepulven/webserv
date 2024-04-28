@@ -22,15 +22,15 @@ static void print_uint(const std::basic_string<uint8_t> &str)
 	* Log the response on sthe stdout;
 */
 void Req::log(void) const {
-		std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
-		std::cout << file_path << std::endl
-				<< filename << std::endl
-				<< file_ext << std::endl
-				<< query_string << std::endl
-				;
+	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+	std::cout << file_path << std::endl
+			<< filename << std::endl
+			<< file_ext << std::endl
+			<< query_string << std::endl
+			;
 
-		print_uint(data);
-		std::cout << "********************************" << std::endl;
+	print_uint(data);
+	std::cout << "********************************" << std::endl;
 }
 
 static std::vector<std::string> split(const std::string& base, const std::string& delimiter)
