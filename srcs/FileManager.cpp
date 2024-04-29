@@ -82,21 +82,60 @@ static std::vector<std::basic_string<uint8_t> > split(const std::basic_string<ui
 	return tokens;
 }
 
+// static void print_uint(const std::basic_string<uint8_t> &str)
+// {
+// 	std::basic_string<uint8_t>::const_iterator it = str.begin();
+// 	std::basic_string<uint8_t>::const_iterator ite = str.end();
+
+// 	for (; it != ite; it++)
+// 		std::cout << static_cast<unsigned char>(*it);
+// }
+
+// std::string FileManager::create_files(const std::basic_string<uint8_t>& body, const std::string & boundary, const std::string dir)
+// {
+	
+// }
+
+
 /*
-	* Don't add the extension, as we can't figure out what is the extension;
+ * Returns the file content;
+ * Takes care of the string manipulation;
+*/
+std::basic_string<uint8_t> get_file(const std::basic_string<uint8_t>& content)
+{
+	uint8_t _crlf[] = {'\r', '\n'};
+	std::basic_string<uint8_t> crlf(_crlf, 2);
+	uint8_t _crlf_2[] = {'\r', '\n', '\r', '\n'};
+	std::basic_string<uint8_t> crlf_2(_crlf_2, 4);
+	std::basic_string<uint8_t> file;
+
+	// std::cout << "-------------------------------------" << std::endl;
+	// print_uint(content);
+	// std::cout << "-------------------------------------" << std::endl;
+	size_t pos = content.find(crlf_2) + 4;
+	// std::cout << pos << std::endl;
+	size_t length = content.substr(pos).length() - 2;
+
+	file = content.substr(pos, length);
+	return (file);
+}
+
+/*
+ * Returns the status code of the operation;
 */
 std::string FileManager::create_files(const std::basic_string<uint8_t>& body, const std::string & boundary, const std::string dir)
 {
 	std::vector<std::basic_string<uint8_t> > files = split(body, "--" +	 boundary);
-	uint8_t clrf[] = {'\r', '\n', '\r', '\n'};
-	std::basic_string<uint8_t> pattern(clrf, 4);
-	std::basic_string<uint8_t> file;
 	std::ofstream out_file;
 	std::string filename;
+	std::basic_string<uint8_t> file;
+
 
 	for (size_t i = 1; i < files.size() - 1; i++)
 	{
-		file = files[i].substr(files[i].find(pattern) + pattern.length());
+
+		//print_uint(files[i]);
+		file = get_file(files[i]);
 		filename = dir + "/" + get_random_filename() + (char)(i+48);
 
 		out_file.open(filename.c_str(), std::ios::binary);

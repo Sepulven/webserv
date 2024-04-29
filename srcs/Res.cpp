@@ -160,6 +160,15 @@ void	Res::exec_get(void)
 	}
 }
 
+static void print_uint(const std::basic_string<uint8_t> &str)
+{
+	std::basic_string<uint8_t>::const_iterator it = str.begin();
+	std::basic_string<uint8_t>::const_iterator ite = str.end();
+
+	for (; it != ite; it++)
+		std::cout << static_cast<unsigned char>(*it);
+}
+
 /*
  * * Only deals with content-type multipart/form-data
  * If the request body are files, saves them;
@@ -170,11 +179,13 @@ void	Res::exec_post(void)
 	const std::string & content_type = stream->req->header["Content-Type"];
 	std::string boundary;
 
-
 	if (content_type.find("multipart/form-data;") == 1)
 	{
 		// * I am assuming that the boundary is well formated and it is there;
 		boundary = content_type.substr(content_type.find("=") + 1);
+
+		(void)print_uint;
+		// print_uint(stream->req->raw_body);
 
 		// * In case the boundary is inside quotes;
 		if (boundary[0] == '"' && boundary[boundary.length() - 1] == '"')

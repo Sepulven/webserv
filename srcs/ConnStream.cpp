@@ -17,18 +17,20 @@ void ConnStream::clean_conn()
 {
 	// * Clean all variable before the new request is received
 
-	// Raw request;
-	req->data.resize(0);
+	// * Raw request;
+	req->data.clear();
 
-	// Request message header
+	// * Request message header
 	req->request_line = "";
 	req->method = "";
 	req->http = "";
 	req->URL = "";
 
-	req->raw_body.resize(0);
+	req->raw_body.clear();
 
-	// Parse URL data
+	req->header.clear();
+
+	// * Parse URL data
 	req->file_path = "";
 	req->filename = "";
 	req->file_ext = "";

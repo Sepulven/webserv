@@ -112,19 +112,6 @@ void	Req::set_URL_data(std::string& URL)
 		file_ext = filename.substr(pos);
 	else
 		file_ext = "";
-
-}
-
-void	Req::set_raw_body(size_t pos)
-{
-	size_t length = this->data.length();
-	std::basic_string<uint8_t> data = this->data;
-
-	for (size_t i = pos; i < length; i++)
-	{
-		std::cout << static_cast<unsigned char>(data[i]) << std::endl;
-		this->raw_body.push_back(static_cast<int>(data[i]));
-	}
 }
 
 void	Req::parser(void)
