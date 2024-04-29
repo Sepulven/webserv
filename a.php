@@ -33,15 +33,12 @@ if ($_SERVER['method'] === 'GET') {
     // get n bodies of files
     $parts = explode("$boundary", $body);
     array_pop($parts); // erases last element "--"
-    print_r($parts);
 
-    if (!is_dir("uploads/")) {
+    if (!is_dir("uploads/"))
         mkdir("uploads/", 0777, true); // Creates the directory recursively
-    }
 
     // get files present int the 'uploads' directory
     $entries = scandir("uploads/");
-    print_r($entries);
 
     // loop to create each file
     foreach ($parts as $part) {
@@ -69,19 +66,17 @@ if ($_SERVER['method'] === 'GET') {
         
         $file_to_create = fopen("uploads/" . $filename, "w"); // create file
 
-        print("\npart:\n");
-        print($part);
         // $start = strpos($body, "\r\n\r\n") + 4;
-        $start = 0;
+        $start  = 0;
         $content = substr($part, $start); // get content from uploaded file
 
         fwrite($file_to_create, $content); // write content
         fclose($file_to_create);
+        $response = "File uploaded successfully!";
     }
 
     $status = 200;
 }
-        // write content of uploaded file to the create file in the uploads directoru
 
 $contentLength = strlen($response);
 

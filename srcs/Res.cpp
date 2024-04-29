@@ -69,12 +69,13 @@ int    Res::exec_CGI(void)
 
 	char *argv0;
 	std::cout << "file extension: " << req->file_ext << std::endl;
-	if (req->file_ext == ".py")
+	if (req->file_path == "a.py")
     	argv0 = const_cast<char *>("/usr/bin/python3");
-	else if (req->file_ext == ".php")
+	else if (req->file_path == "a.php")
     	argv0 = const_cast<char *>("/usr/bin/php");
 	else
 		argv0 = const_cast<char *>("");
+	std::cout << "argv0: " << argv0 << std::endl;
     char *argv1 = const_cast<char *>(req->file_path.c_str());
     char *const argv[] = {argv0, argv1, NULL};
 

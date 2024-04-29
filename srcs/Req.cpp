@@ -2,7 +2,7 @@
 
 Req::Req(ConnStream * _stream) : stream(_stream)
 {
-	this->cgi_path = "a.py";
+	this->cgi_path = "a.php";
 }
 
 Req::~Req()
