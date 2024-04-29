@@ -67,7 +67,14 @@ int    Res::exec_CGI(void)
     // if (location.find('?'))
     //     location = split(location, '?').first;
 
-    char *argv0 = const_cast<char *>("/usr/bin/python3");
+	char *argv0;
+	std::cout << "file extension: " << req->file_ext << std::endl;
+	if (req->file_ext == ".py")
+    	argv0 = const_cast<char *>("/usr/bin/python3");
+	else if (req->file_ext == ".php")
+    	argv0 = const_cast<char *>("/usr/bin/php");
+	else
+		argv0 = const_cast<char *>("");
     char *argv1 = const_cast<char *>(req->file_path.c_str());
     char *const argv[] = {argv0, argv1, NULL};
 
@@ -76,7 +83,7 @@ int    Res::exec_CGI(void)
 
     pid_t pid = fork();
 
-    if (pid == 0) { // Child process
+    if (pid == 0) {
         std::vector<std::string> request;
         request.push_back("request=" + req->data);
         request.push_back("path=" + req->file_path);
@@ -102,21 +109,15 @@ int    Res::exec_CGI(void)
 
         execve(argv[0], argv, envp);
 		delete []envp;
-
-		// std::string content = "HTTP/1.1 500 Internal Server Error\nContent-Type:text/plain\nContent-Length: 13\r\n\r\nExecve failed\n";
-		// std::cout << content << std::endl;
-		// write(stream->fd, content.c_str(), content.length())
-
-		exit(EXIT_FAILURE);
+		exit(EXIT_FAILURE); // check this
     }
-    else { // Parent process
-        close(pipe_fd[1]); // Close write end
+    else {
 
-        // Read output from the pipe
+        close(pipe_fd[1]); // Close write end
         char buffer[4096];
         ssize_t bytes_read;
         std::string content = "";
-        while ((bytes_read = read(pipe_fd[0], buffer, sizeof(buffer))) > 0)
+        while ((bytes_read = read(pipe_fd[0], buffer, sizeof(buffer))) > 0) // Read output from the pipe
             content.append(buffer, bytes_read);
 
         int status;

@@ -45,7 +45,6 @@ static std::vector<std::string> split(const std::string& base, const std::string
 	return tokens;
 }
 
-
 void	Req::set_header(std::vector<std::string>& header)
 {
 	std::string	line;
@@ -109,7 +108,6 @@ void	Req::set_URL_data(std::string& URL)
 
 void	Req::parser(void)
 {
-
 	std::vector<std::string> request = split(this->data, "\r\n\r\n");
 	std::vector<std::string> message_header = split(request[0], "\r\n");
 

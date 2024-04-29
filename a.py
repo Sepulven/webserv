@@ -15,16 +15,17 @@ content_type = {
 }
 
 def POST():
+
+    upload_dir = "uploads/"
+    if not os.path.exists(upload_dir):
+        os.mkdir(upload_dir)
+    entries = os.listdir(upload_dir)
+
     body = os.environ.get("body")
-    request = os.environ.get("request")
-
-    filename_match = re.search(r'filename="(.*?)"', body)
-    if filename_match:
-        filename = filename_match.group(1)
-    else:
+    if body is None:
         return 400
-
-    if not filename:
+    request = os.environ.get("request")
+    if request is None:
         return 400
 
     # find boundary in header
@@ -38,13 +39,12 @@ def POST():
     if files[0] == "":
         files = files[1:]
 
-    # erase lsat boundary (check split problem)
+    # erase last boundary (check split problem)
     # this might bring problems if the splits works correctly
     i = b_len + 3
     f = len(files[-1])
     files[-1] = files[-1][0:f - i]
 
-    upload_dir = "uploads/"
     entries = os.listdir(upload_dir)
 
     for file in files: # loop to create each file
@@ -64,6 +64,13 @@ def POST():
     
     return 200
 
+def errorPage(status):
+    filename = "error/" + f'{status}' + ".html"
+    f = open(filename, 'r')
+    response = f.read() # get file content
+
+    return response
+
 def GET():
     res = '<!DOCTYPE html>\n'
     res += '<html>\n'
@@ -78,17 +85,15 @@ def GET():
     res += '</form>\n'
 
     upload_dir = "uploads/"
-    if not os.path.exists(upload_dir):
-        os.mkdir(upload_dir)
-    entries = os.listdir(upload_dir)
-    if not entries:
-        res += '<p>No files uploaded yet</p>'
-    else:
+    if os.path.exists(upload_dir):
+        entries = os.listdir(upload_dir)
         res += '<p>Uploaded Files:</p>'
         res += '<ul>'
         for file_name in os.listdir(upload_dir):
                 res += "<li>{}</li>\n".format(file_name)
         res += '</ul>'
+    else:
+        res += '<p>No files uploaded yet</p>'
 
     res += "</body>\n"
     res += "</html>"
@@ -103,8 +108,6 @@ if __name__ == "__main__" :
     response = ""
     header = ""
 
-    # read and disply error pages
-
     if method == "GET":
         response = GET()
         header = 'HTTP/1.1 200 OK\nContent-Type: text/html' + f'\nContent-Length: {len(response)}' + '\r\n\r\n'
@@ -112,11 +115,10 @@ if __name__ == "__main__" :
         status = POST()
         if status == 200:
             response = "File uploaded successfully!"
-            header = f'HTTP/1.1 200 OK\nContent-Type:text/plain\n' + f'Content-Length: {len(response)}' + '\r\n'
+            header = f'HTTP/1.1 200 OK\nContent-Type: text/plain\n' + f'Content-Length: {len(response)}' + '\r\n'
         elif status == 400:
-            # response = errorPage(status)
-            response == "400 Error"
-            header = 'HTTP/1.1 400 Bad Request\nContent-Type:text/plain' + f'\nContent-Length: {len(response)}' + '\r\n\r\n'
+            response = errorPage(status)
+            header = 'HTTP/1.1 400 Bad Request\nContent-Type: text/html' + f'\nContent-Length: {len(response)}' + '\r\n\r\n'
 
     print(header)
     if response:
