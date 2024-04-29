@@ -25,12 +25,25 @@ typedef struct s_server {
 class Parser
 {
 private:
+	std::list<token>::iterator it;
 	std::list<t_server> serverNodes;
 	std::map<int, bool> nodeCheck;
+
+	std::string getParam(token token);
+	bool		checkIndent(token token);
+
+	/* Start of BNF syntax validator and 'serverNodes' 
+	   composer based on syntax.txt. */
+
+	bool configuration();
+	bool configurationCase1();
+	bool configurationCase2();
+
+	bool
+
 public:
 	Parser();
 	~Parser();
 	
-	bool	checkIndent(token token);
 	void	parse(std::list<token> tokens);
 };

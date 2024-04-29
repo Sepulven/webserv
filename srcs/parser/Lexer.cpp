@@ -1,4 +1,4 @@
-#include "Lexer.hpp"
+#include "parser/Lexer.hpp"
 
 Lexer::Lexer() {
 	std::string tmp[] = {"server", "listen", "host", "port", "server_name",
@@ -50,7 +50,7 @@ void Lexer::trimIdent(std::string& content) {
 }
 
 int Lexer::identifyToken(token& token) {
-	if (!std::strncmp(token.content.c_str(), "route", 5))
+	if (!std::strncmp(token.content.c_str(), "route ", 6))
 		return 10;
 	size_t i = token.content.find_first_of(":");
 	std::string tmp = token.content.substr(0, i);

@@ -1,0 +1,33 @@
+The grammar below is written in Backus-Naur Form (BNF) - https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form
+
+<configuration>		: <server_block> <configuration>
+					| <server_block>
+					;
+
+<server_block>		: "server" <block>
+					;
+
+<block>				: <directives>
+					;
+
+<directives>		: <block_dirs> [path] <directives> *
+					| <block_dirs> <directives>
+					| <simple_dir> <directives>
+					| <block_dirs> [path] *
+					| <block_dirs>
+					| <simple_dir>
+					;
+
+<block_dirs>		: <simple_dir> <block_dirs>
+					| <simple_dir>
+					;
+
+<simple_dir>		: [name] <parameter_lst>
+					;
+
+<parameter_lst>		: [parameter] <parameter_lst> **
+					| [parameter]
+					;
+
+* for 'ROUTE' type only.
+** if type matches 'METHOD' or 'INDEX'.
