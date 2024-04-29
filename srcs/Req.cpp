@@ -3,11 +3,10 @@
 Req::Req(ConnStream * _stream) : stream(_stream)
 {
 	this->cgi_path = "a.py";
+	this->chunk_length = -1;
 }
 
-Req::~Req()
-{
-}
+Req::~Req() {}
 
 static void print_uint(const std::basic_string<uint8_t> &str)
 {
@@ -126,7 +125,6 @@ void	Req::set_raw_body(size_t pos)
 		std::cout << static_cast<unsigned char>(data[i]) << std::endl;
 		this->raw_body.push_back(static_cast<int>(data[i]));
 	}
-
 }
 
 void	Req::parser(void)
@@ -153,31 +151,61 @@ void	Req::parser(void)
 }
 
 /*
- * Refactor it for the chunked;
- * Refactor based on the bad connections;
+ * Returns nothing.
+ * Sets the chunk_length;
+ * Set the chunk until it reaches it's chunk_length;
+ * Write to the raw_body;
+*/
+void	Req::unchunk(const uint8_t *_buff, size_t length)
+{
+	std::basic_string<uint8_t> buff(_buff, _buff + length);
+	uint8_t crlf[] = {'\r', '\n'};
+	std::basic_string<uint8_t> pattern(crlf, 4);
+	std::stringstream ss;
+	std::size_t crlf_pos = buff.find(pattern);
+
+	if (chunk_length == -1 && crlf_pos != std::string::npos)
+	{
+		ss << std::hex << buff.substr(0, crlf_pos).c_str();
+		ss >> chunk_length;
+		chunk.append(buff.substr(crlf_pos + 2, chunk_length));
+	}
+	if (chunk_length == (int)chunk.size()) // * Sets to the raw_body
+	{
+		raw_body.append(chunk);
+		chunk.clear();
+		chunk_length = -1 * (chunk_length != 0);  // * Restarts the circle
+	}
+}
+
+/*
+ TODO: Refactor it for the chunked;
+ TODO: Refactor based on the bad connections;
 */
 int Req::read(int fd)
 {
-	uint8_t buffer[4096 + 1];
-	std::basic_string<uint8_t>& _data = this->data;
-	const uint8_t crlf[] = {'\r', '\n', '\r', '\n'};
+	uint8_t crlf[] = {'\r', '\n', '\r', '\n'};
 	std::basic_string<uint8_t> pattern(crlf, 4);
-
+	uint8_t buffer[4096 + 1];
 	int bytes_read = ::read(fd, buffer, 4096);
 
 	if (bytes_read <= 0) // * Closes the connection
 		return -1;
-
 	while (bytes_read > 0)
 	{
-		_data.append(buffer, buffer + bytes_read);
-		if (method == "" && _data.find(pattern) != std::string::npos)
+		data.append(buffer, buffer + bytes_read);
+		if (method == "" && data.find(pattern) != std::string::npos)
 			this->parser();
+		else if (method != "" && header["Transfer-Encoding"] == "chunked")
+			this->unchunk(buffer, bytes_read);
 		else if (method != "")
 			raw_body.append(buffer, buffer + bytes_read);
 		bytes_read = ::read(fd, buffer, 4096);
 	}
-	if (_data.find(pattern) != std::string::npos && raw_body.length() >= this->content_length)
+	if (data.find(pattern) != std::string::npos 
+		&& raw_body.length() >= content_length)
+		return (1);
+	if (header["Transfer-Encoding"] == "chunked" && chunk_length == 0)
 		return (1);
 	return (0);
 }

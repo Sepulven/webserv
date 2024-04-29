@@ -26,7 +26,7 @@ void Res::log(void) const {
 
 /*
 	* Must check for the permissions before executing;
-	* Must handle in case of the URL is a a directory;
+	* Must handle in case of the URL is a  directory;
 */
 int Res::send(void)
 {
@@ -164,8 +164,6 @@ void	Res::exec_get(void)
  * * Only deals with content-type multipart/form-data
  * If the request body are files, saves them;
  * If the request body are regular form data, does nothing;
-
- TODO: Lower case header properties;
 */
 void	Res::exec_post(void)
 {

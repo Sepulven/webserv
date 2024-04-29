@@ -12,7 +12,6 @@
 		-> For chuncked request it must unchunk it;
 	-> Whenever it checks that there is the end of the request it will
 		validate the request, get its attr and payload, and instanciate a response;
-
 */
 
 /* C++ header */
@@ -78,6 +77,8 @@ class Req
 		// Body
 		std::size_t content_length;
 		std::basic_string<uint8_t> raw_body;
+		std::basic_string<uint8_t> chunk;
+		int chunk_length;
 
 		// Parse URL data
 		std::string file_path;
@@ -94,6 +95,6 @@ class Req
 		void set_URL_data(std::string &);
 		void set_header(std::vector<std::string> &);
 		void parser(void);
+		void unchunk(const uint8_t*, size_t);
 		void log(void) const;
-
 };
