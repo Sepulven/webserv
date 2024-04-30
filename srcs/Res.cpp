@@ -64,6 +64,7 @@ int Res::send(void)
 
 	ss << "HTTP/1.1 " << code << " " << this->status[code] << "\r\n";
 	std::cout << "ext: " << stream->req->file_ext << std::endl;
+	
 	if (this->add_ext != "")
 		ss << "Content-Type: " << content_type[add_ext] <<  "\r\n";
 	else
