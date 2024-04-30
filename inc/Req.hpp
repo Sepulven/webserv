@@ -12,7 +12,6 @@
 		-> For chuncked request it must unchunk it;
 	-> Whenever it checks that there is the end of the request it will
 		validate the request, get its attr and payload, and instanciate a response;
-
 */
 
 /* C++ header */
@@ -26,7 +25,7 @@
 #include <filesystem>
 
 /* C header */
-
+#include <stdint.h>
 #include <dirent.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -64,10 +63,10 @@ class Req
 
 		ConnStream *stream;
 
-		// Raw request;
-		std::string data;
+		// * Raw request;
+		std::basic_string<uint8_t> data;
 
-		// Request message header
+		// * Request message header
 		std::string request_line;
 		std::string method;
 		std::string http;
@@ -75,10 +74,13 @@ class Req
 
 		std::map<std::string, std::string> header;
 
-		// Body
-		std::string body;
+		// * Body
+		std::size_t content_length;
+		std::basic_string<uint8_t> raw_body;
+		std::basic_string<uint8_t> chunk;
+		int chunk_length;
 
-		// Parse URL data
+		// * Parse URL data
 		std::string file_path;
 		std::string filename;
 		std::string file_ext;
@@ -89,9 +91,10 @@ class Req
 		enum PATH_TYPE path_type;
 
 		int read(int);
+		void set_raw_body(size_t);
 		void set_URL_data(std::string &);
 		void set_header(std::vector<std::string> &);
 		void parser(void);
+		void unchunk(const uint8_t*, size_t);
 		void log(void) const;
-
 };

@@ -4,6 +4,7 @@ ConnStream::ConnStream(int _fd, ServerContext *_server) : fd(_fd), server(_serve
 {
 	this->req = new Req(this);
 	this->res = new Res(this);
+	this->set_time();
 }
 
 ConnStream::~ConnStream()
@@ -16,18 +17,20 @@ void ConnStream::clean_conn()
 {
 	// * Clean all variable before the new request is received
 
-	// Raw request;
-	req->data = "";
+	// * Raw request;
+	req->data.clear();
 
-	// Request message header
+	// * Request message header
 	req->request_line = "";
 	req->method = "";
 	req->http = "";
 	req->URL = "";
 
-	req->body = "";
+	req->raw_body.clear();
 
-	// Parse URL data
+	req->header.clear();
+
+	// * Parse URL data
 	req->file_path = "";
 	req->filename = "";
 	req->file_ext = "";
@@ -39,4 +42,13 @@ void ConnStream::clean_conn()
 	res->content = "";
 	res->data = ""; 
 	res->add_ext= ""; 
+}
+
+void ConnStream::set_time(void)
+{
+	struct timeval		t;
+
+	gettimeofday(&t, NULL);
+	this->last_action = (t.tv_sec * 1000) + (t.tv_usec / 1000);
+	this->close_conn_time = this->last_action + 20000; // * The connection can last 20 seconds without events;
 }

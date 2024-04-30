@@ -1,13 +1,16 @@
 #pragma once
 
 /* C headers*/
+#include <stdint.h>
 #include <unistd.h>
 #include <cstdlib>
 #include <sys/wait.h>
+
 /* C++ headers*/
 #include <iostream>
 #include <algorithm>
 #include <cstring>
+
 /* Classes */
 #include <Req.hpp>
 #include <ConnStream.hpp>

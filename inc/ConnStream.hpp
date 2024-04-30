@@ -1,6 +1,9 @@
 #pragma once
 
 
+/* C headers */
+#include <stdint.h>
+
 /* C++ headers */
 #include <iostream>
 #include <string>
@@ -9,7 +12,6 @@
 #include <Req.hpp>
 #include <Res.hpp>
 #include <FileManager.hpp>
-#include <Route.hpp>
 #include <ServerContext.hpp>
 
 class Req;
@@ -18,7 +20,8 @@ class Res;
 class ConnStream
 {
 	protected:
-		std::string time;
+		long long last_action;
+		long long close_conn_time;
 	public:
 		ConnStream(int, ServerContext *);
 		virtual ~ConnStream();
@@ -29,9 +32,9 @@ class ConnStream
 		Res *res;
 
 		FileManager file;
-		Route *route;
 
 		ServerContext *server;
 
+		void set_time(void);
 		void clean_conn();
 };

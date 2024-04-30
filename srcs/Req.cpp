@@ -4,26 +4,33 @@ Req::Req(ConnStream * _stream) : stream(_stream)
 {
 	this->cgi_path.push_back("a.py");
 	this->cgi_path.push_back("a.php");
+	this->chunk_length = -1;
 }
 
-Req::~Req()
+Req::~Req() {}
+
+static void print_uint(const std::basic_string<uint8_t> &str)
 {
-}
+	std::basic_string<uint8_t>::const_iterator it = str.begin();
+	std::basic_string<uint8_t>::const_iterator ite = str.end();
 
+	for (; it != ite; it++)
+		std::cout << static_cast<unsigned char>(*it);
+}
 
 /*
 	* Log the response on sthe stdout;
 */
 void Req::log(void) const {
-		// std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
-		// std::cout << file_path << std::endl
-		// 		<< filename << std::endl
-		// 		<< file_ext << std::endl
-		// 		<< query_string << std::endl
-		// 		;
+	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+	std::cout << file_path << std::endl
+			<< filename << std::endl
+			<< file_ext << std::endl
+			<< query_string << std::endl
+			;
 
-		std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
-		std::cout << data;
+	print_uint(data);
+	std::cout << "********************************" << std::endl;
 }
 
 static std::vector<std::string> split(const std::string& base, const std::string& delimiter)
@@ -77,15 +84,16 @@ void	Req::set_URL_data(std::string& URL)
 	size_t pos;
 
 	file_path = vec[0].substr(1); // * Removes the first slash
-
 	query_string = URL.substr(file_path.length() + 1);
+
+	if (file_path.length() == 0)
+		file_path = ".";
 
 	pos = file_path.find_last_of('/');
 	if (pos != std::string::npos)
 		filename = file_path;
 	else
 		filename = file_path.substr(pos + 1);
-
 	// * Sets the file_type - related to how the request is going to get treated
 	if (stat(file_path.c_str(), &fileStat) < -1)
 		path_type = _NONE;
@@ -108,12 +116,11 @@ void	Req::set_URL_data(std::string& URL)
 
 void	Req::parser(void)
 {
-	std::vector<std::string> request = split(this->data, "\r\n\r\n");
+	std::string _data(this->data.begin(), this->data.end());
+	size_t end_header_pos = _data.find("\r\n\r\n");
+	std::vector<std::string> request = split(_data, "\r\n\r\n");
 	std::vector<std::string> message_header = split(request[0], "\r\n");
 
-	// this->body = request[1];
-	size_t pos = this->data.find("\r\n\r\n");
-	this->body = this->data.substr(pos + 4);
 	this->request_line = message_header[0];
 
 	std::vector<std::string> request_line_tokens = split(message_header[0], " ");
@@ -124,30 +131,69 @@ void	Req::parser(void)
 
 	this->set_URL_data(this->URL);
 	this->set_header(message_header);
+
+	this->content_length = std::atoi(this->header["Content-length"].c_str());
+	if (end_header_pos != std::string::npos)
+		this->raw_body.append(this->data.begin() + end_header_pos + 4, this->data.end());
 }
 
+/*
+ * Returns nothing.
+ * Sets the chunk_length;
+ * Set the chunk until it reaches it's chunk_length;
+ * Write to the raw_body;
+*/
+void	Req::unchunk(const uint8_t *_buff, size_t length)
+{
+	std::basic_string<uint8_t> buff(_buff, _buff + length);
+	uint8_t crlf[] = {'\r', '\n'};
+	std::basic_string<uint8_t> pattern(crlf, 4);
+	std::stringstream ss;
+	std::size_t crlf_pos = buff.find(pattern);
+
+	if (chunk_length == -1 && crlf_pos != std::string::npos)
+	{
+		ss << std::hex << buff.substr(0, crlf_pos).c_str();
+		ss >> chunk_length;
+		chunk.append(buff.substr(crlf_pos + 2, chunk_length));
+	}
+	if (chunk_length == (int)chunk.size()) // * Sets to the raw_body
+	{
+		raw_body.append(chunk);
+		chunk.clear();
+		chunk_length = -1 * (chunk_length != 0);  // * Restarts the circle
+	}
+}
+
+/*
+ TODO: Refactor it for the chunked;
+ TODO: Refactor based on the bad connections;
+*/
 int Req::read(int fd)
 {
-	char buffer[4096 + 1];
-	std::string& _data = this->data;
-
+	uint8_t crlf[] = {'\r', '\n', '\r', '\n'};
+	std::basic_string<uint8_t> pattern(crlf, 4);
+	uint8_t buffer[4096 + 1];
 	int bytes_read = ::read(fd, buffer, 4096);
 
-	buffer[bytes_read] = '\0';
-	if (bytes_read <= 0)
+	if (bytes_read <= 0) // * Closes the connection
 		return -1;
-
 	while (bytes_read > 0)
 	{
-		_data += buffer;
+		data.append(buffer, buffer + bytes_read);
+		if (method == "" && data.find(pattern) != std::string::npos)
+			this->parser();
+		else if (method != "" && header["Transfer-Encoding"] == "chunked")
+			this->unchunk(buffer, bytes_read);
+		else if (method != "")
+			raw_body.append(buffer, buffer + bytes_read);
 		bytes_read = ::read(fd, buffer, 4096);
-		buffer[bytes_read] = '\0';
 	}
-
-	if (!_data.find("/r/n/r/n"))
-		return (0);
-	this->parser();
-	this->log();
-	return (1);
+	if (data.find(pattern) != std::string::npos 
+		&& raw_body.length() >= content_length)
+		return (1);
+	if (header["Transfer-Encoding"] == "chunked" && chunk_length == 0)
+		return (1);
+	return (0);
 }
 
