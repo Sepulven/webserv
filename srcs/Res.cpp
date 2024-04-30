@@ -21,8 +21,9 @@ Res::~Res() { }
 */
 void Res::log(void) const {
 	std::cout << "\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
-	size_t pos = this->data.find("\r\n\r\n");
-	std::string str_to_print = this->data.substr(0, pos + 2);
+	// size_t pos = this->data.find("\r\n\r\n");
+	// std::string str_to_print = this->data.substr(0, pos + 2);
+	std::string str_to_print = this->data;
 	std::cout << str_to_print;
 }
 
@@ -41,9 +42,20 @@ int Res::send(void)
 	methods.push_back("DELETE");
 
 	// * We are going to check for permission before doing anything
-	if (req->cgi_path != "" && req->file_path == req->cgi_path)
-		return (this->exec_CGI());
-	else if (req->method == "GET")
+	std::vector<std::string>::iterator it = req->cgi_path.begin();
+	while (it != req->cgi_path.end())
+	{
+		if (req->file_path == *it)
+		{
+			std::cout << "cgi " << req->file_path << std::endl;
+			return (this->exec_CGI());
+		}
+		it++;
+	}
+
+	// if (req->cgi_path != "" && req->file_path == req->cgi_path)
+	// 	return (this->exec_CGI());
+	if (req->method == "GET")
 		exec_get();
 	else if (req->method == "POST")
 		exec_post();
@@ -51,7 +63,11 @@ int Res::send(void)
 		exec_delete();
 
 	ss << "HTTP/1.1 " << code << " " << this->status[code] << "\r\n";
-	ss << "Content-Type: " << content_type[stream->req->file_ext] <<  "\r\n";
+	std::cout << "ext: " << stream->req->file_ext << std::endl;
+	if (this->add_ext != "")
+		ss << "Content-Type: " << content_type[add_ext] <<  "\r\n";
+	else
+		ss << "Content-Type: " << content_type[stream->req->file_ext] <<  "\r\n";
 	ss << "Content-Length: " << content.length() << "\r\n\r\n";
 	ss << content;
 
@@ -139,14 +155,17 @@ void	Res::exec_delete(void)
 
 	if (path[0] == '/')
 		path = path.substr(1);
+	// missing extension / content type of this responses
 	if (std::remove(path.c_str()) != 0)
 	{
-		this->content = "We couldn't find the file to be deleted!";		
+		this->content = FileManager::read_file("errors/404.html"); // change for error page variable
+		this->add_ext = ".html";
 		this->code = "404";
 	}
 	else
 	{
 		this->content = "We've deleted the file succesfully!";
+		this->add_ext = ".txt";
 		this->code = "200";
 	}
 }
@@ -160,12 +179,15 @@ void	Res::exec_get(void)
 	}
 	if (stream->req->path_type == _DIRECTORY)
 	{
+		// missing extension / content type of this responses
 		this->content = FileManager::directory_listing(stream->req->file_path);
+		this->add_ext = ".html";
 		this->code = "200";
 	}
 	if (stream->req->path_type == _NONE)
 	{
-		this->content = FileManager::read_file("errors/404.html");
+		this->content = FileManager::read_file("errors/404.html");  // change for error page variable
+		this->add_ext = ".html";
 		this->code = "404";
 	}
 }

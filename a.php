@@ -3,6 +3,18 @@
 $response = "";
 
 if ($_SERVER['method'] === 'GET') {
+    $items = "";
+    if (is_dir("uploads/") && scandir("uploads/"))
+    {
+        $entries = scandir("uploads/");
+        $items = '<p>Uploaded Files:</p>';
+        $items += '<ul>';
+        foreach ($entries as $file_name)
+            $items += "<li>{}</li>\n".format($file_name);
+        $items += '</ul>';
+    }
+    else
+        $items += '<p>No files uploaded yet</p>';
     ob_start(); // Start output buffering to capture HTML output
     ?>
     <!DOCTYPE html>
@@ -17,6 +29,7 @@ if ($_SERVER['method'] === 'GET') {
             <input type="file" name="file-content" accept=".txt,.css,.scss,.html,.js,.svg" required multiple><br>
             <input type="submit" value="Upload">
         </form>
+    <p>$response</p>
     </body>
     </html>
     <?php

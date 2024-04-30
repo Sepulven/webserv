@@ -85,7 +85,7 @@ def GET():
     res += '</form>\n'
 
     upload_dir = "uploads/"
-    if os.path.exists(upload_dir):
+    if os.path.exists(upload_dir) and os.listdir(upload_dir):
         entries = os.listdir(upload_dir)
         res += '<p>Uploaded Files:</p>'
         res += '<ul>'

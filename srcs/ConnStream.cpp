@@ -38,4 +38,5 @@ void ConnStream::clean_conn()
 	res->code = "";
 	res->content = "";
 	res->data = ""; 
+	res->add_ext= ""; 
 }

@@ -39,6 +39,7 @@ class Res
 		std::string code;
 		std::string content; // * What is going to get rendered
 		std::string data; // * Final Result
+		std::string add_ext;
 
 		Res(ConnStream *);
 		~Res();

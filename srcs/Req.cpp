@@ -2,7 +2,8 @@
 
 Req::Req(ConnStream * _stream) : stream(_stream)
 {
-	this->cgi_path = "a.py";
+	this->cgi_path.push_back("a.py");
+	this->cgi_path.push_back("a.php");
 }
 
 Req::~Req()
@@ -103,7 +104,6 @@ void	Req::set_URL_data(std::string& URL)
 		file_ext = filename.substr(pos);
 	else
 		file_ext = "";
-
 }
 
 void	Req::parser(void)
