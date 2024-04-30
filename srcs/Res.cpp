@@ -23,23 +23,18 @@ void Res::log(void) const {
 	std::cout << "\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 	// size_t pos = this->data.find("\r\n\r\n");
 	// std::string str_to_print = this->data.substr(0, pos + 2);
-	std::string str_to_print = this->data;
-	std::cout << str_to_print;
+	std::cout << "<Log Response><>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+	std::cout << this->data;
 }
 
 /*
 	* Must check for the permissions before executing;
-	* Must handle in case of the URL is a a directory;
+	* Must handle in case of the URL is a  directory;
 */
 int Res::send(void)
 {
 	Req *req = stream->req;
-	std::vector<std::string> methods;
 	std::stringstream ss;	
-
-	methods.push_back("GET");
-	methods.push_back("POST");
-	methods.push_back("DELETE");
 
 	// * We are going to check for permission before doing anything
 	std::vector<std::string>::iterator it = req->cgi_path.begin();
@@ -53,8 +48,6 @@ int Res::send(void)
 		it++;
 	}
 
-	// if (req->cgi_path != "" && req->file_path == req->cgi_path)
-	// 	return (this->exec_CGI());
 	if (req->method == "GET")
 		exec_get();
 	else if (req->method == "POST")
@@ -63,27 +56,23 @@ int Res::send(void)
 		exec_delete();
 
 	ss << "HTTP/1.1 " << code << " " << this->status[code] << "\r\n";
-	std::cout << "ext: " << stream->req->file_ext << std::endl;
-	
+
 	if (this->add_ext != "")
 		ss << "Content-Type: " << content_type[add_ext] <<  "\r\n";
 	else
 		ss << "Content-Type: " << content_type[stream->req->file_ext] <<  "\r\n";
+
 	ss << "Content-Length: " << content.length() << "\r\n\r\n";
+
 	ss << content;
 
 	this->data = ss.str();
-	this->log();
 	return (write(stream->fd, this->data.c_str(), this->data.length()));
 }
 
 int    Res::exec_CGI(void)
 {
 	Req *req = stream->req;
-    // if (location[0] == '/')
-    //     location = "." + location;
-    // if (location.find('?'))
-    //     location = split(location, '?').first;
 
 	char *argv0;
 	std::cout << "file extension: " << req->file_ext << std::endl;
@@ -102,12 +91,14 @@ int    Res::exec_CGI(void)
 
     pid_t pid = fork();
 
+	std::string raw_body(req->raw_body.begin(), req->raw_body.end());
+	std::string data(req->data.begin(), req->data.end());
     if (pid == 0) {
         std::vector<std::string> request;
-        request.push_back("request=" + req->data);
+        request.push_back("request=" + data);
         request.push_back("path=" + req->file_path);
         request.push_back("method=" + req->method);
-        request.push_back("body=" + req->body);
+        request.push_back("body=" + raw_body);
         request.push_back("content-type=" + content_type[req->file_ext]);
         // request.push_back("content-lenght=" + req->body.length());
 
@@ -122,9 +113,9 @@ int    Res::exec_CGI(void)
         close(pipe_fd[0]); // Close read end
         dup2(pipe_fd[1], STDOUT_FILENO); // Redirect stdout to the write end
 
-		int dev_null = open("/dev/null", O_WRONLY);
-		dup2(dev_null, STDERR_FILENO); // redirecting stderr to /dev/null
-		close(dev_null);
+		// int dev_null = open("/dev/null", O_WRONLY);
+		// dup2(dev_null, STDERR_FILENO); // redirecting stderr to /dev/null
+		// close(dev_null);
 
         execve(argv[0], argv, envp);
 		delete []envp;
@@ -193,9 +184,48 @@ void	Res::exec_get(void)
 	}
 }
 
-void	Res::exec_post(void)
+static void print_uint(const std::basic_string<uint8_t> &str)
 {
-	this->code = "200";
-	this->content = FileManager::create_file(stream->req->filename, stream->req->body);
+	std::basic_string<uint8_t>::const_iterator it = str.begin();
+	std::basic_string<uint8_t>::const_iterator ite = str.end();
+
+	for (; it != ite; it++)
+		std::cout << static_cast<unsigned char>(*it);
 }
 
+/*
+ * * Only deals with content-type multipart/form-data
+ * If the request body are files, saves them;
+ * If the request body are regular form data, does nothing;
+*/
+void	Res::exec_post(void)
+{
+	const std::string & content_type = stream->req->header["Content-Type"];
+	std::string boundary;
+
+	if (content_type.find("multipart/form-data;") == 1)
+	{
+		// * I am assuming that the boundary is well formated and it is there;
+		boundary = content_type.substr(content_type.find("=") + 1);
+
+		(void)print_uint;
+		// print_uint(stream->req->raw_body);
+
+		// * In case the boundary is inside quotes;
+		if (boundary[0] == '"' && boundary[boundary.length() - 1] == '"')
+		{
+			boundary.erase(0, 1);
+			boundary.erase(boundary.length() - 1, 1);
+		}
+		this->code = FileManager::create_files(stream->req->raw_body, boundary, "server_uploaded_files");
+		if (this->code == "201")
+			this->content = "What should be the content when we upload a file?";
+		else
+			this->content = "Error while dealing with your post request!";
+	}
+	else
+	{
+		this->code = "405";
+		this->content = "We can't execute this type of request";
+	}
+}

@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 12:31:02 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/22 00:17:52 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/04/25 23:21:25 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,6 @@
 #include <string>
 
 /* Classes */
-#include <Route.hpp>
 
 /*
 	Server contexts:
@@ -41,9 +40,6 @@ class ServerContext
 		int			port;
 		int			max_events;
 		int			socket;
-
-		//Location Context are name route;
-		std::map<std::string, Route *> router;
 
 		ServerContext(std::string, std::string, int);
 		virtual ~ServerContext();
