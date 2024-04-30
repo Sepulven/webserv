@@ -14,6 +14,15 @@ content_type = {
     ".pdf": "application/pdf"
 }
 
+def repeated_file(filename, entries):
+    for i in entries: # change file name if it already exists
+        if i == filename:
+            name = filename.split('.')[0]
+            ext = filename.split('.')[1]
+            filename = name + "_" + str(int(time.time())) + "." + ext
+
+    return filename
+
 def POST():
 
     upload_dir = "uploads/"
@@ -45,17 +54,19 @@ def POST():
     f = len(files[-1])
     files[-1] = files[-1][0:f - i]
 
-    entries = os.listdir(upload_dir)
 
     for file in files: # loop to create each file
+        entries = os.listdir(upload_dir)
         filename_match = re.search(r'filename="(.*?)"', file) # get filename
         if filename_match:
             filename = filename_match.group(1)
+
         for i in entries: # change file name if it already exists
             if i == filename:
                 name = filename.split('.')[0]
                 ext = filename.split('.')[1]
                 filename = name + "_" + str(int(time.time())) + "." + ext
+                
         file_path = os.path.join(upload_dir, filename)
         f = open(file_path, 'w')
         pos = file.find("\r\n\r\n") + 4

@@ -75,14 +75,13 @@ int    Res::exec_CGI(void)
 	Req *req = stream->req;
 
 	char *argv0;
-	std::cout << "file extension: " << req->file_ext << std::endl;
 	if (req->file_ext == ".py")
     	argv0 = const_cast<char *>("/usr/bin/python3");
 	else if (req->file_ext == ".php")
     	argv0 = const_cast<char *>("/usr/bin/php");
 	else
 		argv0 = const_cast<char *>("");
-	std::cout << "argv0: " << argv0 << std::endl;
+
     char *argv1 = const_cast<char *>(req->file_path.c_str());
     char *const argv[] = {argv0, argv1, NULL};
 
@@ -135,7 +134,7 @@ int    Res::exec_CGI(void)
         waitpid(pid, &status, 0); // Wait for the child process to finish
 		if (content == "")
 			content = "HTTP/1.1 500 Internal Server Error\nContent-Type:text/plain\nContent-Length: 20\r\n\r\nError running script\n";
-		// std::cout << "\n>>>>>>>>>>>>>>>\n" << content;
+		std::cout << "\n>>>>>>>>>>>>>>>\n" << content;
 		return(write(stream->fd, content.c_str(), content.length()));
     }
 	return 1;
