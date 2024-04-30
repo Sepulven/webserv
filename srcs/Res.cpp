@@ -21,7 +21,9 @@ Res::~Res() { }
 */
 void Res::log(void) const {
 	std::cout << "\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
-	std::cout << this->data;
+	size_t pos = this->data.find("\r\n\r\n");
+	std::string str_to_print = this->data.substr(0, pos + 2);
+	std::cout << str_to_print;
 }
 
 /*
@@ -50,8 +52,7 @@ int Res::send(void)
 
 	ss << "HTTP/1.1 " << code << " " << this->status[code] << "\r\n";
 	ss << "Content-Type: " << content_type[stream->req->file_ext] <<  "\r\n";
-	ss << "Content-Length: " << content.length() << "\r\n";
-	ss << "\r\n";
+	ss << "Content-Length: " << content.length() << "\r\n\r\n";
 	ss << content;
 
 	this->data = ss.str();
@@ -104,9 +105,9 @@ int    Res::exec_CGI(void)
         close(pipe_fd[0]); // Close read end
         dup2(pipe_fd[1], STDOUT_FILENO); // Redirect stdout to the write end
 
-		// int dev_null = open("/dev/null", O_WRONLY);
-		// dup2(dev_null, STDERR_FILENO); // redirecting stderr to /dev/null
-		// close(dev_null);
+		int dev_null = open("/dev/null", O_WRONLY);
+		dup2(dev_null, STDERR_FILENO); // redirecting stderr to /dev/null
+		close(dev_null);
 
         execve(argv[0], argv, envp);
 		delete []envp;
@@ -126,7 +127,7 @@ int    Res::exec_CGI(void)
         waitpid(pid, &status, 0); // Wait for the child process to finish
 		if (content == "")
 			content = "HTTP/1.1 500 Internal Server Error\nContent-Type:text/plain\nContent-Length: 20\r\n\r\nError running script\n";
-		std::cout << "\n>>>>>>>>>>>>>>>\n" << content;
+		// std::cout << "\n>>>>>>>>>>>>>>>\n" << content;
 		return(write(stream->fd, content.c_str(), content.length()));
     }
 	return 1;

@@ -14,14 +14,14 @@ Req::~Req()
 	* Log the response on sthe stdout;
 */
 void Req::log(void) const {
-		std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
-		std::cout << file_path << std::endl
-				<< filename << std::endl
-				<< file_ext << std::endl
-				<< query_string << std::endl
-				;
+		// std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
+		// std::cout << file_path << std::endl
+		// 		<< filename << std::endl
+		// 		<< file_ext << std::endl
+		// 		<< query_string << std::endl
+		// 		;
 
-		std::cout << "********************************" << std::endl;
+		std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
 		std::cout << data;
 }
 
@@ -147,6 +147,7 @@ int Req::read(int fd)
 	if (!_data.find("/r/n/r/n"))
 		return (0);
 	this->parser();
+	this->log();
 	return (1);
 }
 
