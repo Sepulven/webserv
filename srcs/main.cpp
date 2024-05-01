@@ -6,7 +6,7 @@
 /*   By: ratavare <ratavare@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 12:28:28 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/29 14:26:26 by ratavare         ###   ########.fr       */
+/*   Updated: 2024/05/01 15:49:40 by ratavare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,12 +21,12 @@ int main(void)
 	try
 	{
 		Lexer lex;
-		lex.tokenize("config.yml");
+		lex.tokenize("test.yml");
 		Lexer::printTokens(lex.getTokens());
 		Parser parser;
 		parser.parse(lex.getTokens());
-		WebServer server;
-		server.listen();
+		// WebServer server;
+		// server.listen();
 	}
 	catch (const std::exception& e)
 	{

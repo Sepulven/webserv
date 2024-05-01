@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer_utils.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ratavare <ratavare@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 16:54:14 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/15 16:54:31 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/05/01 14:05:17 by ratavare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,14 +39,14 @@ int WebServer::epoll_add_fd(int epoll_fd, int fd, t_event event)
 int WebServer::epoll_in_fd(int epoll_fd, int fd, t_event event)
 {
 	// event.events = EPOLLIN | EPOLLERR | EPOLLHUP;
-	event.events = EPOLLIN | EPOLLET;
+	event.events = EPOLLIN ;
 	return (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event));
 }
 
 int WebServer::epoll_out_fd(int epoll_fd, int fd, t_event event)
 {
 	// event.events = EPOLLOUT | EPOLLERR | EPOLLHUP;
-	event.events = EPOLLOUT | EPOLLET;
+	event.events = EPOLLOUT ;
 	return (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event));
 }
 

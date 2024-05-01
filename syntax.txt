@@ -4,25 +4,19 @@ The grammar below is written in Backus-Naur Form (BNF) - https://en.wikipedia.or
 					| <server_block>
 					;
 
-<server_block>		: "server" <block>
-					;
-
-<block>				: <directives>
+<server_block>		: <directives>
 					;
 
 <directives>		: <block_dirs> [path] <directives> *
 					| <block_dirs> <directives>
-					| <simple_dir> <directives>
+					| <parameter_lst> <directives>
 					| <block_dirs> [path] *
 					| <block_dirs>
-					| <simple_dir>
+					| <parameter_lst>
 					;
 
-<block_dirs>		: <simple_dir> <block_dirs>
-					| <simple_dir>
-					;
-
-<simple_dir>		: [name] <parameter_lst>
+<block_dirs>		: <parameter_lst> <block_dirs>
+					| <parameter_lst>
 					;
 
 <parameter_lst>		: [parameter] <parameter_lst> **

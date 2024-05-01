@@ -1,0 +1,13 @@
+server:
+    route /ola:
+        index: ola.html
+    listen:
+        host: localhost
+        port: 2020
+    server_name: example2.com
+    root: /home
+    index: xedni.html
+    error_pages:
+        400: error/400.html
+    max_cbsize: 1m
+    max_conn: 5

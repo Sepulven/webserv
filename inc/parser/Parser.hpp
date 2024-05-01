@@ -4,10 +4,11 @@
 #include <utility>
 
 typedef struct s_route {
+	std::string path;
 	std::list<std::string> httpMethods;
 	std::list<std::string> index;
 	std::string rroot;
-	bool dirListing;
+	int dirListing;
 } t_route;
 
 typedef struct s_server {
@@ -26,10 +27,13 @@ class Parser
 {
 private:
 	std::list<token>::iterator it;
+	std::list<token>::iterator end;
+
 	std::list<t_server> serverNodes;
 	std::map<int, bool> nodeCheck;
 
 	std::string getParam(token token);
+	std::string getRoute(token token);
 	bool		checkIndent(token token);
 
 	/* Start of BNF syntax validator and 'serverNodes' 
@@ -39,7 +43,27 @@ private:
 	bool configurationCase1();
 	bool configurationCase2();
 
-	bool
+	bool serverBlock();
+	bool serverBlockCase1();
+
+	bool directives();
+	bool directivesCase1();
+	bool directivesCase2();
+	bool directivesCase3();
+	bool directivesCase4();
+	bool directivesCase5();
+	bool directivesCase6();
+
+	bool blockDirs(int flag);
+	bool blockDirsCase1(int flag);
+	bool blockDirsCase2(int flag);
+
+	template <typename T>
+	bool parameterLst(T container);
+	template <typename T>
+	bool parameterLstCase1(T container);
+	template <typename T>
+	bool parameterLstCase2(T container);
 
 public:
 	Parser();
