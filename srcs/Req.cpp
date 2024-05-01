@@ -1,6 +1,6 @@
 #include <Req.hpp>
 
-Req::Req(ConnStream * _stream) : stream(_stream)
+Req::Req(ConnStream * _stream) : stream(_stream), out_of_bound(std::string::npos)
 {
 	this->cgi_path = "a.py";
 	this->chunk_length = -1;
@@ -30,26 +30,6 @@ void Req::log(void) const {
 
 	print_uint(data);
 	std::cout << "********************************" << std::endl;
-}
-
-static std::vector<std::string> split(const std::string& base, const std::string& delimiter)
-{
-	std::istringstream iss(base);
-	std::string token;
-	std::vector<std::string> tokens;
-	size_t startPos = 0;
-
-	size_t pos = base.find(delimiter, startPos);
-	while (pos != std::string::npos)
-	{
-		token = base.substr(startPos, pos - startPos); 
-		tokens.push_back(token);
-
-		startPos = pos + delimiter.length();
-		pos = base.find(delimiter, startPos);
-	}
-	tokens.push_back(base.substr(startPos));
-	return tokens;
 }
 
 
@@ -114,16 +94,18 @@ void	Req::set_URL_data(std::string& URL)
 		file_ext = "";
 }
 
+/*
+ * 
+*/
 void	Req::parser(void)
 {
-	std::string _data(this->data.begin(), this->data.end());
-	size_t end_header_pos = _data.find("\r\n\r\n");
-	std::vector<std::string> request = split(_data, "\r\n\r\n");
-	std::vector<std::string> message_header = split(request[0], "\r\n");
+	size_t end_header_pos = RawData::find(data, "\r\n\r\n");
+	std::vector<std::string> request = RawData::split(data, "\r\n\r\n");
+	std::vector<std::string> message_header = RawData::split(request[0], "\r\n");
 
 	this->request_line = message_header[0];
 
-	std::vector<std::string> request_line_tokens = split(message_header[0], " ");
+	std::vector<std::string> request_line_tokens = RawData::split(message_header[0], " ");
 
 	this->method = request_line_tokens[0];
 	this->URL = request_line_tokens[1];
@@ -133,7 +115,7 @@ void	Req::parser(void)
 	this->set_header(message_header);
 
 	this->content_length = std::atoi(this->header["Content-length"].c_str());
-	if (end_header_pos != std::string::npos)
+	if (end_header_pos != out_of_bound)
 		this->raw_body.append(this->data.begin() + end_header_pos + 4, this->data.end());
 }
 
@@ -180,7 +162,7 @@ int Req::read(int fd)
 	while (bytes_read > 0)
 	{
 		RawData::append(data, buffer, bytes_read);
-		if (method == "" && RawData::find(data, "\r\n\r\n"))
+		if (method == "" && RawData::find(data, "\r\n\r\n") != out_of_bound)
 			this->parser();
 		else if (method != "" && header["Transfer-Encoding"] == "chunked")
 			this->unchunk(buffer, bytes_read);
@@ -188,7 +170,7 @@ int Req::read(int fd)
 			RawData::append(raw_body, buffer, bytes_read);
 		bytes_read = ::read(fd, buffer, 4096);
 	}
-	if (RawData::find(data, "\r\n\r\n") && raw_body.size() >= content_length)
+	if (RawData::find(data, "\r\n\r\n") != out_of_bound && raw_body.size() >= content_length)
 		return (1);
 	if (header["Transfer-Encoding"] == "chunked" && chunk_length == 0)
 		return (1);

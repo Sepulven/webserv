@@ -17,7 +17,6 @@
 /* C++ header */
 #include <iostream>
 #include <map>
-#include <sstream>
 #include <fstream>
 #include <cstdio>
 #include <vector>
@@ -66,7 +65,9 @@ class Req
 		~Req();
 
 		ConnStream *stream;
-
+		
+		const size_t out_of_bound; // * An alias of std::string::npos
+	
 		// * Raw request;
 		std::vector<uint8_t> data;
 
