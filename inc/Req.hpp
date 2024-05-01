@@ -33,6 +33,10 @@
 /* Classes */
 #include <ConnStream.hpp>
 
+
+/* Utils */
+#include <__raw_data_utils.hpp>
+
 /*Errors
 400 - bad request (request that was sent to the server has invalid syntax)
 404 - not found
@@ -64,7 +68,7 @@ class Req
 		ConnStream *stream;
 
 		// * Raw request;
-		std::basic_string<uint8_t> data;
+		std::vector<uint8_t> data;
 
 		// * Request message header
 		std::string request_line;
@@ -76,7 +80,7 @@ class Req
 
 		// * Body
 		std::size_t content_length;
-		std::basic_string<uint8_t> raw_body;
+		std::vector<uint8_t> raw_body;
 		std::basic_string<uint8_t> chunk;
 		int chunk_length;
 

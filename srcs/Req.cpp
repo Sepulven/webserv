@@ -166,31 +166,29 @@ void	Req::unchunk(const uint8_t *_buff, size_t length)
 }
 
 /*
- TODO: Refactor it for the chunked;
- TODO: Refactor based on the bad connections;
+ * Returns 0 in case the read hasn't been finished;
+ * Returns 1 when the whole request has been read;
+ * Returns -1 to close the connection
 */
 int Req::read(int fd)
 {
-	uint8_t crlf[] = {'\r', '\n', '\r', '\n'};
-	std::basic_string<uint8_t> pattern(crlf, 4);
 	uint8_t buffer[4096 + 1];
 	int bytes_read = ::read(fd, buffer, 4096);
 
-	if (bytes_read <= 0) // * Closes the connection
+	if (bytes_read <= 0)
 		return -1;
 	while (bytes_read > 0)
 	{
-		data.append(buffer, buffer + bytes_read);
-		if (method == "" && data.find(pattern) != std::string::npos)
+		RawData::append(data, buffer, bytes_read);
+		if (method == "" && RawData::find(data, "\r\n\r\n"))
 			this->parser();
 		else if (method != "" && header["Transfer-Encoding"] == "chunked")
 			this->unchunk(buffer, bytes_read);
 		else if (method != "")
-			raw_body.append(buffer, buffer + bytes_read);
+			RawData::append(raw_body, buffer, bytes_read);
 		bytes_read = ::read(fd, buffer, 4096);
 	}
-	if (data.find(pattern) != std::string::npos 
-		&& raw_body.length() >= content_length)
+	if (RawData::find(data, "\r\n\r\n") && raw_body.size() >= content_length)
 		return (1);
 	if (header["Transfer-Encoding"] == "chunked" && chunk_length == 0)
 		return (1);
