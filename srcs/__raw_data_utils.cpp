@@ -48,8 +48,11 @@ void RawData::append(std::vector<uint8_t>& _vec, uint8_t* _suffix, size_t _lengt
 	_vec.insert(_vec.size(), _suffix, _suffix + _length);
 }
 
-// * Nuts ~=~
-static std::vector<std::string> split(const std::string& base, const std::string& delimiter)
+/*
+ * Returns a vector of strings
+ TODO: Error scenario?
+*/
+std::vector<std::string> split(const std::string& base, const std::string& delimiter)
 {
 	std::istringstream iss(base);
 	std::string token;
@@ -68,3 +71,8 @@ static std::vector<std::string> split(const std::string& base, const std::string
 	tokens.push_back(base.substr(startPos));
 	return tokens;
 }
+
+//TODO: Split with base vector delimitador vector retruns std::vector<vector>
+//TODO: Split with base vector delimitador string retruns std::vector<string>
+
+//TODO: substring
