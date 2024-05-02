@@ -15,6 +15,7 @@ void Lexer::printTokens(std::list<token> tokens) {
 	for (std::list<token>::iterator it = tokens.begin(); it != tokens.end(); it++)
 		std::cout << it->content << " | type: " << it->type 
 		<< " | ident level: " << it->identLevel << std::endl;
+	std::cout << std::endl;
 }
 
 std::list<token> Lexer::getTokens(void) {return this->tokens;}

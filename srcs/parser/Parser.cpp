@@ -8,6 +8,8 @@ void Parser::printServerNodes(std::list<t_server>::iterator it) {
 	if (it == serverNodes.end())
 		return ;
 	static int i;
+	if (i == 0)
+		std::cout << std::endl << "============Parser============" << std::endl;
 	std::cout << "Server: " << i++ << std::endl;
 	std::cout << "    Host: " << it->host << std::endl;
 	std::cout << "    Port: " << it->port << std::endl;
@@ -52,6 +54,8 @@ std::string Parser::getParam(token token) {
 }
 
 std::string Parser::getRoute(token token) {
+	if (token.content.find_first_of('/') == std::string::npos)
+		return std::string();
 	size_t i = token.content.find_first_of('/') + 1;
 	size_t j = token.content.find_first_of(':') - 1;
 	while (std::isspace(token.content[j]))
@@ -70,18 +74,6 @@ void Parser::parse(std::list<token> tokens) {
 
 	configuration();
 	printServerNodes(serverNodes.begin());
-	// if (!serverNodes.empty()) {
-	// std::cout << serverNodes.back().index.size() << std::endl;
-	// std::cout << serverNodes.back().index.back() << std::endl;
-	// }
-	// std::cout << serverNodes.back().route.back().httpMethods.back() << std::endl;
-	// std::cout << serverNodes.back().route.back().rroot << std::endl;
-	// std::cout << serverNodes.back().route.back().index.back() << std::endl;
-	// std::cout << serverNodes.back().route.back().dirListing << std::endl;
-
-	// // For debugging purposes.
-	// for (std::list<t_server>::iterator it = serverNodes.begin(); it != serverNodes.end(); it++)
-	// 	std::cout << "SERVER NODE DETECTED!" << std::endl;
 }
 
 // TODO: HANDLE ALREADY FILLED PARAMETERS.
@@ -103,35 +95,36 @@ bool Parser::configuration() {
 // <server_block> <configuration>
 
 bool Parser::configurationCase1() {
+	if (it == end)
+		return false;
+	std::cout << "Entered configurationCase1 with: " << it->content << std::endl;
 	if (it->type != SERVERBLOCK || it->identLevel != 0)
 		return false;
 	it++;
 	t_server newServerNode;
 	serverNodes.push_back(newServerNode);
-	if (!serverBlock()) {
-		serverNodes.pop_back();
-		std::cout << "=========ServerNode cleared==========" << std::endl;
-		return false;
-	}
-	configuration(); // Not checking return outputs may cause issues.
+	if (!serverBlock())
+		return serverNodes.pop_back(), false;
+	if (!configuration())
+		return serverNodes.pop_back(), false;
 	return true;
 }
 
 // <server_block>
 
 bool Parser::configurationCase2() {
+	if (it == end)
+		return false;
+	std::cout << "Entered configurationCase2 with: " << it->content << std::endl;
 	if (it->type != SERVERBLOCK || it->identLevel != 0)
 		return false;
 	it++;
 	t_server newServerNode;
 	serverNodes.push_back(newServerNode);
-	if (!serverBlock()) {
-		serverNodes.pop_back();
-		std::cout << "2=========ServerNode cleared==========" << std::endl;
-		return false;
-	}
+	if (!serverBlock())
+		return serverNodes.pop_back(), false;
 	if (it != end)
-		return false;
+		return serverNodes.pop_back(), false;
 	return true;
 }
 
@@ -146,8 +139,6 @@ bool Parser::serverBlock() {
 // <directives>
 
 bool Parser::serverBlockCase1() {
-	if (it == end)      // might not be right.
-		return false;
 	if (it->identLevel != 1)
 		return false;
 	if (!directives())
@@ -184,6 +175,7 @@ bool Parser::directives() {
 bool Parser::directivesCase1() {
 	if (it == end)
 		return false;
+	std::cout << "Entered directivesCase1 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->type != ROUTE)
 		return false;
 	std::string routePath = getRoute(*it);
@@ -193,12 +185,10 @@ bool Parser::directivesCase1() {
 	serverNodes.back().route.push_back(newRoute);
 	serverNodes.back().route.back().path = routePath;
 	it++;
-	if (!blockDirs(ROUTE)) { // Might need specific function to acess t_route structure.
-		std::cout << "CLEANED ROUTE" << std::endl;
-		serverNodes.back().route.pop_back();
-		return false;
-	}
-	directives();
+	if (!blockDirs(ROUTE))
+		return serverNodes.back().route.pop_back(), false;
+	if (!directives())
+		return serverNodes.back().route.pop_back(), false;
 	return true;
 }
 
@@ -207,13 +197,15 @@ bool Parser::directivesCase1() {
 bool Parser::directivesCase2() {
 	if (it == end)
 		return false;
+	std::cout << "Entered directivesCase2 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->type != LISTEN && it->type != ERROR_PAGE_BLOCK)
 		return false;
 	int flag = it->type == LISTEN ? LISTEN : ERROR_PAGE_BLOCK;
 	it++;
 	if (!blockDirs(flag))
 		return false;
-	directives();
+	if (!directives())
+		return false;
 	return true;
 }
 
@@ -222,13 +214,14 @@ bool Parser::directivesCase2() {
 bool Parser::directivesCase3() {
 	if (it == end)
 		return false;
-	std::cout << "entered directivesCase3 with: " << it->content << " | type: " << it->type << std::endl;
+	std::cout << "Entered directivesCase3 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->type != NAME && it->type != ROOT && it->type != INDEX && 
 	it->type != MAX_CBSIZE && it->type != MAX_CONN)
 		return false;
 	if (!parameterLst(serverNodes))
 		return false;
-	directives();
+	if (!directives())
+		return false;
 	return true;
 }
 
@@ -237,6 +230,7 @@ bool Parser::directivesCase3() {
 bool Parser::directivesCase4() {
 	if (it == end)
 		return false;
+	std::cout << "Entered directivesCase4 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->type != ROUTE)
 		return false;
 	std::string routePath = getRoute(*it);
@@ -258,6 +252,7 @@ bool Parser::directivesCase4() {
 bool Parser::directivesCase5() {
 	if (it == end)
 		return false;
+	std::cout << "Entered directivesCase5 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->type != LISTEN && it->type != ERROR_PAGE_BLOCK)
 		return false;
 	int flag = it->type == LISTEN ? LISTEN : ERROR_PAGE_BLOCK;
@@ -272,7 +267,7 @@ bool Parser::directivesCase5() {
 bool Parser::directivesCase6() {
 	if (it == end)
 		return false;
-	std::cout << "entered directivesCase6 with: " << it->content << " | type: " << it->type << std::endl;
+	std::cout << "Entered directivesCase6 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->type != NAME && it->type != ROOT && it->type != INDEX && 
 	it->type != MAX_CBSIZE && it->type != MAX_CONN) {
 		return false;
@@ -285,6 +280,7 @@ bool Parser::directivesCase6() {
 // Main <block_dirs> function.
 
 bool Parser::blockDirs(int flag) {
+	std::cout << "Entered blockDirs with: " << it->content << std::endl;
 	std::list<token>::iterator tmp = it;
 	if (blockDirsCase1(flag))
 		return true;
@@ -297,9 +293,10 @@ bool Parser::blockDirs(int flag) {
 // <parameter_lst> <block_dirs>
 
 bool Parser::blockDirsCase1(int flag) {
-	if (it == end)
+	std::list<token>::iterator check = it;
+	if (it == end || ++check == end)
 		return false;
-	std::cout << "entered blockDirsCase1 with: " << it->content << std::endl;
+	std::cout << "Entered blockDirsCase1 with: " << it->content << std::endl;
 	if (it->identLevel != 2)
 		return false;
 	if (flag == ROUTE)
@@ -311,8 +308,8 @@ bool Parser::blockDirsCase1(int flag) {
 	if (flag == ERROR_PAGE_BLOCK)
 		if (!parameterLst(serverNodes.back().errorPages))
 			return false;
-	it++;
-	blockDirs(flag);
+	if (!blockDirs(flag))
+		return false;
 	return true;
 }
 
@@ -321,7 +318,7 @@ bool Parser::blockDirsCase1(int flag) {
 bool Parser::blockDirsCase2(int flag) {
 	if (it == end)
 		return false;
-	std::cout << "entered blockDirsCase2 with: " << it->content << std::endl;
+	std::cout << "Entered blockDirsCase2 with: " << it->content << std::endl;
 	if (it->identLevel != 2)
 		return false;
 	if (flag == ROUTE)
@@ -333,7 +330,6 @@ bool Parser::blockDirsCase2(int flag) {
 	if (flag == ERROR_PAGE_BLOCK)
 		if (!parameterLst(serverNodes.back().errorPages))
 			return false;
-	it++;
 	return true;
 }
 
@@ -346,15 +342,19 @@ bool Parser::parameterLst(T& container) {
 	return false;
 }
 
-// [parameter] <parameter_lst>
+// [parameters]
 
 template<typename T>
 bool Parser::parameterLstCase1(T& container) {
-	std::cout << "entered parameterLstCase1 with: " << it->content << std::endl;
 	if (it == end)
 		return false;
-	if (it->content.empty())
+	std::cout << "Entered parameterLstCase1 with: " << it->content << std::endl;
+	if (getParam(*it).empty())         // Need to check with ppl if there are default values.
 		return false;
+	if (it->type == HOST)
+		container.back().host = getParam(*it);
+	if (it->type == PORT)
+		container.back().port = atoi(getParam(*it).c_str());
 	if (it->type == INDEX)
 		container.back().index.push_back(getParam(*it));
 	if (it->type == ROOT)
@@ -369,10 +369,14 @@ bool Parser::parameterLstCase1(T& container) {
 	return true;
 }
 
+// [parameters] ROUTE
+
 template <>
 bool Parser::parameterLstCase1<std::list<t_route> >(std::list<t_route>& container) {
-	std::cout << "entered parameterLstCase1 ROUTE with: " << it->content << std::endl;
-	if (it->content.empty())
+	if (it == end)
+		return false;
+	std::cout << "Entered parameterLstCase1 ROUTE with: " << it->content << std::endl;
+	if (getParam(*it).empty())
 		return false;
 	if (it->type == INDEX)
 		container.back().index.push_back(getParam(*it)); // Handle multiple params.
@@ -388,12 +392,16 @@ bool Parser::parameterLstCase1<std::list<t_route> >(std::list<t_route>& containe
 	}
 	else
 		return false;
+	it++;
 	return true;
 }
 
 template <>
 bool Parser::parameterLstCase1<std::list<std::pair<int, std::string> > >(std::list<std::pair<int, std::string> >& container) {
 	(void)container;
+	if (it == end)
+		return false;
+	it++;
 	return true;
 }
 
