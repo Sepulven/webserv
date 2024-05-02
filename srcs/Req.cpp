@@ -8,10 +8,10 @@ Req::Req(ConnStream * _stream) : stream(_stream), out_of_bound(std::string::npos
 
 Req::~Req() {}
 
-static void print_uint(const std::basic_string<uint8_t> &str)
+static void print_uint(const std::vector<uint8_t> &str)
 {
-	std::basic_string<uint8_t>::const_iterator it = str.begin();
-	std::basic_string<uint8_t>::const_iterator ite = str.end();
+	RawData::const_iterator it = str.begin();
+	RawData::const_iterator ite = str.end();
 
 	for (; it != ite; it++)
 		std::cout << static_cast<unsigned char>(*it);
@@ -61,7 +61,7 @@ void	Req::set_header(std::vector<std::string>& header)
 */
 void	Req::set_URL_data(std::string& URL)
 {
-	std::vector<std::string> vec = split(URL, "?");
+	std::vector<std::string> vec = RawData::split(URL, "?");
 	struct stat fileStat;
 	size_t pos;
 
@@ -102,7 +102,7 @@ void	Req::set_URL_data(std::string& URL)
 void	Req::parser(void)
 {
 	size_t end_header_pos = RawData::find(data, "\r\n\r\n");
-	std::vector<std::string> request = RawData::split(data, "\r\n\r\n");
+	std::vector<std::string> request = RawData::splitToString(data, "\r\n\r\n");
 	std::vector<std::string> message_header = RawData::split(request[0], "\r\n");
 
 	this->request_line = message_header[0];
@@ -117,8 +117,9 @@ void	Req::parser(void)
 	this->set_header(message_header);
 
 	this->content_length = std::atoi(this->header["Content-length"].c_str());
-	if (end_header_pos != out_of_bound)
-		this->raw_body.append(this->data.begin() + end_header_pos + 4, this->data.end());
+	(void)end_header_pos;
+	// if (end_header_pos != out_of_bound)
+	// 	this->raw_body.append(this->data.begin() + end_header_pos + 4, this->data.end());
 }
 
 /*
@@ -143,7 +144,7 @@ void	Req::unchunk(const uint8_t *_buff, size_t length)
 	}
 	if (chunk_length == (int)chunk.size()) // * Sets to the raw_body
 	{
-		raw_body.append(chunk);
+		// raw_body.append(chunk);
 		chunk.clear();
 		chunk_length = -1 * (chunk_length != 0);  // * Restarts the circle
 	}

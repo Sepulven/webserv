@@ -15,8 +15,8 @@ namespace RawData
 	typedef typename std::vector<uint8_t>::iterator iterator;
 	typedef typename std::vector<uint8_t>::const_iterator const_iterator;
 
-	size_t find(const std::vector<uint8_t> &, const std::vector<uint8_t> &, size_t);
-	size_t find(const std::vector<uint8_t> &, const std::string, size_t);
+	size_t find(const std::vector<uint8_t> &, std::string, size_t = 0);
+	size_t find(const std::vector<uint8_t> &, const std::vector<uint8_t> &, size_t = 0);
 
 	void append(std::vector<uint8_t> &, std::vector<uint8_t> &);
 	void append(std::vector<uint8_t> &_vec, uint8_t *_suffix, size_t);
@@ -36,4 +36,7 @@ namespace RawData
 	//* Split from std::vector<uint8_t> to std::vector<uint8_t> using std::string
 	std::vector<std::vector<uint8_t> >
 	split(const std::vector<uint8_t> &, const std::string);
+
+	std::vector<std::string>
+	splitToString(const std::vector<uint8_t> &, const std::string);
 };

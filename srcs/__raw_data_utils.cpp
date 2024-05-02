@@ -8,7 +8,7 @@
  */
 size_t RawData::find(const std::vector<uint8_t> &_h, const std::vector<uint8_t> &_n, size_t _p = 0)
 {
-	const_iterator it = std::search(_h.begin() + _p, _h.end(), _n.begin(), _n.end());
+	RawData::const_iterator it = std::search(_h.begin() + _p, _h.end(), _n.begin(), _n.end());
 
 	if (it == _h.end())
 		return (std::string::npos);
@@ -21,10 +21,10 @@ size_t RawData::find(const std::vector<uint8_t> &_h, const std::vector<uint8_t> 
  * Returns the position of when it first found _n in _h from the
  * position _p
  */
-size_t RawData::find(const std::vector<uint8_t> &_h, const std::string _n, size_t _p = 0)
+size_t RawData::find(const std::vector<uint8_t> &_h, std::string _n, size_t _p = 0)
 {
 	std::vector<uint8_t> __n(_n.begin(), _n.begin() + _n.length());
-	const_iterator it = std::search(_h.begin() + _p, _h.end(), __n.begin(), __n.end()); // * I don't to compore the \0
+	RawData::const_iterator it = std::search(_h.begin() + _p, _h.end(), __n.begin(), __n.end()); // * I don't to compore the \0
 
 	if (it == _h.end())
 		return (std::string::npos);
@@ -133,5 +133,31 @@ RawData::split(const std::vector<uint8_t> &base, const std::string delimiter)
 		pos = find(base, delimiter, startPos);
 	}
 	tokens.push_back(substr(base, startPos, base.size()));
+	return (tokens);
+}
+
+/*
+*/
+std::vector<std::string>
+RawData::splitToString(const std::vector<uint8_t> &base, const std::string delimiter)
+{
+	std::string token;
+	std::vector<uint8_t> __token;
+	std::vector<std::string > tokens;
+	size_t startPos = 0;
+	size_t pos = find(base, delimiter, startPos);
+
+	while (pos != std::string::npos)
+	{
+		__token = substr(base, startPos, pos - startPos);
+		token = std::string(__token.begin(), __token.end());
+		tokens.push_back(token);
+
+		startPos = pos + delimiter.size();
+		pos = find(base, delimiter, startPos);
+	}
+	__token = substr(base, startPos, pos - startPos);
+	token = std::string(__token.begin(), __token.end());
+	tokens.push_back(token);
 	return (tokens);
 }
