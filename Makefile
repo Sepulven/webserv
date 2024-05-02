@@ -2,12 +2,13 @@ NAME		=	webserv
 CXX			=	c++
 CXXFLAGS 	=	-Wall -Werror -Wextra -std=c++98 -g # -fsanitize=address
 
-SRCS		=	main.cpp ServerContext.cpp Req.cpp Res.cpp WebServer_utils.cpp \
+SRCS		=	main.cpp ServerContext.cpp Req.cpp Res.cpp \
 				WebServer.cpp ConnStream.cpp
 
-UTILS		= __raw_data_utils.cpp __file_manager_utils.cpp
+UTILS		= __raw_data_utils.cpp __file_manager_utils.cpp __webserv_utils.cpp
 
-SRC			=	$(addprefix srcs/,$(SRCS)) $(addprefix srcs/utils/,$(UTILS)) 
+SRC			=	$(addprefix srcs/,$(SRCS)) \
+				$(addprefix srcs/utils/,$(UTILS)) 
 
 INCLUDES	=	-I ./inc
 
