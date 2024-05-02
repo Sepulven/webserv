@@ -5,3 +5,7 @@ You will be able to test it with a real browser. HTTP is one of the most used pr
 ## Note (bind failed):
 	`lsof -i :8080
 	 kill [PID]`
+
+
+## Note (leaks and errors):
+	`valgrind --leak-check=yes --show-leak-kinds=all --undef-value-errors=yes ./webserv`

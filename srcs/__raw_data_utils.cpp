@@ -101,15 +101,18 @@ RawData::split(const std::vector<uint8_t> &base, const std::vector<uint8_t> &del
 	size_t startPos = 0;
 	size_t pos = find(base, delimiter, startPos);
 
-	while (pos != std::string::npos)
+	while (pos != std::string::npos && startPos < base.size())
 	{
 		token = substr(base, startPos, pos - startPos);
 		tokens.push_back(token);
 
 		startPos = pos + delimiter.size();
-		pos = find(base, delimiter, startPos);
 	}
-	tokens.push_back(substr(base, startPos, base.size()));
+	if (startPos < base.size())
+	{
+  		std::vector<uint8_t> lastToken = substr(base, startPos, base.size() - startPos);
+		tokens.push_back(lastToken);
+	}
 	return (tokens);
 }
 

@@ -110,12 +110,14 @@ void	Req::parser(void)
 	this->set_header(message_header);
 
 
-	this->content_length = std::atoi(this->header["Content-length"].c_str());
+	if (header["Content-Length"] != "")
+		this->content_length = std::atoi(&this->header["Content-Length"].c_str()[1]);
 	if (end_header_pos != out_of_bound)
 	{
 		std::vector<uint8_t> sub_vec = RawData::substr(data, end_header_pos + 4, data.size() - end_header_pos - 4);
 		RawData::append(raw_body, sub_vec);
-	}}
+	}
+}
 
 /*
  * Returns nothing.
@@ -168,8 +170,19 @@ int Req::read(int fd)
 			RawData::append(raw_body, buffer, bytes_read);
 		bytes_read = ::read(fd, buffer, 4096);
 	}
+	// if (header["Content-Length"] != "")
+	// {
+	// 	std::cout << "Content length: " << header["Content-Length"] 
+	// 			  << " this->content_length " << content_length
+	// 	<< std::endl;
+	// 	std::cout << "Out raw_body size: " << raw_body.size() << std::endl;
+	// }
+	std:: cout << "a" << std::endl;
 	if (RawData::find(data, "\r\n\r\n") != out_of_bound && raw_body.size() >= content_length)
+	{
+		std::cout << "rawbody.size() >= content_length" << std::endl;
 		return (1);
+	}
 	if (header["Transfer-Encoding"] == "chunked" && chunk_length == 0)
 		return (1);
 	return (0);
