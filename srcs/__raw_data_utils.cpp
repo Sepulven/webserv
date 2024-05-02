@@ -6,7 +6,7 @@
  * Returns the position of when it first found _n in _h from the
  * position _p
  */
-size_t RawData::find(const std::vector<uint8_t> &_h, const std::vector<uint8_t> &_n, size_t _p = 0)
+size_t RawData::find(const std::vector<uint8_t> &_h, const std::vector<uint8_t> &_n, size_t _p /*= 0*/)
 {
 	RawData::const_iterator it = std::search(_h.begin() + _p, _h.end(), _n.begin(), _n.end());
 
@@ -21,7 +21,7 @@ size_t RawData::find(const std::vector<uint8_t> &_h, const std::vector<uint8_t> 
  * Returns the position of when it first found _n in _h from the
  * position _p
  */
-size_t RawData::find(const std::vector<uint8_t> &_h, std::string _n, size_t _p = 0)
+size_t RawData::find(const std::vector<uint8_t> &_h, std::string _n, size_t _p /*= 0*/)
 {
 	std::vector<uint8_t> __n(_n.begin(), _n.begin() + _n.length());
 	RawData::const_iterator it = std::search(_h.begin() + _p, _h.end(), __n.begin(), __n.end()); // * I don't to compore the \0

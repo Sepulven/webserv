@@ -1,7 +1,6 @@
 #pragma once
 
 /* C++ headers */
-
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -13,6 +12,9 @@
 #include <stdint.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+
+/* Utils */
+#include <__raw_data_utils.hpp>
 
 /*
 	* The only responsability of this class is to deal with the file system;
@@ -33,7 +35,7 @@ class FileManager
 		static std::string directory_listing(const std::string);
 
 		// * Post method
-		static std::string create_files(const std::basic_string<uint8_t> &, const std::string&, const std::string);
+		static std::string create_files(const std::vector<uint8_t> &, const std::string&, const std::string);
 };
 
 std::string get_random_filename(void) ;
