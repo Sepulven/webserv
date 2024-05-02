@@ -1,6 +1,22 @@
 server:
-    route /ola:
-        index: ola.html
+    listen:                     # mandatory
+        host: localhost   
+        port: 8080
+    server_name: example.com
+    root: /www
+    index: index.html index2.html
+    error_pages:
+        404: error/404.html
+        403: error/403.html
+        400: error/400.html
+    max_cbsize: 2m              # to do: conversion and mapping
+    max_conn: 31
+    route /about:               # to do: HTTP redirect.
+        http_methods: GET POST
+        root: /www/about
+        index: about.html       # default file to open if the request is the dir
+        dir_listing: on  
+server:
     listen:
         host: localhost
         port: 2020

@@ -1,6 +1,6 @@
 NAME		=	webserv
 CXX			=	c++
-CXXFLAGS 		=	-Wall -Werror -Wextra -std=c++98 #-g -fsanitize=address
+CXXFLAGS 		=	-Wall -Werror -Wextra -std=c++98 -g #-fsanitize=address
 SRC			=	srcs/main.cpp srcs/Server.cpp srcs/Req.cpp srcs/WebServer_utils.cpp \
 				srcs/WebServer.cpp srcs/parser/Lexer.cpp srcs/parser/Parser.cpp
 

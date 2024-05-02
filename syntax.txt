@@ -19,8 +19,7 @@ The grammar below is written in Backus-Naur Form (BNF) - https://en.wikipedia.or
 					| <parameter_lst>
 					;
 
-<parameter_lst>		: [parameter] <parameter_lst> **
-					| [parameter]
+<parameter_lst>		: [parameters]
 					;
 
 * for 'ROUTE' type only.

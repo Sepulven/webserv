@@ -8,7 +8,7 @@ typedef struct s_route {
 	std::list<std::string> httpMethods;
 	std::list<std::string> index;
 	std::string rroot;
-	int dirListing;
+	bool dirListing;
 } t_route;
 
 typedef struct s_server {
@@ -32,6 +32,7 @@ private:
 	std::list<t_server> serverNodes;
 	std::map<int, bool> nodeCheck;
 
+	void		printServerNodes(std::list<t_server>::iterator it);
 	std::string getParam(token token);
 	std::string getRoute(token token);
 	bool		checkIndent(token token);
@@ -59,11 +60,9 @@ private:
 	bool blockDirsCase2(int flag);
 
 	template <typename T>
-	bool parameterLst(T container);
+	bool parameterLst(T& container);
 	template <typename T>
-	bool parameterLstCase1(T container);
-	template <typename T>
-	bool parameterLstCase2(T container);
+	bool parameterLstCase1(T& container);
 
 public:
 	Parser();
