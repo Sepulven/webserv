@@ -8,15 +8,6 @@ Req::Req(ConnStream * _stream) : stream(_stream), out_of_bound(std::string::npos
 
 Req::~Req() {}
 
-static void print_uint(const std::vector<uint8_t> &str)
-{
-	RawData::const_iterator it = str.begin();
-	RawData::const_iterator ite = str.end();
-
-	for (; it != ite; it++)
-		std::cout << static_cast<unsigned char>(*it);
-}
-
 /*
 	* Log the response on sthe stdout;
 */
@@ -28,7 +19,7 @@ void Req::log(void) const {
 			<< query_string << std::endl
 			;
 
-	print_uint(data);
+	RawData::print_uint(data);
 	std::cout << "********************************" << std::endl;
 }
 
@@ -102,10 +93,12 @@ void	Req::set_URL_data(std::string& URL)
 void	Req::parser(void)
 {
 	size_t end_header_pos = RawData::find(data, "\r\n\r\n");
-	std::vector<std::string> request = RawData::splitToString(data, "\r\n\r\n");
-	std::vector<std::string> message_header = RawData::split(request[0], "\r\n");
+	std::vector<uint8_t> __header  = RawData::substr(data, 0, end_header_pos);
+	std::string request(__header.begin(), __header.end());
+	std::vector<std::string> message_header = RawData::split(request, "\r\n");
 
 	this->request_line = message_header[0];
+
 
 	std::vector<std::string> request_line_tokens = RawData::split(message_header[0], " ");
 
@@ -116,11 +109,13 @@ void	Req::parser(void)
 	this->set_URL_data(this->URL);
 	this->set_header(message_header);
 
+
 	this->content_length = std::atoi(this->header["Content-length"].c_str());
-	(void)end_header_pos;
-	// if (end_header_pos != out_of_bound)
-	// 	this->raw_body.append(this->data.begin() + end_header_pos + 4, this->data.end());
-}
+	if (end_header_pos != out_of_bound)
+	{
+		std::vector<uint8_t> sub_vec = RawData::substr(data, end_header_pos + 4, data.size() - end_header_pos - 4);
+		RawData::append(raw_body, sub_vec);
+	}}
 
 /*
  * Returns nothing.

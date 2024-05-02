@@ -52,6 +52,19 @@ void RawData::append(std::vector<uint8_t> &_vec, uint8_t *_suffix, size_t _lengt
 }
 
 /*
+ * Returns a new std::vector<uint8_t> from _base starting in the _pos with _length
+*/
+std::vector<uint8_t> 
+RawData::substr(const std::vector<uint8_t> &_base, size_t _pos, size_t _length)
+{
+	size_t actualLength = std::min(_length, _base.size() - _pos);
+
+	if (_pos >= _base.size())
+	    return std::vector<uint8_t>();
+	return std::vector<uint8_t>(_base.begin() + _pos, _base.begin() + actualLength);
+}
+
+/*
  * Returns a vector of strings
  * Splits the given base string with the delimiter string;
  TODO: Error scenario?
@@ -75,18 +88,6 @@ std::vector<std::string> RawData::split(const std::string &base, const std::stri
 	return tokens;
 }
 
-/*
- * Returns a new std::vector<uint8_t> from _base starting in the _pos with _length
-*/
-std::vector<uint8_t> 
-RawData::substr(const std::vector<uint8_t> &_base, size_t _pos, size_t _length)
-{
-	size_t actualLength = std::min(_length, _base.size() - _pos);
-
-	if (_pos >= _base.size())
-	    return std::vector<uint8_t>();
-	return std::vector<uint8_t>(_base.begin() + _pos, _base.begin() + actualLength);
-}
 
 /*
  * Returns std::vector<std::vector<uint8_t>>
@@ -137,7 +138,10 @@ RawData::split(const std::vector<uint8_t> &base, const std::string delimiter)
 }
 
 /*
-*/
+ * Returns std::vector<std::string>
+ * Split with base std::vector<uint8_t> delimitador std::string
+ TODO: Check whether it is needed or not.
+ */
 std::vector<std::string>
 RawData::splitToString(const std::vector<uint8_t> &base, const std::string delimiter)
 {
@@ -160,4 +164,14 @@ RawData::splitToString(const std::vector<uint8_t> &base, const std::string delim
 	token = std::string(__token.begin(), __token.end());
 	tokens.push_back(token);
 	return (tokens);
+}
+
+
+void RawData::print_uint(const std::vector<uint8_t> &str)
+{
+	RawData::const_iterator it = str.begin();
+	RawData::const_iterator ite = str.end();
+
+	for (; it != ite; it++)
+		std::cout << static_cast<unsigned char>(*it);
 }

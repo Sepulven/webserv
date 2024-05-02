@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <iterator>
 #include <sstream>
-
+#include <iostream>
 /* C header */
 #include <stdint.h>
 
@@ -14,6 +14,8 @@ namespace RawData
 {
 	typedef typename std::vector<uint8_t>::iterator iterator;
 	typedef typename std::vector<uint8_t>::const_iterator const_iterator;
+
+	void print_uint(const std::vector<uint8_t> &str);
 
 	size_t find(const std::vector<uint8_t> &, std::string, size_t = 0);
 	size_t find(const std::vector<uint8_t> &, const std::vector<uint8_t> &, size_t = 0);
