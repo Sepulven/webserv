@@ -32,7 +32,9 @@ void Req::log(void) const {
 	std::cout << "********************************" << std::endl;
 }
 
-
+/*
+ TODO: Protecy in case of invalid syntax Throw error;
+*/
 void	Req::set_header(std::vector<std::string>& header)
 {
 	std::string	line;
@@ -95,7 +97,7 @@ void	Req::set_URL_data(std::string& URL)
 }
 
 /*
- * 
+ * Returns void
 */
 void	Req::parser(void)
 {
