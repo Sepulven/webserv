@@ -59,9 +59,9 @@ RawData::substr(const std::vector<uint8_t> &_base, size_t _pos, size_t _length)
 {
 	size_t actualLength = std::min(_length, _base.size() - _pos);
 
-	if (_pos >= _base.size())
-	    return std::vector<uint8_t>();
-	return std::vector<uint8_t>(_base.begin() + _pos, _base.begin() + actualLength);
+	if (_pos > _base.size() - 1)
+		return std::vector<uint8_t>();
+	return std::vector<uint8_t>(_base.begin() + _pos, _base.begin() + _pos + actualLength);
 }
 
 /*
