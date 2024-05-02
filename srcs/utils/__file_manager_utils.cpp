@@ -1,10 +1,5 @@
-#include <FileManager.hpp>
-
-FileManager::FileManager() {}
-
-//* Utils
-FileManager::~FileManager() {}
-
+#include <__file_manager_utils.hpp>
+	
 /*
 	* Reads file given a path;
 	* If path starts with '/', jumps it;
@@ -102,7 +97,7 @@ std::string FileManager::create_files(const std::vector<uint8_t>& body, const st
 	return ("201");
 }
 
-std::string get_random_filename(void) 
+std::string FileManager::get_random_filename(void) 
 {
 	struct timeval		t;
 	std::stringstream filename;

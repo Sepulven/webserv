@@ -11,8 +11,10 @@
 /* Classes */
 #include <Req.hpp>
 #include <Res.hpp>
-#include <FileManager.hpp>
 #include <ServerContext.hpp>
+
+/*Utils*/
+#include <__file_manager_utils.hpp>
 
 class Req;
 class Res;
@@ -30,8 +32,6 @@ class ConnStream
 
 		Req *req;
 		Res *res;
-
-		FileManager file;
 
 		ServerContext *server;
 

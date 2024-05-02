@@ -24,19 +24,13 @@
 	* Creating files;
 */
 
-class FileManager
+namespace FileManager
 {
-	private:
-	public:
-		FileManager();
-		~FileManager();
+	// * Get method
+	std::string read_file(const std::string);
+	std::string directory_listing(const std::string);
 
-		// * Get method
-		static std::string read_file(const std::string);
-		static std::string directory_listing(const std::string);
-
-		// * Post method
-		static std::string create_files(const std::vector<uint8_t> &, const std::string&, const std::string);
+	// * Post method
+	std::string create_files(const std::vector<uint8_t> &, const std::string&, const std::string);
+	std::string get_random_filename(void) ;
 };
-
-std::string get_random_filename(void) ;
