@@ -112,9 +112,9 @@ int    Res::exec_CGI(void)
         close(pipe_fd[0]); // Close read end
         dup2(pipe_fd[1], STDOUT_FILENO); // Redirect stdout to the write end
 
-		// int dev_null = open("/dev/null", O_WRONLY);
-		// dup2(dev_null, STDERR_FILENO); // redirecting stderr to /dev/null
-		// close(dev_null);
+		int dev_null = open("/dev/null", O_WRONLY);
+		dup2(dev_null, STDERR_FILENO); // redirecting stderr to /dev/null
+		close(dev_null);
 
         execve(argv[0], argv, envp);
 		delete []envp;
@@ -142,6 +142,7 @@ int    Res::exec_CGI(void)
 
 void	Res::exec_delete(void)
 {
+	// check permissions (deleting objects in allowed directory)
 	std::string path = stream->req->file_path;
 
 	if (path[0] == '/')
