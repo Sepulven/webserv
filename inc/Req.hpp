@@ -32,21 +32,8 @@
 /* Classes */
 #include <ConnStream.hpp>
 
-
 /* Utils */
 #include <__raw_data_utils.hpp>
-
-/*Errors
-400 - bad request (request that was sent to the server has invalid syntax)
-404 - not found
-
-401 - unauthorized (user tries to access a resource that is protected by HTTP authentication)
-403 - forbidden (lack of permission to access the requested resource,
-trying to access a directory that does not have a default index file, and directory listings
-are not enabled)
-502 - bad gateway (socket doesnt exist)
-504 - gateway timeout
-*/
 
 enum PATH_TYPE
 {
@@ -67,7 +54,7 @@ class Req
 		ConnStream *stream;
 		
 		const size_t out_of_bound; // * An alias of std::string::npos
-	
+
 		// * Raw request;
 		std::vector<uint8_t> data;
 
@@ -82,7 +69,7 @@ class Req
 		// * Body
 		std::size_t content_length;
 		std::vector<uint8_t> raw_body;
-		std::basic_string<uint8_t> chunk;
+		std::vector<uint8_t> chunk;
 		int chunk_length;
 
 		// * Parse URL data
@@ -101,5 +88,6 @@ class Req
 		void set_header(std::vector<std::string> &);
 		void parser(void);
 		void unchunk(const uint8_t*, size_t);
+		void get_last_chunk(const std::vector<uint8_t>&);
 		void log(void) const;
 };

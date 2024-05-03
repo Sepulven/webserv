@@ -17,7 +17,7 @@ Res::~Res() { }
 
 
 /*
-	* Log the response on sthe stdout;
+	* Log the response on stdout;
 */
 void Res::log(void) const {
 	std::cout << "<Log Response><>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
@@ -104,7 +104,6 @@ int    Res::exec_CGI(void)
     }
     else { // Parent process
         close(pipe_fd[1]); // Close write end
-
         // Read output from the pipe
         char buffer[4096];
         ssize_t bytes_read;
@@ -187,9 +186,20 @@ void	Res::exec_post(void)
 			this->content = "What should be the content when we upload a file?";
 		else
 			this->content = "Error while dealing with your post request!";
+	} 
+	else if (req->header["Transfer-Encoding"] == " chunked")
+	{
+		std::cout << "This is the raw_body to create the file " << std::endl;
+		RawData::print_uint(req->raw_body);
+		this->code = FileManager::create_file(req->raw_body, "server_uploaded_files");
+		if (this->code == "201")
+			this->content = "What should be the content when we upload a file?";
+		else
+			this->content = "Error while dealing with your post request!";
 	}
 	else
 	{
+		RawData::print_uint(req->raw_body);
 		this->code = "405";
 		this->content = "We can't execute this type of request";
 	}

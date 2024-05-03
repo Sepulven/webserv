@@ -99,7 +99,6 @@ void	Req::parser(void)
 
 	this->request_line = message_header[0];
 
-
 	std::vector<std::string> request_line_tokens = RawData::split(message_header[0], " ");
 
 	this->method = request_line_tokens[0];
@@ -109,13 +108,47 @@ void	Req::parser(void)
 	this->set_URL_data(this->URL);
 	this->set_header(message_header);
 
+	RawData::print_uint(data);
 
 	if (header["Content-Length"] != "")
 		this->content_length = std::atoi(&this->header["Content-Length"].c_str()[1]);
-	if (end_header_pos != out_of_bound)
-	{
-		std::vector<uint8_t> sub_vec = RawData::substr(data, end_header_pos + 4, data.size() - end_header_pos - 4);
+	std::vector<uint8_t> sub_vec = RawData::substr(data, end_header_pos + 4, data.size() - end_header_pos - 4);
+	if (header["Transfer-Encoding"] == " chunked") //* there is space here, we need to get rid of it
+		this->unchunk(sub_vec.data(), sub_vec.size());
+	else if (end_header_pos != out_of_bound)
 		RawData::append(raw_body, sub_vec);
+}
+
+/*
+ * Returns nothing;
+ * Sets all of the previous chunk to the raw body
+*/
+void Req::get_last_chunk(const std::vector<uint8_t>& buff)
+{
+	std::size_t crlf_pos = RawData::find(buff, "\r\n");
+	std::string length(buff.begin(), buff.begin() + 2);
+	std::vector<uint8_t> chunk_content;
+	std::stringstream ss;
+
+
+	ss << std::hex << length.c_str();
+	ss >> chunk_length;
+
+	// RawData::print_uint(buff);
+
+
+	int i = 0;
+	while (crlf_pos != out_of_bound && chunk_length > 0)
+	{
+		std::cout << "["<< i << "] " << chunk_length << " -> " << length << std::endl;
+		chunk_content = RawData::substr(buff, crlf_pos + 2, chunk_length);
+
+		RawData::append(chunk, chunk_content);
+
+		crlf_pos = RawData::find(buff, "\r\n", crlf_pos + 2);
+		length == std::string(buff.begin(), buff.begin() + crlf_pos);
+		ss << std::hex << length.c_str();
+		ss >> chunk_length;
 	}
 }
 
@@ -125,23 +158,18 @@ void	Req::parser(void)
  * Set the chunk until it reaches it's chunk_length;
  * Write to the raw_body;
 */
-void	Req::unchunk(const uint8_t *_buff, size_t length)
+void	Req::unchunk(const uint8_t *_buff, size_t _length)
 {
-	std::basic_string<uint8_t> buff(_buff, _buff + length);
-	uint8_t crlf[] = {'\r', '\n'};
-	std::basic_string<uint8_t> pattern(crlf, 4);
-	std::stringstream ss;
-	std::size_t crlf_pos = buff.find(pattern);
+	std::vector<uint8_t> buff(_buff, _buff + _length);
+	std::size_t crlf_pos = RawData::find(buff, "\r\n");
 
-	if (chunk_length == -1 && crlf_pos != std::string::npos)
+	if (chunk_length == -1 && crlf_pos != out_of_bound)
+		this->get_last_chunk(buff);
+	else if (chunk_length == -1 && chunk_length < (int)chunk.size())
+		RawData::append(chunk, buff);
+	else if (chunk_length == (int)chunk.size()) // * Sets to the raw_body
 	{
-		ss << std::hex << buff.substr(0, crlf_pos).c_str();
-		ss >> chunk_length;
-		chunk.append(buff.substr(crlf_pos + 2, chunk_length));
-	}
-	if (chunk_length == (int)chunk.size()) // * Sets to the raw_body
-	{
-		// raw_body.append(chunk);
+		RawData::append(raw_body, chunk);
 		chunk.clear();
 		chunk_length = -1 * (chunk_length != 0);  // * Restarts the circle
 	}
@@ -164,26 +192,15 @@ int Req::read(int fd)
 		RawData::append(data, buffer, bytes_read);
 		if (method == "" && RawData::find(data, "\r\n\r\n") != out_of_bound)
 			this->parser();
-		else if (method != "" && header["Transfer-Encoding"] == "chunked")
+		else if (method != "" && header["Transfer-Encoding"] == " chunked")
 			this->unchunk(buffer, bytes_read);
 		else if (method != "")
 			RawData::append(raw_body, buffer, bytes_read);
 		bytes_read = ::read(fd, buffer, 4096);
 	}
-	// if (header["Content-Length"] != "")
-	// {
-	// 	std::cout << "Content length: " << header["Content-Length"] 
-	// 			  << " this->content_length " << content_length
-	// 	<< std::endl;
-	// 	std::cout << "Out raw_body size: " << raw_body.size() << std::endl;
-	// }
-	std:: cout << "a" << std::endl;
 	if (RawData::find(data, "\r\n\r\n") != out_of_bound && raw_body.size() >= content_length)
-	{
-		std::cout << "rawbody.size() >= content_length" << std::endl;
 		return (1);
-	}
-	if (header["Transfer-Encoding"] == "chunked" && chunk_length == 0)
+	if (header["Transfer-Encoding"] == " chunked" && chunk_length == 0)
 		return (1);
 	return (0);
 }

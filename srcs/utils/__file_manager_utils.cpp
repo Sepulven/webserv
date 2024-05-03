@@ -97,6 +97,28 @@ std::string FileManager::create_files(const std::vector<uint8_t>& body, const st
 	return ("201");
 }
 
+/*
+ * Returns the status code of the operation;
+*/
+std::string FileManager::create_file(const std::vector<uint8_t>& body, const std::string dir)
+{
+	std::ofstream out_file;
+	std::string filename = dir + "/" + get_random_filename() + "_chunked";
+
+	out_file.open(filename.c_str(), std::ios::binary);
+
+	if (!out_file.is_open())
+		return ("500");
+
+	out_file.write((const char*)&body[0], body.size());
+
+	if (out_file.fail())
+		return ("500");
+
+	out_file.close();
+	return ("201");
+}
+
 std::string FileManager::get_random_filename(void) 
 {
 	struct timeval		t;

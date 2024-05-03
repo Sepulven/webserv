@@ -1,0 +1,17 @@
+== Info:   Trying 127.0.0.1:8080...
+== Info: Connected to 127.0.0.1 (127.0.0.1) port 8080 (#0)
+=> Send header, 133 bytes (0x85)
+0000: POST / HTTP/1.1
+0011: Host: 127.0.0.1:8080
+0027: User-Agent: curl/7.81.0
+0040: Accept: */*
+004d: Content-Type: text/plain
+0067: Transfer-Encoding: chunked
+0083: 
+=> Send data, 38 bytes (0x26)
+0000: 1b
+0004: $Mozilla&$Developer Network
+0021: 0
+0024: 
+== Info: Empty reply from server
+== Info: Closing connection 0

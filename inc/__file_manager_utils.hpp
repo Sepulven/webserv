@@ -31,6 +31,7 @@ namespace FileManager
 	std::string directory_listing(const std::string);
 
 	// * Post method
+	std::string create_file(const std::vector<uint8_t> &, const std::string);
 	std::string create_files(const std::vector<uint8_t> &, const std::string&, const std::string);
 	std::string get_random_filename(void) ;
 };
