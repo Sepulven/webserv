@@ -67,6 +67,7 @@ int Res::send(void)
 	ss << content;
 
 	this->data = ss.str();
+	std::cout << this->data << std::endl;
 	return (write(stream->fd, this->data.c_str(), this->data.length()));
 }
 

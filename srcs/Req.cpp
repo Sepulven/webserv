@@ -135,6 +135,8 @@ void	Req::parser(void)
 	this->content_length = std::atoi(this->header["Content-length"].c_str());
 	if (end_header_pos != std::string::npos)
 		this->raw_body.append(this->data.begin() + end_header_pos + 4, this->data.end());
+
+	this->log();
 }
 
 /*
