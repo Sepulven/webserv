@@ -78,9 +78,7 @@ if ($_SERVER['method'] === 'GET') {
         }
         
         $file_to_create = fopen("uploads/" . $filename, "w"); // create file
-
-        // $start = strpos($body, "\r\n\r\n") + 4;
-        $start  = 0;
+        $start = strpos($part, "\r\n\r\n") + 4;
         $content = substr($part, $start); // get content from uploaded file
 
         fwrite($file_to_create, $content); // write content
