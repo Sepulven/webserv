@@ -17,7 +17,7 @@
 # echo
 
 # echo -e "\033[1;34mGET: file with custom header...\033[0m"
-# curl -X GET -H "Custom-Header: Value" http://localhost:8080/index.html
+# curl -X GET  http://localhost:8080/index.html -H "Custom-Header: Value"
 # echo
 # echo
 
@@ -50,46 +50,46 @@
 
 # Test POST method
 echo -e "\033[1;34mPOST: form data...\033[0m"
-curl -X POST -d "key1=value1&key2=value2" http://localhost:8080/index.html
+response=$(curl -X POST -d "key1=value1&key2=value2" http://localhost:8080/index.html)
 echo
 echo
 
-echo -e "\033[1;34mPOST: json data...\033[0m"
-curl -X POST -H "Content-Type: application/json" -d '{"key1":"value1","key2":"value2"}' http://localhost:8080/index.html
-echo
-echo
+# echo -e "\033[1;34mPOST: json data...\033[0m"
+# curl -X POST -H "Content-Type: application/json" -d '{"key1":"value1","key2":"value2"}' http://localhost:8080/index.html
+# echo
+# echo
 
-echo -e "\033[1;34mPOST: xml data...\033[0m"
-curl -X POST -H "Content-Type: application/xml" -d '<data><key1>value1</key1><key2>value2</key2></data>' http://localhost:8080/index.html
-echo
-echo
+# echo -e "\033[1;34mPOST: xml data...\033[0m"
+# curl -X POST -H "Content-Type: application/xml" -d '<data><key1>value1</key1><key2>value2</key2></data>' http://localhost:8080/index.html
+# echo
+# echo
 
-echo -e "\033[1;34mPOST: file upload...\033[0m"
-curl -X POST -F "file=uploads/a.txt" http://localhost:8080/index.html
-echo
-echo
+# echo -e "\033[1;34mPOST: file upload...\033[0m"
+# curl -X POST -F "file=uploads/a.txt" http://localhost:8080/index.html
+# echo
+# echo
 
-echo -e "\033[1;34mPOST: files upload without file content...\033[0m"
-curl -X POST -F "file1=@/home/mvicente/file2.txt" -F "file1=@/home/mvicente/file2.txt" http://localhost:8080/index.html
-echo
-echo
+# echo -e "\033[1;34mPOST: files upload without file content...\033[0m"
+# curl -X POST -F "file1=@/home/mvicente/file2.txt" -F "file1=@/home/mvicente/file2.txt" http://localhost:8080/index.html
+# echo
+# echo
 
-echo -e "\033[1;34mPOST: files upload with file content...\033[0m"
-curl -X POST http://localhost:8080/uploads \
-  -H "Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW" \
-  --data-binary @- <<EOF
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="file1"; filename="file1.txt"
-Content-Type: text/plain
-This is the content of file1.txt
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="file2"; filename="file2.txt"
-Content-Type: text/plain
-This is the content of file2.txt
-------WebKitFormBoundary7MA4YWxkTrZu0gW--
-EOF
-echo
-echo
+# echo -e "\033[1;34mPOST: files upload with file content...\033[0m"
+# curl -X POST http://localhost:8080/uploads \
+#   -H "Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW" \
+#   --data-binary @- <<EOF
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW
+# Content-Disposition: form-data; name="file1"; filename="file1.txt"
+# Content-Type: text/plain
+# This is the content of file1.txt
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW
+# Content-Disposition: form-data; name="file2"; filename="file2.txt"
+# Content-Type: text/plain
+# This is the content of file2.txt
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW--
+# EOF
+# echo
+# echo
 
 # # Test DELETE method
 # echo -e "\033[1;34mTesting DELETE method...\033[0m"
