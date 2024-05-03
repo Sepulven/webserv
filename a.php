@@ -50,11 +50,11 @@ if ($_SERVER['method'] === 'GET') {
     if (!is_dir("uploads/"))
         mkdir("uploads/", 0777, true); // Creates the directory recursively
 
-    // get files present int the 'uploads' directory
-    $entries = scandir("uploads/");
-
+    
     // loop to create each file
+    $count = 0;
     foreach ($parts as $part) {
+        $entries = scandir("uploads/"); // get files present int the 'uploads' directory
         if (empty($part))
             continue;
         $filename = '';
@@ -71,9 +71,15 @@ if ($_SERVER['method'] === 'GET') {
                 $ext = explode(".", $filename)[1];
 
                 list($microseconds, $seconds) = explode(' ', microtime());
-                $milliseconds = intval($seconds * 1000) + intval($microseconds * 1000);
-
-                $filename = $name . "_" . strval($milliseconds) . "." . $ext;
+                // $milliseconds = intval($seconds * 1000) + intval($microseconds * 1000);
+                $seconds = intval($seconds) + intval($microseconds);
+                
+                if ($count != 0)
+                    $filename = $name . "_" . strval($seconds) . "_" . $count . "." . $ext;
+                else
+                    $filename = $name . "_" . strval($seconds) . "." . $ext;
+                $count = $count + 1;
+                break;
             }
         }
         

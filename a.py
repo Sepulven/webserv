@@ -4,6 +4,7 @@ import os
 import cgi
 import re
 import time
+import uuid
 
 content_type = {
     ".txt": "text/plain",
@@ -54,7 +55,7 @@ def POST():
     f = len(files[-1])
     files[-1] = files[-1][0:f - i]
 
-
+    count = 0
     for file in files: # loop to create each file
         entries = os.listdir(upload_dir)
         filename_match = re.search(r'filename="(.*?)"', file) # get filename
@@ -65,21 +66,25 @@ def POST():
             if i == filename:
                 name = filename.split('.')[0]
                 ext = filename.split('.')[1]
-                filename = name + "_" + str(int(time.time())) + "." + ext
-                
+                # filename = name + "_" + str(int(time.time())) + "." + ext
+                if (count != 0):
+                    filename = f"{name}_{str(int(time.time()))}_{count}.{ext}"
+                else:
+                    filename = f"{name}_{str(int(time.time()))}.{ext}"
+                count += 1
+                break
+        
         file_path = os.path.join(upload_dir, filename)
         f = open(file_path, 'w')
         pos = file.find("\r\n\r\n") + 4
         content = file[pos:] # get file content
         f.write(content)
-    
     return 200
 
 def errorPage(status):
     filename = "error/" + f'{status}' + ".html"
     f = open(filename, 'r')
     response = f.read() # get file content
-
     return response
 
 def GET():
