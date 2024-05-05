@@ -3,7 +3,7 @@
 Req::Req(ConnStream * _stream) : stream(_stream), out_of_bound(std::string::npos)
 {
 	this->cgi_path = "a.py";
-	this->chunk_length = -1;
+	this->rest_chunk_length = 0;
 }
 
 Req::~Req() {}
@@ -119,43 +119,62 @@ void	Req::parser(void)
 		RawData::append(raw_body, sub_vec);
 }
 
+
+/*
+ * Returns the size in decimal
+ * Returns -1 in case of error;
+*/
+size_t get_chunk_length(const std::vector<uint8_t> &buff, size_t start, size_t end)
+{
+	std::stringstream ss;
+	std::string length(buff.begin(), buff.begin() + left_crlf - 1);
+	size_t chunk_length;
+
+	ss << std::hex << length.c_str();
+	ss >> chunk_length;
+
+	return (chunk_length);
+}
+
+/*
+	std::cout << "["<< i++ << "] chunk_length:decimal=" << chunk_length << " -> chunk_length:hex=" << length << std::endl;
+	std::cout << "crlf_pos=" << left_crlf << std::endl;
+
+
+	std::cout << "start of the body --" << std::endl;
+	RawData::print_uint(buff);
+	std::cout << "end of the body --" << std::endl;
+*/
+
 /*
  * Returns nothing;
  * Sets all of the previous chunk to the raw body
  * 
  * 5\r\nbanan\r\n
- TODO: Add conditional that checks whether the difference between right and left are bigger than the size;
+ TODO: right + 2 - left > chunk_zise -> throw error
 */
 void Req::get_last_chunk(const std::vector<uint8_t>& buff)
 {
 	std::size_t left_crlf = RawData::find(buff, "\r\n");
 	std::size_t right_crlf = RawData::find(buff, "\r\n", left_crlf + 2);
-	std::string length(buff.begin(), buff.begin() + 2);
-	std::vector<uint8_t> chunk_content;
-	std::stringstream ss;
+	size_t chunk_length = get_chunk_length(buff, left_crlf + 2, right_crlf);
 
-
-	ss << std::hex << length.c_str();
-	ss >> chunk_length;
-
-	std::cout << "start of the body --" << std::endl;
-	RawData::print_uint(buff);
-	std::cout << "end of the body --" << std::endl;
-
-	int i = 0;
-	while (right_crlf != out_of_bound && chunk_length > 0)
+	while (right_crlf != out_of_bound && left_crlf != out_of_bound && chunk_length > 0)
 	{
-		std::cout << "["<< i++ << "] chunk_length:decimal=" << chunk_length << " -> chunk_length:hex=" << length << std::endl;
-		std::cout << "crlf_pos=" << left_crlf << std::endl;
-
+		if (right_crlf + 2 - left_crlf > chunk_length)
+		{
+			std::cout << "Invalid chunk" << std::endl;
+			return ;
+		}
 		chunk_content = RawData::substr(buff, left_crlf + 2, chunk_length);
 
-		RawData::append(chunk, chunk_content);
+		RawData::append(raw_body, chunk_content);
 
-		left_crlf = RawData::find(buff, "\r\n", left_crlf + 2);
+		left_crlf = RawData::find(buff, "\r\n", right_crlf + 2);
+
+		chunk_length = get_chunk_length(buff, );
+		right_crlf = RawData::find(buff, "\r\n", left_crlf + 2);
 		length == std::string(buff.begin(), buff.begin() + left_crlf);
-		ss << std::hex << length.c_str();
-		ss >> chunk_length;
 	}
 }
 
@@ -207,7 +226,7 @@ int Req::read(int fd)
 	}
 	if (RawData::find(data, "\r\n\r\n") != out_of_bound && raw_body.size() >= content_length)
 		return (1);
-	if (header["Transfer-Encoding"] == " chunked" && chunk_length == 0)
+	if (header["Transfer-Encoding"] == " chunked" && rest_chunk_length == -1)
 		return (1);
 	return (0);
 }

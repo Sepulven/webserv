@@ -69,8 +69,7 @@ class Req
 		// * Body
 		std::size_t content_length;
 		std::vector<uint8_t> raw_body;
-		std::vector<uint8_t> chunk;
-		int chunk_length;
+		int rest_chunk_length;
 
 		// * Parse URL data
 		std::string file_path;
