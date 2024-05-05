@@ -9,3 +9,6 @@ You will be able to test it with a real browser. HTTP is one of the most used pr
 
 ## Note (leaks and errors):
 	`valgrind --leak-check=yes --show-leak-kinds=all --undef-value-errors=yes ./webserv`
+
+## Note (epoll performance compared to other polling APIs)
+	`https://suchprogramming.com/epoll-in-3-easy-steps/`

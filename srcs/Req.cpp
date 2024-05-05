@@ -122,10 +122,14 @@ void	Req::parser(void)
 /*
  * Returns nothing;
  * Sets all of the previous chunk to the raw body
+ * 
+ * 5\r\nbanan\r\n
+ TODO: Add conditional that checks whether the difference between right and left are bigger than the size;
 */
 void Req::get_last_chunk(const std::vector<uint8_t>& buff)
 {
-	std::size_t crlf_pos = RawData::find(buff, "\r\n");
+	std::size_t left_crlf = RawData::find(buff, "\r\n");
+	std::size_t right_crlf = RawData::find(buff, "\r\n", left_crlf + 2);
 	std::string length(buff.begin(), buff.begin() + 2);
 	std::vector<uint8_t> chunk_content;
 	std::stringstream ss;
@@ -134,19 +138,22 @@ void Req::get_last_chunk(const std::vector<uint8_t>& buff)
 	ss << std::hex << length.c_str();
 	ss >> chunk_length;
 
-	// RawData::print_uint(buff);
-
+	std::cout << "start of the body --" << std::endl;
+	RawData::print_uint(buff);
+	std::cout << "end of the body --" << std::endl;
 
 	int i = 0;
-	while (crlf_pos != out_of_bound && chunk_length > 0)
+	while (right_crlf != out_of_bound && chunk_length > 0)
 	{
-		std::cout << "["<< i << "] " << chunk_length << " -> " << length << std::endl;
-		chunk_content = RawData::substr(buff, crlf_pos + 2, chunk_length);
+		std::cout << "["<< i++ << "] chunk_length:decimal=" << chunk_length << " -> chunk_length:hex=" << length << std::endl;
+		std::cout << "crlf_pos=" << left_crlf << std::endl;
+
+		chunk_content = RawData::substr(buff, left_crlf + 2, chunk_length);
 
 		RawData::append(chunk, chunk_content);
 
-		crlf_pos = RawData::find(buff, "\r\n", crlf_pos + 2);
-		length == std::string(buff.begin(), buff.begin() + crlf_pos);
+		left_crlf = RawData::find(buff, "\r\n", left_crlf + 2);
+		length == std::string(buff.begin(), buff.begin() + left_crlf);
 		ss << std::hex << length.c_str();
 		ss >> chunk_length;
 	}
@@ -166,7 +173,7 @@ void	Req::unchunk(const uint8_t *_buff, size_t _length)
 	if (chunk_length == -1 && crlf_pos != out_of_bound)
 		this->get_last_chunk(buff);
 	else if (chunk_length == -1 && chunk_length < (int)chunk.size())
-		RawData::append(chunk, buff);
+		RawData::append(chunk, buff); //* Questionable needs to check it more precisely;
 	else if (chunk_length == (int)chunk.size()) // * Sets to the raw_body
 	{
 		RawData::append(raw_body, chunk);
