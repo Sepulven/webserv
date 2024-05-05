@@ -28,11 +28,14 @@ class Parser
 private:
 	std::list<token>::iterator it;
 	std::list<token>::iterator end;
+	std::list<token>::iterator last;
 
 	std::list<t_server> serverNodes;
 	std::map<int, bool> nodeCheck;
 
+	std::list<token>::iterator getLastTokenIt(std::list<token> tokens);
 	void		printServerNodes(std::list<t_server>::iterator it);
+	void 		clearLastOperation(int type);
 	std::string getParam(token token);
 	std::string getRoute(token token);
 	bool		checkIndent(token token);

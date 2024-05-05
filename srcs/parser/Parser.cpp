@@ -71,6 +71,7 @@ void Parser::parse(std::list<token> tokens) {
 	}
 	this->it = tokens.begin();
 	this->end = tokens.end();
+	this->last = getLastTokenIt(tokens);
 
 	configuration();
 	printServerNodes(serverNodes.begin());
@@ -97,7 +98,7 @@ bool Parser::configuration() {
 bool Parser::configurationCase1() {
 	if (it == end)
 		return false;
-	std::cout << "Entered configurationCase1 with: " << it->content << std::endl;
+	std::cout << "\033[31m" << "Entered configurationCase1 with: " << it->content << " | type: " << it->type << "\033[0m" << std::endl;
 	if (it->type != SERVERBLOCK || it->identLevel != 0)
 		return false;
 	it++;
@@ -115,7 +116,7 @@ bool Parser::configurationCase1() {
 bool Parser::configurationCase2() {
 	if (it == end)
 		return false;
-	std::cout << "Entered configurationCase2 with: " << it->content << std::endl;
+	std::cout << "\033[31m" << "Entered configurationCase2 with: " << it->content << " | type: " << it->type << "\033[0m" << std::endl;
 	if (it->type != SERVERBLOCK || it->identLevel != 0)
 		return false;
 	it++;
@@ -139,6 +140,7 @@ bool Parser::serverBlock() {
 // <directives>
 
 bool Parser::serverBlockCase1() {
+	std::cout << "Entered serverBlockCase1 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->identLevel != 1)
 		return false;
 	if (!directives())
@@ -202,10 +204,15 @@ bool Parser::directivesCase2() {
 		return false;
 	int flag = it->type == LISTEN ? LISTEN : ERROR_PAGE_BLOCK;
 	it++;
-	if (!blockDirs(flag))
+	if (!blockDirs(flag)) {  // !!!!!!!!!1
+		std::cout << "DEBUG1" << std::endl;
 		return false;
-	if (!directives())
-		return false;
+	} 
+	if (!directives()) {
+		std::cout << "DEBUG2" << std::endl;
+		if (it != end && it->type == LISTEN) // !!!!!!!!!!!!!!
+			return clearLastOperation(it->type), false;
+	}
 	return true;
 }
 
@@ -220,8 +227,11 @@ bool Parser::directivesCase3() {
 		return false;
 	if (!parameterLst(serverNodes))
 		return false;
-	if (!directives())
-		return false;
+	if (!directives()) {
+		std::list<token>::iterator tmp = it;
+		tmp = tmp == end ? last : --tmp;
+		return clearLastOperation(tmp->type), false;
+	}
 	return true;
 }
 
@@ -280,7 +290,6 @@ bool Parser::directivesCase6() {
 // Main <block_dirs> function.
 
 bool Parser::blockDirs(int flag) {
-	std::cout << "Entered blockDirs with: " << it->content << std::endl;
 	std::list<token>::iterator tmp = it;
 	if (blockDirsCase1(flag))
 		return true;
@@ -296,7 +305,7 @@ bool Parser::blockDirsCase1(int flag) {
 	std::list<token>::iterator check = it;
 	if (it == end || ++check == end)
 		return false;
-	std::cout << "Entered blockDirsCase1 with: " << it->content << std::endl;
+	std::cout << "Entered blockDirsCase1 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->identLevel != 2)
 		return false;
 	if (flag == ROUTE)
@@ -308,8 +317,11 @@ bool Parser::blockDirsCase1(int flag) {
 	if (flag == ERROR_PAGE_BLOCK)
 		if (!parameterLst(serverNodes.back().errorPages))
 			return false;
-	if (!blockDirs(flag))
-		return false;
+	if (!blockDirs(flag)) {
+		std::list<token>::iterator tmp = it;
+		tmp = tmp == end ? last : --tmp;
+		return clearLastOperation(tmp->type), false;
+	}
 	return true;
 }
 
@@ -318,7 +330,7 @@ bool Parser::blockDirsCase1(int flag) {
 bool Parser::blockDirsCase2(int flag) {
 	if (it == end)
 		return false;
-	std::cout << "Entered blockDirsCase2 with: " << it->content << std::endl;
+	std::cout << "Entered blockDirsCase2 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->identLevel != 2)
 		return false;
 	if (flag == ROUTE)
@@ -332,6 +344,8 @@ bool Parser::blockDirsCase2(int flag) {
 			return false;
 	return true;
 }
+
+// todo: NEEDS PARAMETER RESET FUNCTIONS.
 
 // Main <parameter_lst> function.
 
@@ -348,7 +362,7 @@ template<typename T>
 bool Parser::parameterLstCase1(T& container) {
 	if (it == end)
 		return false;
-	std::cout << "Entered parameterLstCase1 with: " << it->content << std::endl;
+	std::cout << "\033[32m" << "Entered parameterLstCase1 with: " << it->content << " | type: " << it->type << "\033[0m" << std::endl;
 	if (getParam(*it).empty())         // Need to check with ppl if there are default values.
 		return false;
 	if (it->type == HOST)
@@ -375,7 +389,7 @@ template <>
 bool Parser::parameterLstCase1<std::list<t_route> >(std::list<t_route>& container) {
 	if (it == end)
 		return false;
-	std::cout << "Entered parameterLstCase1 ROUTE with: " << it->content << std::endl;
+	std::cout << "\033[32m" <<  "Entered parameterLstCase1 ROUTE with: " << it->content << " | type: " << it->type << "\033[0m" << std::endl;
 	if (getParam(*it).empty())
 		return false;
 	if (it->type == INDEX)
@@ -401,6 +415,11 @@ bool Parser::parameterLstCase1<std::list<std::pair<int, std::string> > >(std::li
 	(void)container;
 	if (it == end)
 		return false;
+	std::cout << "\033[32m" <<  "Entered parameterLstCase1 ERROR_PAGE with: " << it->content << " | type: " << it->type << "\033[0m" << std::endl;
+	int code = atoi(it->content.c_str());
+	if (code == 0)
+		return false;
+	container.push_back(std::make_pair(code, getParam(*it)));
 	it++;
 	return true;
 }
