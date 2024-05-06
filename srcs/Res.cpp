@@ -17,7 +17,7 @@ Res::~Res() { }
 
 
 /*
-	* Log the response on sthe stdout;
+	* Log the response on stdout;
 */
 void Res::log(void) const {
 	std::cout << "\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
@@ -185,15 +185,6 @@ void	Res::exec_get(void)
 	}
 }
 
-static void print_uint(const std::basic_string<uint8_t> &str)
-{
-	std::basic_string<uint8_t>::const_iterator it = str.begin();
-	std::basic_string<uint8_t>::const_iterator ite = str.end();
-
-	for (; it != ite; it++)
-		std::cout << static_cast<unsigned char>(*it);
-}
-
 /*
  * * Only deals with content-type multipart/form-data
  * If the request body are files, saves them;
@@ -201,7 +192,8 @@ static void print_uint(const std::basic_string<uint8_t> &str)
 */
 void	Res::exec_post(void)
 {
-	const std::string & content_type = stream->req->header["Content-Type"];
+	Req *req = stream->req;
+	const std::string & content_type = req->header["Content-Type"];
 	std::string boundary;
 
 	if (content_type.find("multipart/form-data;") == 1)
@@ -209,16 +201,23 @@ void	Res::exec_post(void)
 		// * I am assuming that the boundary is well formated and it is there;
 		boundary = content_type.substr(content_type.find("=") + 1);
 
-		(void)print_uint;
-		// print_uint(stream->req->raw_body);
-
 		// * In case the boundary is inside quotes;
 		if (boundary[0] == '"' && boundary[boundary.length() - 1] == '"')
 		{
 			boundary.erase(0, 1);
 			boundary.erase(boundary.length() - 1, 1);
 		}
-		this->code = FileManager::create_files(stream->req->raw_body, boundary, "server_uploaded_files");
+		this->code = FileManager::create_files(req->raw_body, boundary, "server_uploaded_files");
+		if (this->code == "201")
+			this->content = "What should be the content when we upload a file?";
+		else
+			this->content = "Error while dealing with your post request!";
+	} 
+	else if (req->header["Transfer-Encoding"] == " chunked")
+	{
+		std::cout << "This is the raw_body to create the file " << std::endl;
+		RawData::print_uint(req->raw_body);
+		this->code = FileManager::create_file(req->raw_body, "server_uploaded_files");
 		if (this->code == "201")
 			this->content = "What should be the content when we upload a file?";
 		else
@@ -226,6 +225,7 @@ void	Res::exec_post(void)
 	}
 	else
 	{
+		RawData::print_uint(req->raw_body);
 		this->code = "405";
 		this->content = "We can't execute this type of request";
 	}

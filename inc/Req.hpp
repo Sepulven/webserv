@@ -17,7 +17,6 @@
 /* C++ header */
 #include <iostream>
 #include <map>
-#include <sstream>
 #include <fstream>
 #include <cstdio>
 #include <vector>
@@ -33,17 +32,8 @@
 /* Classes */
 #include <ConnStream.hpp>
 
-/*Errors
-400 - bad request (request that was sent to the server has invalid syntax)
-404 - not found
-
-401 - unauthorized (user tries to access a resource that is protected by HTTP authentication)
-403 - forbidden (lack of permission to access the requested resource,
-trying to access a directory that does not have a default index file, and directory listings
-are not enabled)
-502 - bad gateway (socket doesnt exist)
-504 - gateway timeout
-*/
+/* Utils */
+#include <__raw_data_utils.hpp>
 
 enum PATH_TYPE
 {
@@ -62,9 +52,11 @@ class Req
 		~Req();
 
 		ConnStream *stream;
+		
+		const size_t out_of_bound; // * An alias of std::string::npos
 
 		// * Raw request;
-		std::basic_string<uint8_t> data;
+		std::vector<uint8_t> data;
 
 		// * Request message header
 		std::string request_line;
@@ -76,9 +68,7 @@ class Req
 
 		// * Body
 		std::size_t content_length;
-		std::basic_string<uint8_t> raw_body;
-		std::basic_string<uint8_t> chunk;
-		int chunk_length;
+		std::vector<uint8_t> raw_body;
 
 		// * Parse URL data
 		std::string file_path;
@@ -91,10 +81,11 @@ class Req
 		enum PATH_TYPE path_type;
 
 		int read(int);
+		// * Parsing
 		void set_raw_body(size_t);
 		void set_URL_data(std::string &);
 		void set_header(std::vector<std::string> &);
 		void parser(void);
-		void unchunk(const uint8_t*, size_t);
+
 		void log(void) const;
 };

@@ -21,7 +21,11 @@
 #include <vector>
 #include <algorithm>
 
+/* Classes */
 #include <ConnStream.hpp>
+
+/* Utils */
+#include <__webserv_utils.hpp>
 
 typedef struct s_event_data
 {
@@ -40,8 +44,11 @@ typedef struct epoll_event t_event;
 
 static volatile sig_atomic_t is_running = 1;
 
+using namespace ServerUtils;
+
 class WebServer
 {
+
 	private:
 		int max_events;
 		int epoll_fd;
@@ -73,12 +80,4 @@ class WebServer
 		};
 
 		static void	sig_handler(int sig); // * Handles Ctrl + c
-
-		static int sfd_non_blocking(int);
-		static int set_reuseaddr(int);
-		static int epoll_add_fd(int, int, t_event);
-		static int epoll_in_fd(int, int, t_event);
-		static int epoll_out_fd(int, int, t_event);
-		static int epoll_del_fd(int, int);
-		static int bind(int, struct sockaddr_in *);
 };
