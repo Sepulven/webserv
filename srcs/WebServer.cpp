@@ -123,6 +123,7 @@ void WebServer::read_request(int epoll_fd, int fd, t_event event)
 {
 	int status = this->streams[fd]->req->read(fd);
 
+	std::cout << "a" << std::endl;
 	this->streams[fd]->set_time(); // * Update last action;
 	if ((status == 1) && epoll_out_fd(epoll_fd, fd, event))
 		throw Error("Epoll_ctl failed");
