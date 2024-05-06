@@ -35,7 +35,7 @@ size_t RawData::find(const std::vector<uint8_t> &_h, std::string _n, size_t _p /
  * Returns nothing
  * Append the _suffix vector to the of the _vec;
  */
-void RawData::append(std::vector<uint8_t> &_vec, std::vector<uint8_t> &_suffix)
+void RawData::append(std::vector<uint8_t> &_vec, const std::vector<uint8_t> &_suffix)
 {
 	_vec.reserve(_vec.size() + _suffix.size());
 	_vec.insert(_vec.end(), _suffix.begin(), _suffix.end());
@@ -45,7 +45,7 @@ void RawData::append(std::vector<uint8_t> &_vec, std::vector<uint8_t> &_suffix)
  * Returns nothing
  * Append the _suffix arr to the of the _vec;
  */
-void RawData::append(std::vector<uint8_t> &_vec, uint8_t *_suffix, size_t _length)
+void RawData::append(std::vector<uint8_t> &_vec, const uint8_t *_suffix, size_t _length)
 {
 	_vec.reserve(_vec.size() + _length);
 	_vec.insert(_vec.end(), _suffix, _suffix + _length);

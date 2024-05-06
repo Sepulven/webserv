@@ -127,7 +127,7 @@ void	Req::parser(void)
 size_t get_chunk_length(const std::vector<uint8_t> &buff, size_t start, size_t end)
 {
 	std::stringstream ss;
-	std::string length(buff.begin(), buff.begin() + left_crlf - 1);
+	std::string length(buff.begin() + start, buff.begin() + end - 1);
 	size_t chunk_length;
 
 	ss << std::hex << length.c_str();
@@ -149,15 +149,13 @@ size_t get_chunk_length(const std::vector<uint8_t> &buff, size_t start, size_t e
 /*
  * Returns nothing;
  * Sets all of the previous chunk to the raw body
- * 
- * 5\r\nbanan\r\n
- TODO: right + 2 - left > chunk_zise -> throw error
 */
-void Req::get_last_chunk(const std::vector<uint8_t>& buff)
+void Req::handle_chunks(const std::vector<uint8_t>& buff)
 {
 	std::size_t left_crlf = RawData::find(buff, "\r\n");
 	std::size_t right_crlf = RawData::find(buff, "\r\n", left_crlf + 2);
 	size_t chunk_length = get_chunk_length(buff, left_crlf + 2, right_crlf);
+	std::vector<uint8_t> chunk_content;
 
 	while (right_crlf != out_of_bound && left_crlf != out_of_bound && chunk_length > 0)
 	{
@@ -168,14 +166,35 @@ void Req::get_last_chunk(const std::vector<uint8_t>& buff)
 		}
 		chunk_content = RawData::substr(buff, left_crlf + 2, chunk_length);
 
+		if (chunk_content.size() < chunk_length)
+			this->rest_chunk_length = chunk_length - chunk_content.size();
+		else
+			this->rest_chunk_length = 0;
+
 		RawData::append(raw_body, chunk_content);
 
 		left_crlf = RawData::find(buff, "\r\n", right_crlf + 2);
 
-		chunk_length = get_chunk_length(buff, );
+		chunk_length = get_chunk_length(buff, right_crlf + 2, left_crlf);
+
 		right_crlf = RawData::find(buff, "\r\n", left_crlf + 2);
-		length == std::string(buff.begin(), buff.begin() + left_crlf);
 	}
+	if (chunk_length == 0)
+		rest_chunk_length = -1;
+}
+
+void Req::handle_chunk_segment(const std::vector<uint8_t>& buff)
+{
+	std::size_t crlf_pos = RawData::find(buff, "\r\n");
+
+	if (crlf_pos - 1 > (size_t)rest_chunk_length)
+	{
+		// * Problem;
+		std::cout << "Invalid chunk" << std::endl;
+		return ;
+	}
+	RawData::append(raw_body, buff);
+	rest_chunk_length = 0;
 }
 
 /*
@@ -189,16 +208,10 @@ void	Req::unchunk(const uint8_t *_buff, size_t _length)
 	std::vector<uint8_t> buff(_buff, _buff + _length);
 	std::size_t crlf_pos = RawData::find(buff, "\r\n");
 
-	if (chunk_length == -1 && crlf_pos != out_of_bound)
-		this->get_last_chunk(buff);
-	else if (chunk_length == -1 && chunk_length < (int)chunk.size())
-		RawData::append(chunk, buff); //* Questionable needs to check it more precisely;
-	else if (chunk_length == (int)chunk.size()) // * Sets to the raw_body
-	{
-		RawData::append(raw_body, chunk);
-		chunk.clear();
-		chunk_length = -1 * (chunk_length != 0);  // * Restarts the circle
-	}
+	if (rest_chunk_length > 0 && crlf_pos != out_of_bound) // * We must deal with the rest of the chunk
+		handle_chunk_segment(buff);
+	if (rest_chunk_length != -1)
+		handle_chunks(buff);
 }
 
 /*

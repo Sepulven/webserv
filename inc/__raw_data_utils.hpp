@@ -20,8 +20,8 @@ namespace RawData
 	size_t find(const std::vector<uint8_t> &, std::string, size_t = 0);
 	size_t find(const std::vector<uint8_t> &, const std::vector<uint8_t> &, size_t = 0);
 
-	void append(std::vector<uint8_t> &, std::vector<uint8_t> &);
-	void append(std::vector<uint8_t> &_vec, uint8_t *_suffix, size_t);
+	void append(std::vector<uint8_t> &, const std::vector<uint8_t> &);
+	void append(std::vector<uint8_t> &, const uint8_t *, size_t);
 
 	// * Creates a subtrs from base
 	std::vector<uint8_t>

@@ -69,7 +69,7 @@ class Req
 		// * Body
 		std::size_t content_length;
 		std::vector<uint8_t> raw_body;
-		int rest_chunk_length;
+		int rest_chunk_length; // * What we are waiting to receive;
 
 		// * Parse URL data
 		std::string file_path;
@@ -82,11 +82,16 @@ class Req
 		enum PATH_TYPE path_type;
 
 		int read(int);
+		// * Parsing
 		void set_raw_body(size_t);
 		void set_URL_data(std::string &);
 		void set_header(std::vector<std::string> &);
 		void parser(void);
+
+		// * Unchunking;
 		void unchunk(const uint8_t*, size_t);
-		void get_last_chunk(const std::vector<uint8_t>&);
+		void handle_chunks(const std::vector<uint8_t>&);
+		void handle_chunk_segment(const std::vector<uint8_t> &);
+
 		void log(void) const;
 };
