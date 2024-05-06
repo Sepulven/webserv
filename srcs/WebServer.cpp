@@ -99,8 +99,10 @@ void WebServer::accept_connection(int epoll_fd, int fd)
 	if (sfd_non_blocking(client_fd) < 0)
 		throw Error("Couln't make socket fd non-blocking.");
 
+
 	event.events = EPOLLIN | EPOLLET;
 	event.data.ptr = new t_event_data(client_fd, CLIENT);
+
 
 	if (epoll_add_fd(epoll_fd, client_fd, event) < 0)
 		throw Error("Epoll_ctl failed");
@@ -179,8 +181,6 @@ void WebServer::close_conn(int epoll_fd, int fd)
 	close(fd);
 	delete this->streams[fd];
 }
-
-
 
 /*Exception class*/
 WebServer::Error::Error(const char *_msg) : msg(_msg) {}

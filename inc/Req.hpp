@@ -86,6 +86,4 @@ class Req
 		void set_URL_data(std::string &);
 		void set_header(std::vector<std::string> &);
 		void parser(void);
-
-		void log(void) const;
 };

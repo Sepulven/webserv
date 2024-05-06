@@ -48,6 +48,7 @@ int Res::send(void)
 		it++;
 	}
 
+	std::cout << "here we are " << std::endl;
 	if (req->method == "GET")
 		exec_get();
 	else if (req->method == "POST")
@@ -213,19 +214,8 @@ void	Res::exec_post(void)
 		else
 			this->content = "Error while dealing with your post request!";
 	} 
-	else if (req->header["Transfer-Encoding"] == " chunked")
-	{
-		std::cout << "This is the raw_body to create the file " << std::endl;
-		RawData::print_uint(req->raw_body);
-		this->code = FileManager::create_file(req->raw_body, "server_uploaded_files");
-		if (this->code == "201")
-			this->content = "What should be the content when we upload a file?";
-		else
-			this->content = "Error while dealing with your post request!";
-	}
 	else
 	{
-		RawData::print_uint(req->raw_body);
 		this->code = "405";
 		this->content = "We can't execute this type of request";
 	}

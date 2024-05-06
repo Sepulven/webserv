@@ -2,25 +2,10 @@
 
 Req::Req(ConnStream * _stream) : stream(_stream), out_of_bound(std::string::npos)
 {
-	this->cgi_path = "a.py";
+	this->cgi_path.push_back("a.py");
 }
 
 Req::~Req() {}
-
-/*
-	* Log the response on sthe stdout;
-*/
-void Req::log(void) const {
-	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
-	std::cout << file_path << std::endl
-			<< filename << std::endl
-			<< file_ext << std::endl
-			<< query_string << std::endl
-			;
-
-	RawData::print_uint(data);
-	std::cout << "********************************" << std::endl;
-}
 
 /*
  TODO: Protect in case of invalid syntax Throw error;
@@ -126,6 +111,7 @@ int Req::read(int fd)
 
 	if (bytes_read <= 0)
 		return -1;
+	std::cout << "here we are " << std::endl;
 	while (bytes_read > 0)
 	{
 		RawData::append(data, buffer, bytes_read);
@@ -135,6 +121,7 @@ int Req::read(int fd)
 			RawData::append(raw_body, buffer, bytes_read);
 		bytes_read = ::read(fd, buffer, 4096);
 	}
+
 	if (RawData::find(data, "\r\n\r\n") != out_of_bound && raw_body.size() >= content_length)
 		return (1);
 	return (0);
