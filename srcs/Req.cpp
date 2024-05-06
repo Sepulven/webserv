@@ -108,8 +108,6 @@ void	Req::parser(void)
 	this->set_URL_data(this->URL);
 	this->set_header(message_header);
 
-	RawData::print_uint(data);
-
 	if (header["Content-Length"] != "")
 		this->content_length = std::atoi(&this->header["Content-Length"].c_str()[1]);
 	std::vector<uint8_t> sub_vec = RawData::substr(data, end_header_pos + 4, data.size() - end_header_pos - 4);
@@ -127,7 +125,7 @@ void	Req::parser(void)
 size_t get_chunk_length(const std::vector<uint8_t> &buff, size_t start, size_t end)
 {
 	std::stringstream ss;
-	std::string length(buff.begin() + start, buff.begin() + end - 1);
+	std::string length(buff.begin() + start, buff.begin() + end);
 	size_t chunk_length;
 
 	ss << std::hex << length.c_str();
@@ -154,8 +152,10 @@ void Req::handle_chunks(const std::vector<uint8_t>& buff)
 {
 	std::size_t left_crlf = RawData::find(buff, "\r\n");
 	std::size_t right_crlf = RawData::find(buff, "\r\n", left_crlf + 2);
-	size_t chunk_length = get_chunk_length(buff, left_crlf + 2, right_crlf);
+	size_t chunk_length = get_chunk_length(buff, 0, left_crlf);
 	std::vector<uint8_t> chunk_content;
+
+	int i = 0;
 
 	while (right_crlf != out_of_bound && left_crlf != out_of_bound && chunk_length > 0)
 	{
@@ -166,6 +166,8 @@ void Req::handle_chunks(const std::vector<uint8_t>& buff)
 		}
 		chunk_content = RawData::substr(buff, left_crlf + 2, chunk_length);
 
+		std::cout << "[" << i++ << "]" << std::endl;
+		RawData::print_uint(chunk_content);
 		if (chunk_content.size() < chunk_length)
 			this->rest_chunk_length = chunk_length - chunk_content.size();
 		else
@@ -187,6 +189,8 @@ void Req::handle_chunk_segment(const std::vector<uint8_t>& buff)
 {
 	std::size_t crlf_pos = RawData::find(buff, "\r\n");
 
+
+	std::cout << "handle_chunk_segment" << std::endl;
 	if (crlf_pos - 1 > (size_t)rest_chunk_length)
 	{
 		// * Problem;
