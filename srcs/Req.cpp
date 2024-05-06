@@ -3,7 +3,6 @@
 Req::Req(ConnStream * _stream) : stream(_stream), out_of_bound(std::string::npos)
 {
 	this->cgi_path = "a.py";
-	this->rest_chunk_length = 0;
 }
 
 Req::~Req() {}
@@ -24,7 +23,7 @@ void Req::log(void) const {
 }
 
 /*
- TODO: Protecy in case of invalid syntax Throw error;
+ TODO: Protect in case of invalid syntax Throw error;
 */
 void	Req::set_header(std::vector<std::string>& header)
 {
@@ -111,111 +110,8 @@ void	Req::parser(void)
 	if (header["Content-Length"] != "")
 		this->content_length = std::atoi(&this->header["Content-Length"].c_str()[1]);
 	std::vector<uint8_t> sub_vec = RawData::substr(data, end_header_pos + 4, data.size() - end_header_pos - 4);
-	if (header["Transfer-Encoding"] == " chunked") //* there is space here, we need to get rid of it
-		this->unchunk(sub_vec.data(), sub_vec.size());
-	else if (end_header_pos != out_of_bound)
+	if (end_header_pos != out_of_bound)
 		RawData::append(raw_body, sub_vec);
-}
-
-
-/*
- * Returns the size in decimal
- * Returns -1 in case of error;
-*/
-size_t get_chunk_length(const std::vector<uint8_t> &buff, size_t start, size_t end)
-{
-	std::stringstream ss;
-	std::string length(buff.begin() + start, buff.begin() + end);
-	size_t chunk_length;
-
-	ss << std::hex << length.c_str();
-	ss >> chunk_length;
-
-	return (chunk_length);
-}
-
-/*
-	std::cout << "["<< i++ << "] chunk_length:decimal=" << chunk_length << " -> chunk_length:hex=" << length << std::endl;
-	std::cout << "crlf_pos=" << left_crlf << std::endl;
-
-
-	std::cout << "start of the body --" << std::endl;
-	RawData::print_uint(buff);
-	std::cout << "end of the body --" << std::endl;
-*/
-
-/*
- * Returns nothing;
- * Sets all of the previous chunk to the raw body
-*/
-void Req::handle_chunks(const std::vector<uint8_t>& buff)
-{
-	std::size_t left_crlf = RawData::find(buff, "\r\n");
-	std::size_t right_crlf = RawData::find(buff, "\r\n", left_crlf + 2);
-	size_t chunk_length = get_chunk_length(buff, 0, left_crlf);
-	std::vector<uint8_t> chunk_content;
-
-	int i = 0;
-
-	while (right_crlf != out_of_bound && left_crlf != out_of_bound && chunk_length > 0)
-	{
-		if (right_crlf + 2 - left_crlf > chunk_length)
-		{
-			std::cout << "Invalid chunk" << std::endl;
-			return ;
-		}
-		chunk_content = RawData::substr(buff, left_crlf + 2, chunk_length);
-
-		std::cout << "[" << i++ << "]" << std::endl;
-		RawData::print_uint(chunk_content);
-		if (chunk_content.size() < chunk_length)
-			this->rest_chunk_length = chunk_length - chunk_content.size();
-		else
-			this->rest_chunk_length = 0;
-
-		RawData::append(raw_body, chunk_content);
-
-		left_crlf = RawData::find(buff, "\r\n", right_crlf + 2);
-
-		chunk_length = get_chunk_length(buff, right_crlf + 2, left_crlf);
-
-		right_crlf = RawData::find(buff, "\r\n", left_crlf + 2);
-	}
-	if (chunk_length == 0)
-		rest_chunk_length = -1;
-}
-
-void Req::handle_chunk_segment(const std::vector<uint8_t>& buff)
-{
-	std::size_t crlf_pos = RawData::find(buff, "\r\n");
-
-
-	std::cout << "handle_chunk_segment" << std::endl;
-	if (crlf_pos - 1 > (size_t)rest_chunk_length)
-	{
-		// * Problem;
-		std::cout << "Invalid chunk" << std::endl;
-		return ;
-	}
-	RawData::append(raw_body, buff);
-	rest_chunk_length = 0;
-}
-
-/*
- * Returns nothing.
- * Sets the chunk_length;
- * Set the chunk until it reaches it's chunk_length;
- * Write to the raw_body;
-*/
-void	Req::unchunk(const uint8_t *_buff, size_t _length)
-{
-	std::vector<uint8_t> buff(_buff, _buff + _length);
-	std::size_t crlf_pos = RawData::find(buff, "\r\n");
-
-	if (rest_chunk_length > 0 && crlf_pos != out_of_bound) // * We must deal with the rest of the chunk
-		handle_chunk_segment(buff);
-	if (rest_chunk_length != -1)
-		handle_chunks(buff);
 }
 
 /*
@@ -235,15 +131,11 @@ int Req::read(int fd)
 		RawData::append(data, buffer, bytes_read);
 		if (method == "" && RawData::find(data, "\r\n\r\n") != out_of_bound)
 			this->parser();
-		else if (method != "" && header["Transfer-Encoding"] == " chunked")
-			this->unchunk(buffer, bytes_read);
 		else if (method != "")
 			RawData::append(raw_body, buffer, bytes_read);
 		bytes_read = ::read(fd, buffer, 4096);
 	}
 	if (RawData::find(data, "\r\n\r\n") != out_of_bound && raw_body.size() >= content_length)
-		return (1);
-	if (header["Transfer-Encoding"] == " chunked" && rest_chunk_length == -1)
 		return (1);
 	return (0);
 }
