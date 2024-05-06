@@ -79,8 +79,6 @@ std::string FileManager::create_files(const std::vector<uint8_t>& body, const st
 	std::vector<uint8_t> file;
 
 
-	std::cout << "files size " << files.size() << std::endl;
-
 	for (size_t i = 1; i < files.size() - 1; i++)
 	{
 		file = get_file(files[i]);

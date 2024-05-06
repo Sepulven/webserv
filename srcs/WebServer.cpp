@@ -99,10 +99,8 @@ void WebServer::accept_connection(int epoll_fd, int fd)
 	if (sfd_non_blocking(client_fd) < 0)
 		throw Error("Couln't make socket fd non-blocking.");
 
-
 	event.events = EPOLLIN | EPOLLET;
 	event.data.ptr = new t_event_data(client_fd, CLIENT);
-
 
 	if (epoll_add_fd(epoll_fd, client_fd, event) < 0)
 		throw Error("Epoll_ctl failed");
@@ -125,7 +123,6 @@ void WebServer::read_request(int epoll_fd, int fd, t_event event)
 {
 	int status = this->streams[fd]->req->read(fd);
 
-	std::cout << "a" << std::endl;
 	this->streams[fd]->set_time(); // * Update last action;
 	if ((status == 1) && epoll_out_fd(epoll_fd, fd, event))
 		throw Error("Epoll_ctl failed");

@@ -111,7 +111,6 @@ int Req::read(int fd)
 
 	if (bytes_read <= 0)
 		return -1;
-	std::cout << "here we are " << std::endl;
 	while (bytes_read > 0)
 	{
 		RawData::append(data, buffer, bytes_read);
