@@ -4,65 +4,6 @@ Parser::Parser() {}
 
 Parser::~Parser() {}
 
-void Parser::printServerNodes(std::list<t_server>::iterator it) {
-	if (it == serverNodes.end())
-		return ;
-	static int i;
-	if (i == 0)
-		std::cout << std::endl << "============Parser============" << std::endl;
-	std::cout << "Server: " << i++ << std::endl;
-	std::cout << "    Host: " << it->host << std::endl;
-	std::cout << "    Port: " << it->port << std::endl;
-	std::cout << "    Server name: " << it->serverName << std::endl;
-	std::cout << "    Root: " << it->root << std::endl;
-	std::cout << "    Max client body size: " << it->maxCBSize << std::endl;
-	std::cout << "    Max connections: " << it->maxConn << std::endl;
-	std::cout << "    Index: ";
-	for (std::list<std::string>::iterator tmp = it->index.begin(); tmp != it->index.end(); tmp++)
-		std::cout << *tmp << " ";
-	std::cout << std::endl << "    Error pages:" << std::endl;
-	for (std::list<std::pair<int, std::string> > ::iterator tmp = it->errorPages.begin(); tmp != it->errorPages.end(); tmp++)
-		std::cout << "        "<< tmp->first << " " << tmp->second << std::endl;
-	for (std::list<t_route>::iterator tmp = it->route.begin(); tmp != it->route.end(); tmp++) {
-		std::cout << "    Route: " << tmp->path << std::endl;
-		std::cout << "        Root: " << tmp->rroot << std::endl;
-		std::cout << "        HTTP methods: ";
-		for (std::list<std::string>::iterator tmp2 = tmp->httpMethods.begin(); tmp2 != tmp->httpMethods.end(); tmp2++)
-			std::cout << *tmp2 << " ";
-		std::cout << std::endl << "        Index: ";
-		for (std::list<std::string>::iterator tmp2 = tmp->index.begin(); tmp2 != tmp->index.end(); tmp2++)
-			std::cout << *tmp2 << " ";
-		std::cout << std::endl << "        Directory listing: " << (tmp->dirListing ? "true" : "false") << std::endl;
-	}
-	printServerNodes(++it);
-}
-
-bool Parser::checkIndent(token token) {
-	if (token.identLevel < 0)
-		return false;
-	return true;
-}
-
-std::string Parser::getParam(token token) {
-	size_t i = token.content.find_first_of(':') + 1;
-	while (std::isspace(token.content[i]))
-		i++;
-	size_t j = token.content.length() - 1;
-	while (std::isspace(token.content[j]))
-		j--;
-	return token.content.substr(i, j - i + 1);
-}
-
-std::string Parser::getRoute(token token) {
-	if (token.content.find_first_of('/') == std::string::npos)
-		return std::string();
-	size_t i = token.content.find_first_of('/') + 1;
-	size_t j = token.content.find_first_of(':') - 1;
-	while (std::isspace(token.content[j]))
-		j--;
-	return token.content.substr(i, j - i + 1);
-}
-
 void Parser::parse(std::list<token> tokens) {
 	for (std::list<token>::iterator it = tokens.begin();
 	it != tokens.end(); it++) {
@@ -204,14 +145,14 @@ bool Parser::directivesCase2() {
 		return false;
 	int flag = it->type == LISTEN ? LISTEN : ERROR_PAGE_BLOCK;
 	it++;
-	if (!blockDirs(flag)) {  // !!!!!!!!!1
+	if (!blockDirs(flag)) {  // !!!!!!!!!
 		std::cout << "DEBUG1" << std::endl;
 		return false;
 	} 
 	if (!directives()) {
 		std::cout << "DEBUG2" << std::endl;
 		if (it != end && it->type == LISTEN) // !!!!!!!!!!!!!!
-			return clearLastOperation(it->type), false;
+			return resetParam(it->type, it->identLevel), false;
 	}
 	return true;
 }
@@ -225,12 +166,14 @@ bool Parser::directivesCase3() {
 	if (it->type != NAME && it->type != ROOT && it->type != INDEX && 
 	it->type != MAX_CBSIZE && it->type != MAX_CONN)
 		return false;
+	if (it->identLevel != 1)
+		return false;
 	if (!parameterLst(serverNodes))
 		return false;
 	if (!directives()) {
 		std::list<token>::iterator tmp = it;
 		tmp = tmp == end ? last : --tmp;
-		return clearLastOperation(tmp->type), false;
+		return resetParam(tmp->type, it->identLevel), false;
 	}
 	return true;
 }
@@ -279,9 +222,10 @@ bool Parser::directivesCase6() {
 		return false;
 	std::cout << "Entered directivesCase6 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->type != NAME && it->type != ROOT && it->type != INDEX && 
-	it->type != MAX_CBSIZE && it->type != MAX_CONN) {
+	it->type != MAX_CBSIZE && it->type != MAX_CONN)
 		return false;
-	}
+	if (it->identLevel != 1)
+		return false;
 	if (!parameterLst(serverNodes))
 		return false;
 	return true;
@@ -320,7 +264,7 @@ bool Parser::blockDirsCase1(int flag) {
 	if (!blockDirs(flag)) {
 		std::list<token>::iterator tmp = it;
 		tmp = tmp == end ? last : --tmp;
-		return clearLastOperation(tmp->type), false;
+		return resetParam(tmp->type, it->identLevel), false;
 	}
 	return true;
 }
@@ -345,9 +289,7 @@ bool Parser::blockDirsCase2(int flag) {
 	return true;
 }
 
-// todo: NEEDS PARAMETER RESET FUNCTIONS.
-
-// Main <parameter_lst> function.
+// <parameter_lst> function.
 
 template<typename T>
 bool Parser::parameterLst(T& container) {
@@ -365,20 +307,22 @@ bool Parser::parameterLstCase1(T& container) {
 	std::cout << "\033[32m" << "Entered parameterLstCase1 with: " << it->content << " | type: " << it->type << "\033[0m" << std::endl;
 	if (getParam(*it).empty())         // Need to check with ppl if there are default values.
 		return false;
-	if (it->type == HOST)
+	else if (it->type == HOST && container.back().host.empty())
 		container.back().host = getParam(*it);
-	if (it->type == PORT)
+	else if (it->type == PORT && container.back().port == -1)
 		container.back().port = atoi(getParam(*it).c_str());
-	if (it->type == INDEX)
+	else if (it->type == INDEX)
 		container.back().index.push_back(getParam(*it));
-	if (it->type == ROOT)
+	else if (it->type == ROOT && container.back().root.empty())
 		container.back().root = getParam(*it);
-	if (it->type == NAME)
+	else if (it->type == NAME && container.back().serverName.empty())
 		container.back().serverName = getParam(*it);
-	if (it->type == MAX_CBSIZE)
+	else if (it->type == MAX_CBSIZE && container.back().maxCBSize == -1)
 		container.back().maxCBSize = atoi(getParam(*it).c_str()); // Needs mb to byte conversion function.
-	if (it->type == MAX_CONN)
+	else if (it->type == MAX_CONN && container.back().maxConn == -1)
 		container.back().maxConn = atoi(getParam(*it).c_str());
+	else
+		return false;
 	it++;
 	return true;
 }
@@ -409,6 +353,8 @@ bool Parser::parameterLstCase1<std::list<t_route> >(std::list<t_route>& containe
 	it++;
 	return true;
 }
+
+// [parameters] ERROR_PAGES
 
 template <>
 bool Parser::parameterLstCase1<std::list<std::pair<int, std::string> > >(std::list<std::pair<int, std::string> >& container) {

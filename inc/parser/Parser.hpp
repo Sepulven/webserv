@@ -12,6 +12,7 @@ typedef struct s_route {
 } t_route;
 
 typedef struct s_server {
+	s_server();
 	std::string host;
 	int port;
 	std::string serverName;
@@ -35,7 +36,7 @@ private:
 
 	std::list<token>::iterator getLastTokenIt(std::list<token> tokens);
 	void		printServerNodes(std::list<t_server>::iterator it);
-	void 		clearLastOperation(int type);
+	void 		resetParam(int type, int identLevel);
 	std::string getParam(token token);
 	std::string getRoute(token token);
 	bool		checkIndent(token token);
