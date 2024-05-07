@@ -8,6 +8,7 @@
 #include <map>
 #include <fstream>
 #include <sstream>
+#include <cctype>
 
 enum nodeType {
 	SERVERBLOCK,
@@ -37,6 +38,7 @@ class Lexer
 private:
 	std::list<token> tokens;
 	std::map<std::string, int> types;
+	bool			 isspace(std::string str);
 	std::string		 trimComments(std::string line);
 	void			 trimIdent(std::string& content);
 	int				 identifyToken(token& token);

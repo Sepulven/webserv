@@ -4,11 +4,12 @@
 #include <utility>
 
 typedef struct s_route {
+	s_route();
 	std::string path;
 	std::list<std::string> httpMethods;
 	std::list<std::string> index;
 	std::string rroot;
-	bool dirListing;
+	int dirListing;
 } t_route;
 
 typedef struct s_server {
@@ -19,17 +20,23 @@ typedef struct s_server {
 	std::string root;
 	std::list<std::string> index;
 	std::list<std::pair<int, std::string> > errorPages;
-	int maxCBSize;
+	long long maxCBSize;
 	int maxConn;
+	int dirListing;
 	std::list<t_route> route;
 } t_server;
+
+/*
+TODO: ROUTE SEM :
+TODO: ROUTE COM DOIS PATHS.
+*/
 
 class Parser
 {
 private:
 	std::list<token>::iterator it;
 	std::list<token>::iterator end;
-	std::list<token>::iterator last;
+	std::list<token> tokens;
 
 	std::list<t_server> serverNodes;
 	std::map<int, bool> nodeCheck;
@@ -40,6 +47,8 @@ private:
 	std::string getParam(token token);
 	std::string getRoute(token token);
 	bool		checkIndent(token token);
+	long long	convertToByte(std::string str);
+	void pushBackMultipleParams(std::list<std::string>& list, std::string str);
 
 	/* Start of BNF syntax validator and 'serverNodes' 
 	   composer based on syntax.txt. */

@@ -12,13 +12,12 @@ void Parser::parse(std::list<token> tokens) {
 	}
 	this->it = tokens.begin();
 	this->end = tokens.end();
-	this->last = getLastTokenIt(tokens);
+	this->tokens = tokens;
 
-	configuration();
+	if (!configuration())
+		std::cout << std::endl << "FAILED" << std::endl;
 	printServerNodes(serverNodes.begin());
 }
-
-// TODO: HANDLE ALREADY FILLED PARAMETERS.
 
 // Start of BNF syntax validator and 'serverNodes' composer based on syntax.txt.
 
@@ -164,7 +163,7 @@ bool Parser::directivesCase3() {
 		return false;
 	std::cout << "Entered directivesCase3 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->type != NAME && it->type != ROOT && it->type != INDEX && 
-	it->type != MAX_CBSIZE && it->type != MAX_CONN)
+	it->type != MAX_CBSIZE && it->type != MAX_CONN && it->type != DIR_LISTING)
 		return false;
 	if (it->identLevel != 1)
 		return false;
@@ -172,8 +171,8 @@ bool Parser::directivesCase3() {
 		return false;
 	if (!directives()) {
 		std::list<token>::iterator tmp = it;
-		tmp = tmp == end ? last : --tmp;
-		return resetParam(tmp->type, it->identLevel), false;
+		tmp = tmp == end ? getLastTokenIt(tokens) : --tmp;
+		return resetParam(tmp->type, tmp->identLevel), false;
 	}
 	return true;
 }
@@ -222,7 +221,7 @@ bool Parser::directivesCase6() {
 		return false;
 	std::cout << "Entered directivesCase6 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->type != NAME && it->type != ROOT && it->type != INDEX && 
-	it->type != MAX_CBSIZE && it->type != MAX_CONN)
+	it->type != MAX_CBSIZE && it->type != MAX_CONN && it->type != DIR_LISTING)
 		return false;
 	if (it->identLevel != 1)
 		return false;
@@ -263,8 +262,8 @@ bool Parser::blockDirsCase1(int flag) {
 			return false;
 	if (!blockDirs(flag)) {
 		std::list<token>::iterator tmp = it;
-		tmp = tmp == end ? last : --tmp;
-		return resetParam(tmp->type, it->identLevel), false;
+		tmp = tmp == end ? getLastTokenIt(tokens) : --tmp;
+		return resetParam(tmp->type, tmp->identLevel), false;
 	}
 	return true;
 }
@@ -280,7 +279,7 @@ bool Parser::blockDirsCase2(int flag) {
 	if (flag == ROUTE)
 		if (!parameterLst(serverNodes.back().route))
 			return false;
-	if (flag == LISTEN)
+	if (flag == LISTEN && (it->type == HOST || it->type == PORT))
 		if (!parameterLst(serverNodes))
 			return false;
 	if (flag == ERROR_PAGE_BLOCK)
@@ -307,20 +306,28 @@ bool Parser::parameterLstCase1(T& container) {
 	std::cout << "\033[32m" << "Entered parameterLstCase1 with: " << it->content << " | type: " << it->type << "\033[0m" << std::endl;
 	if (getParam(*it).empty())         // Need to check with ppl if there are default values.
 		return false;
-	else if (it->type == HOST && container.back().host.empty())
+	if (it->type == HOST && container.back().host.empty())
 		container.back().host = getParam(*it);
 	else if (it->type == PORT && container.back().port == -1)
 		container.back().port = atoi(getParam(*it).c_str());
-	else if (it->type == INDEX)
-		container.back().index.push_back(getParam(*it));
+	else if (it->type == INDEX && container.back().index.empty())
+		pushBackMultipleParams(container.back().index, getParam(*it));
 	else if (it->type == ROOT && container.back().root.empty())
 		container.back().root = getParam(*it);
 	else if (it->type == NAME && container.back().serverName.empty())
 		container.back().serverName = getParam(*it);
 	else if (it->type == MAX_CBSIZE && container.back().maxCBSize == -1)
-		container.back().maxCBSize = atoi(getParam(*it).c_str()); // Needs mb to byte conversion function.
+		container.back().maxCBSize = convertToByte(getParam(*it).c_str());
 	else if (it->type == MAX_CONN && container.back().maxConn == -1)
 		container.back().maxConn = atoi(getParam(*it).c_str());
+	else if (it->type == DIR_LISTING && container.back().dirListing == -1) {
+		if (getParam(*it) == "on")
+			container.back().dirListing = 1;
+		else if (getParam(*it) == "off")
+			container.back().dirListing = 0;
+		else
+			return false;
+	}
 	else
 		return false;
 	it++;
@@ -334,19 +341,21 @@ bool Parser::parameterLstCase1<std::list<t_route> >(std::list<t_route>& containe
 	if (it == end)
 		return false;
 	std::cout << "\033[32m" <<  "Entered parameterLstCase1 ROUTE with: " << it->content << " | type: " << it->type << "\033[0m" << std::endl;
-	if (getParam(*it).empty())
+	if (getParam(*it).empty()) // Might not be necesary
 		return false;
-	if (it->type == INDEX)
-		container.back().index.push_back(getParam(*it)); // Handle multiple params.
-	else if (it->type == ROOT)
+	if (it->type == INDEX && container.back().index.empty())
+		pushBackMultipleParams(container.back().index, getParam(*it));
+	else if (it->type == ROOT && container.back().rroot.empty())
 		container.back().rroot = getParam(*it);
-	else if (it->type == METHOD)
-		container.back().httpMethods.push_back(getParam(*it));
-	else if (it->type == DIR_LISTING) {
+	else if (it->type == METHOD && container.back().httpMethods.empty())
+		pushBackMultipleParams(container.back().httpMethods, getParam(*it));
+	else if (it->type == DIR_LISTING && container.back().dirListing == -1) {
 		if (getParam(*it) == "on")
-			container.back().dirListing = true;
+			container.back().dirListing = 1;
 		else if (getParam(*it) == "off")
-			container.back().dirListing = false;
+			container.back().dirListing = 0;
+		else
+			return false;
 	}
 	else
 		return false;
@@ -365,6 +374,8 @@ bool Parser::parameterLstCase1<std::list<std::pair<int, std::string> > >(std::li
 	int code = atoi(it->content.c_str());
 	if (code == 0)
 		return false;
+	if (container.back().first == code)
+		return false;	
 	container.push_back(std::make_pair(code, getParam(*it)));
 	it++;
 	return true;

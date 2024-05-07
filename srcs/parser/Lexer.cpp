@@ -31,8 +31,16 @@ int	Lexer::countIdent(std::string line) {
 	return (count / 4);
 }
 
+bool Lexer::isspace(std::string str) {
+	for (std::string::iterator it = str.begin(); it != str.end(); it++) {
+		if (!std::isspace(*it))
+			return false;
+	}
+	return true;
+}
+
 std::string Lexer::trimComments(std::string line) {
-	if (line.empty() || *line.begin() == '#')
+	if (line.empty() || isspace(line) || *line.begin() == '#')
 		return std::string();
 	std::string::iterator it = line.end() - 1;
 	while (*it != '#') {
