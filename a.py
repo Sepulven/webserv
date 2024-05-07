@@ -51,7 +51,7 @@ def POST():
 
     # erase last boundary (check split problem)
     # this might bring problems if the splits works correctly
-    i = b_len + 3pport cookies and session management (prepare quick example
+    i = b_len + 3
     f = len(files[-1])
     files[-1] = files[-1][0:f - i]
 
