@@ -29,6 +29,7 @@ int Res::send(void)
 	std::vector<std::string>::iterator it = req->cgi_path.begin();
 	while (it != req->cgi_path.end())
 	{
+		std::cout << "check loop\n";
 		if (req->file_path == *it)
 			return (this->exec_CGI());
 		it++;
@@ -52,12 +53,18 @@ int Res::send(void)
 
 	ss << content;
 
+	// RawData::print_uint(stream->req->data);
+	// RawData::print_uint(stream->req->raw_body);
+
 	this->data = ss.str();
 	return (write(stream->fd, this->data.c_str(), this->data.length()));
 }
 
 int Res::exec_CGI(void)
 {
+	RawData::print_uint(stream->req->data);
+	// RawData::print_uint(stream->req->raw_body);
+
 	Req *req = stream->req;
 
 	char *argv0;

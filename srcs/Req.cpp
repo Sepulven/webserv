@@ -3,6 +3,7 @@
 Req::Req(ConnStream * _stream) : stream(_stream), out_of_bound(std::string::npos)
 {
 	this->cgi_path.push_back("a.py");
+	this->cgi_path.push_back("a.php");
 }
 
 Req::~Req() {}

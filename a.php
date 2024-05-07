@@ -42,18 +42,25 @@ if ($_SERVER['method'] === 'GET') {
     $body = $_SERVER['body'];
     $request = $_SERVER['request'];
 
-    $end = strpos($body, "\r\n");
-    $boundary = "";
-    $boundary = substr($body, 0, $end);
+    // $ctype = $_SERVER['Content-Type'];
 
-    if ($boundary == "") // form data case, check what to do
+    $post_type = "";
+    $post_type = strpos($request, "Content-Type: ");
+    if ($post_type == "")
+        $status = 400;
+    else if (substr($request, $post_type + 14, 33) == "application/x-www-form-urlencoded")
     {
         $status = 200;
-        $response = "Form data case\n";
+        $response = "Data uploaded successfully!\n";
         $type = "plain";
     }
+    else if (substr($request, $post_type + 14, 19) != "multipart/form-data")
+        $status = 400;
     else
     {
+        $end = strpos($body, "\r\n");
+        $boundary = "";
+        $boundary = substr($body, 0, $end);
 
         // get n bodies of files
         $parts = explode("$boundary", $body);
@@ -62,7 +69,6 @@ if ($_SERVER['method'] === 'GET') {
         if (!is_dir("uploads/"))
             mkdir("uploads/", 0777, true); // Creates the directory recursively
     
-        
         // loop to create each file
         $count = 0;
         foreach ($parts as $part) {
@@ -106,6 +112,15 @@ if ($_SERVER['method'] === 'GET') {
         $type = "plain";
         $status = 200;
     }
+}
+
+if ($status == 400)
+{
+    // print("check 400\n");
+    // $file_to_create = fopen("error/" . $status . ".html", "r"); // read file
+    $response = file_get_contents("error/" . $status . ".html");
+    // $response = "Bad Request\n";
+    $type = "html";
 }
 
 $contentLength = strlen($response);
