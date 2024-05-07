@@ -29,7 +29,6 @@ int Res::send(void)
 	std::vector<std::string>::iterator it = req->cgi_path.begin();
 	while (it != req->cgi_path.end())
 	{
-		std::cout << "check loop\n";
 		if (req->file_path == *it)
 			return (this->exec_CGI());
 		it++;
