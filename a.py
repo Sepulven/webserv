@@ -57,10 +57,14 @@ def POST():
 
     count = 0
     for file in files: # loop to create each file
+        filename = ""
         entries = os.listdir(upload_dir)
-        filename_match = re.search(r'filename="(.*?)"', file) # get filename
+        filename_match = re.search(r'filename="(.*?)"', file) or re.search(r'name="(.*?)"', file)# get filename
+
         if filename_match:
             filename = filename_match.group(1)
+        elif filename == "":
+            return 400
 
         for i in entries: # change file name if it already exists
             if i == filename:

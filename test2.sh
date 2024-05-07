@@ -4,7 +4,7 @@ print_status_code() {
     case $status_code in
         200) echo "200 OK" ;;
         400) echo "400 Bad Request" ;;
-        405) echo "404 Not Allowed" ;;
+        405) echo "405 Not Allowed" ;;
         404) echo "404 Not Found" ;;
         500) echo "500 Internal Server Error" ;;
         *) echo "Unknown Status Code: $status_code" ;;
@@ -26,35 +26,41 @@ execute_curl() {
 }
 
 #GET
-execute_curl "GET" "\033[1;34mGet: existing file\033[0m" "http://localhost:8080/index.html"
-execute_curl "GET" "\033[1;34mGet: non existing file\033[0m" "http://localhost:8080/index13534.html" 
-execute_curl "GET" "\033[1;34mGet: file with query\033[0m" "http://localhost:8080/index.html?param1=value1&param2=value2"
-execute_curl "GET" "\033[1;34mGet: custom header \033[0m" "http://localhost:8080/index.html -H "Custom-Header: Value""
-execute_curl "GET" "\033[1;34mGet: credentials \033[0m" "http://localhost:8080/index.html -u username:password"
-execute_curl "GET" "\033[1;34mGet: special characters \033[0m" "http://localhost:8080/index.html?param=value&special_chars=%5E%25%24 -u username:password"
-# should return 304 Not Modified if the file wasnt modified since this date, and 200 if it has
-execute_curl "GET" "\033[1;34mGet: if-modified headed \033[0m" "http://localhost:8080/index.html -H "If-Modified-Since: Tue, 01 Jan 2020 00:00:00 GMT""
-# only indicates preference, the server ultimately decides what type of response to send
-execute_curl "GET" "\033[1;34mGet: accept header \033[0m" "http://localhost:8080/index.html -H "Accept: application/json""
+# execute_curl "GET" "\033[1;34mGet: existing file\033[0m" "http://localhost:8080/index.html"
+# execute_curl "GET" "\033[1;34mGet: non existing file\033[0m" "http://localhost:8080/index13534.html" 
+# execute_curl "GET" "\033[1;34mGet: file with query\033[0m" "http://localhost:8080/index.html?param1=value1&param2=value2"
+# execute_curl "GET" "\033[1;34mGet: custom header \033[0m" "http://localhost:8080/index.html -H "Custom-Header: Value""
+# execute_curl "GET" "\033[1;34mGet: credentials \033[0m" "http://localhost:8080/index.html -u username:password"
+# execute_curl "GET" "\033[1;34mGet: special characters \033[0m" "http://localhost:8080/index.html?param=value&special_chars=%5E%25%24 -u username:password"
+# # should return 304 Not Modified if the file wasnt modified since this date, and 200 if it has
+# execute_curl "GET" "\033[1;34mGet: if-modified headed \033[0m" "http://localhost:8080/index.html -H "If-Modified-Since: Tue, 05 Jan 2024 00:00:00 GMT""
+# # only indicates preference, the server ultimately decides what type of response to send
+# execute_curl "GET" "\033[1;34mGet: accept header \033[0m" "http://localhost:8080/index.html -H "Accept: application/json""
+# execute_curl "GET" "\033[1;34mGet: existing file CGI 1\033[0m" "http://localhost:8080/a.py"
+# execute_curl "GET" "\033[1;34mGet: existing file CGI 2\033[0m" "http://localhost:8080/a.php"
+# echo -e "\033[1;35m----------------------------\033[0m"
 
-echo -e "\033[1;35m----------------------------\033[0m"
+# #POST
+# execute_curl "POST" "\033[1;34mPost: form data\033[0m" "http://localhost:8080/index.html -d "key1=value1&key2=value2""
+# execute_curl "POST" "\033[1;34mPost: json data\033[0m" "http://localhost:8080/index.html -H "Content-Type: application/json" -d '{"key1":"value1","key2":"value2"}'"
+# execute_curl "POST" "\033[1;34mPost: xml data\033[0m" "http://localhost:8080/index.html -H "Content-Type: application/xml" -d '<data><key1>value1</key1><key2>value2</key2></data>'"
+# execute_curl "POST" "\033[1;34mPost: file upload without content\033[0m" "http://localhost:8080/index.html -F "a.txt=hello\nworld""
+# execute_curl "POST" "\033[1;34mPost: files upload without content\033[0m" "http://localhost:8080/index.html -F "file1=@/home/mvicente/file2.txt" -F "file1=@/home/mvicente/file2.txt""
+# execute_curl "POST" "\033[1;34mPost: files upload with content\033[0m" "http://localhost:8080/index.html \
+#   -H "Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW" \
+#   --data-binary @- <<EOF
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW
+# Content-Disposition: form-data; name="file1"; filename="file1.txt"
+# Content-Type: text/plain
+# This is the content of file1.txt
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW
+# Content-Disposition: form-data; name="file2"; filename="file2.txt"
+# Content-Type: text/plain
+# This is the content of file2.txt
+# ------WebKitFormBoundary7MA4YWxkTrZu0gW--
+# EOF"
+# execute_curl "POST" "\033[1;34mPost: CGI 1 form data\033[0m" "http://localhost:8080/a.py -d "key1=value1""
+# execute_curl "POST" "\033[1;34mPost: CGI 1 files with content\033[0m" "http://localhost:8080/a.py -F "a.txt=helloooo" -F "b.txt=helloooo22222""
 
-#POST
-execute_curl "POST" "\033[1;34mGet: form data\033[0m" "http://localhost:8080/index.html -d "key1=value1&key2=value2""
-execute_curl "POST" "\033[1;34mGet: json data\033[0m" "http://localhost:8080/index.html -H "Content-Type: application/json" -d '{"key1":"value1","key2":"value2"}'"
-execute_curl "POST" "\033[1;34mGet: xml data\033[0m" "http://localhost:8080/index.html -H "Content-Type: application/xml" -d '<data><key1>value1</key1><key2>value2</key2></data>'"
-execute_curl "POST" "\033[1;34mGet: file upload without content\033[0m" "http://localhost:8080/index.html -F "file=uploads/a.txt""
-execute_curl "POST" "\033[1;34mGet: files upload without content\033[0m" "http://localhost:8080/index.html -F "file1=@/home/mvicente/file2.txt" -F "file1=@/home/mvicente/file2.txt""
-execute_curl "POST" "\033[1;34mGet: files upload with content\033[0m" "http://localhost:8080/index.html \
-  -H "Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW" \
-  --data-binary @- <<EOF
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="file1"; filename="file1.txt"
-Content-Type: text/plain
-This is the content of file1.txt
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="file2"; filename="file2.txt"
-Content-Type: text/plain
-This is the content of file2.txt
-------WebKitFormBoundary7MA4YWxkTrZu0gW--
-EOF"
+execute_curl "POST" "\033[1;34mPost: CGI 2 form data\033[0m" "http://localhost:8080/a.php -d "key1=value1""
+execute_curl "POST" "\033[1;34mPost: CGI 2 files with content\033[0m" "http://localhost:8080/a.php -F "a.txt=helloooo" -F "b.txt=helloooo22222""
