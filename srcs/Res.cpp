@@ -52,6 +52,7 @@ int Res::send(void)
 
 	ss << content;
 
+	RawData::print_uint(req->data);
 	this->data = ss.str();
 	return (write(stream->fd, this->data.c_str(), this->data.length()));
 }
@@ -204,7 +205,7 @@ void Res::exec_post(void)
 	}
 	else
 	{
-		this->code = "405";
+		this->code = "406";
 		this->content = "We can't execute this type of request";
 	}
 }
