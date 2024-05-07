@@ -48,5 +48,4 @@ class Res
 		~Res();
 
 		int send(void);
-		void log(void) const; // * Logs the the response
 };

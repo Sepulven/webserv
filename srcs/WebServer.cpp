@@ -102,7 +102,7 @@ void WebServer::accept_connection(int epoll_fd, int fd)
 	event.events = EPOLLIN | EPOLLET;
 	event.data.ptr = new t_event_data(client_fd, CLIENT);
 
-	if (WebServer::epoll_add_fd(epoll_fd, client_fd, event) < 0)
+	if (epoll_add_fd(epoll_fd, client_fd, event) < 0)
 		throw Error("Epoll_ctl failed");
 	this->streams[client_fd] = new ConnStream(client_fd, servers[fd]);
 }
@@ -168,6 +168,16 @@ void WebServer::sig_handler(int sig)
 	is_running = 0;
 }
 
+/*
+ * Close a conn, and clean up the resources.
+ */
+void WebServer::close_conn(int epoll_fd, int fd)
+{
+	if (epoll_del_fd(epoll_fd, fd) < 0)
+		throw Error("Epoll_ctl failed");
+	close(fd);
+	delete this->streams[fd];
+}
 
 /*Exception class*/
 WebServer::Error::Error(const char *_msg) : msg(_msg) {}

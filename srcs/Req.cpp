@@ -1,58 +1,15 @@
 #include <Req.hpp>
 
-Req::Req(ConnStream * _stream) : stream(_stream)
+Req::Req(ConnStream * _stream) : stream(_stream), out_of_bound(std::string::npos)
 {
 	this->cgi_path.push_back("a.py");
-	this->cgi_path.push_back("a.php");
-	this->chunk_length = -1;
 }
 
 Req::~Req() {}
 
-static void print_uint(const std::basic_string<uint8_t> &str)
-{
-	std::basic_string<uint8_t>::const_iterator it = str.begin();
-	std::basic_string<uint8_t>::const_iterator ite = str.end();
-
-	for (; it != ite; it++)
-		std::cout << static_cast<unsigned char>(*it);
-}
-
 /*
-	* Log the response on sthe stdout;
+ TODO: Protect in case of invalid syntax Throw error;
 */
-void Req::log(void) const {
-	std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
-	std::cout << file_path << std::endl
-			<< filename << std::endl
-			<< file_ext << std::endl
-			<< query_string << std::endl
-			;
-
-	print_uint(data);
-	std::cout << "********************************" << std::endl;
-}
-
-static std::vector<std::string> split(const std::string& base, const std::string& delimiter)
-{
-	std::istringstream iss(base);
-	std::string token;
-	std::vector<std::string> tokens;
-	size_t startPos = 0;
-
-	size_t pos = base.find(delimiter, startPos);
-	while (pos != std::string::npos)
-	{
-		token = base.substr(startPos, pos - startPos); 
-		tokens.push_back(token);
-
-		startPos = pos + delimiter.length();
-		pos = base.find(delimiter, startPos);
-	}
-	tokens.push_back(base.substr(startPos));
-	return tokens;
-}
-
 void	Req::set_header(std::vector<std::string>& header)
 {
 	std::string	line;
@@ -79,7 +36,7 @@ void	Req::set_header(std::vector<std::string>& header)
 */
 void	Req::set_URL_data(std::string& URL)
 {
-	std::vector<std::string> vec = split(URL, "?");
+	std::vector<std::string> vec = RawData::split(URL, "?");
 	struct stat fileStat;
 	size_t pos;
 
@@ -114,16 +71,19 @@ void	Req::set_URL_data(std::string& URL)
 		file_ext = "";
 }
 
+/*
+ * Returns void
+*/
 void	Req::parser(void)
 {
-	std::string _data(this->data.begin(), this->data.end());
-	size_t end_header_pos = _data.find("\r\n\r\n");
-	std::vector<std::string> request = split(_data, "\r\n\r\n");
-	std::vector<std::string> message_header = split(request[0], "\r\n");
+	size_t end_header_pos = RawData::find(data, "\r\n\r\n");
+	std::vector<uint8_t> __header  = RawData::substr(data, 0, end_header_pos);
+	std::string request(__header.begin(), __header.end());
+	std::vector<std::string> message_header = RawData::split(request, "\r\n");
 
 	this->request_line = message_header[0];
 
-	std::vector<std::string> request_line_tokens = split(message_header[0], " ");
+	std::vector<std::string> request_line_tokens = RawData::split(message_header[0], " ");
 
 	this->method = request_line_tokens[0];
 	this->URL = request_line_tokens[1];
@@ -132,69 +92,36 @@ void	Req::parser(void)
 	this->set_URL_data(this->URL);
 	this->set_header(message_header);
 
-	this->content_length = std::atoi(this->header["Content-length"].c_str());
-	if (end_header_pos != std::string::npos)
-		this->raw_body.append(this->data.begin() + end_header_pos + 4, this->data.end());
-
-	this->log();
+	if (header["Content-Length"] != "")
+		this->content_length = std::atoi(&this->header["Content-Length"].c_str()[1]);
+	std::vector<uint8_t> sub_vec = RawData::substr(data, end_header_pos + 4, data.size() - end_header_pos - 4);
+	if (end_header_pos != out_of_bound)
+		RawData::append(raw_body, sub_vec);
 }
 
 /*
- * Returns nothing.
- * Sets the chunk_length;
- * Set the chunk until it reaches it's chunk_length;
- * Write to the raw_body;
-*/
-void	Req::unchunk(const uint8_t *_buff, size_t length)
-{
-	std::basic_string<uint8_t> buff(_buff, _buff + length);
-	uint8_t crlf[] = {'\r', '\n'};
-	std::basic_string<uint8_t> pattern(crlf, 4);
-	std::stringstream ss;
-	std::size_t crlf_pos = buff.find(pattern);
-
-	if (chunk_length == -1 && crlf_pos != std::string::npos)
-	{
-		ss << std::hex << buff.substr(0, crlf_pos).c_str();
-		ss >> chunk_length;
-		chunk.append(buff.substr(crlf_pos + 2, chunk_length));
-	}
-	if (chunk_length == (int)chunk.size()) // * Sets to the raw_body
-	{
-		raw_body.append(chunk);
-		chunk.clear();
-		chunk_length = -1 * (chunk_length != 0);  // * Restarts the circle
-	}
-}
-
-/*
- TODO: Refactor it for the chunked;
- TODO: Refactor based on the bad connections;
+ * Returns 0 in case the read hasn't been finished;
+ * Returns 1 when the whole request has been read;
+ * Returns -1 to close the connection
 */
 int Req::read(int fd)
 {
-	uint8_t crlf[] = {'\r', '\n', '\r', '\n'};
-	std::basic_string<uint8_t> pattern(crlf, 4);
 	uint8_t buffer[4096 + 1];
 	int bytes_read = ::read(fd, buffer, 4096);
 
-	if (bytes_read <= 0) // * Closes the connection
+	if (bytes_read <= 0)
 		return -1;
 	while (bytes_read > 0)
 	{
-		data.append(buffer, buffer + bytes_read);
-		if (method == "" && data.find(pattern) != std::string::npos)
+		RawData::append(data, buffer, bytes_read);
+		if (method == "" && RawData::find(data, "\r\n\r\n") != out_of_bound)
 			this->parser();
-		else if (method != "" && header["Transfer-Encoding"] == "chunked")
-			this->unchunk(buffer, bytes_read);
 		else if (method != "")
-			raw_body.append(buffer, buffer + bytes_read);
+			RawData::append(raw_body, buffer, bytes_read);
 		bytes_read = ::read(fd, buffer, 4096);
 	}
-	if (data.find(pattern) != std::string::npos 
-		&& raw_body.length() >= content_length)
-		return (1);
-	if (header["Transfer-Encoding"] == "chunked" && chunk_length == 0)
+
+	if (RawData::find(data, "\r\n\r\n") != out_of_bound && raw_body.size() >= content_length)
 		return (1);
 	return (0);
 }
