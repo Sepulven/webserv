@@ -14,8 +14,6 @@ SRC			=	$(addprefix srcs/,$(SRCS)) \
 
 INCLUDES	=	-I ./inc
 
-#SRC			=	$(addprefix srcs/,$(SRCS))
-
 OBJ			=	$(SRC:.cpp=.o)
 %.o: %.cpp
 	@${CXX} ${CXXFLAGS} ${INCLUDES} -c $< -o $@
