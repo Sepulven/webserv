@@ -110,19 +110,21 @@ int Req::read(int fd)
 	uint8_t buffer[4096 + 1];
 	int bytes_read = ::read(fd, buffer, 4096);
 
+
 	if (bytes_read <= 0)
 		return -1;
+	int i = 0;
 	while (bytes_read > 0)
 	{
 		RawData::append(data, buffer, bytes_read);
-		if (method == "" && RawData::find(data, "\r\n\r\n") != out_of_bound)
+		if (method.empty() && RawData::find(data, "\r\n\r\n") != out_of_bound)
 			this->parser();
-		else if (method != "")
+		else if (!method.empty())
 			RawData::append(raw_body, buffer, bytes_read);
 		bytes_read = ::read(fd, buffer, 4096);
 	}
-
-	if (RawData::find(data, "\r\n\r\n") != out_of_bound && raw_body.size() >= content_length)
+	if (RawData::find(data, "\r\n\r\n") != out_of_bound 
+		&& raw_body.size() >= content_length)
 		return (1);
 	return (0);
 }

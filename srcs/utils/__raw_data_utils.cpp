@@ -175,6 +175,8 @@ void RawData::print_uint(const std::vector<uint8_t> &str)
 	RawData::const_iterator it = str.begin();
 	RawData::const_iterator ite = str.end();
 
+	std::cout << "-------------------------------------" << std::endl;
 	for (; it != ite; it++)
 		std::cout << static_cast<unsigned char>(*it);
+	std::cout << std::endl << "-------------------------------------" << std::endl;
 }
