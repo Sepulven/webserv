@@ -20,6 +20,8 @@ void ConnStream::clean_conn()
 	// * Raw request;
 	req->data.clear();
 
+	req->content_length = 0;
+
 	// * Request message header
 	req->request_line = "";
 	req->method = "";
