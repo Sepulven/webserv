@@ -38,52 +38,62 @@ def POST():
     if request is None:
         return 400
 
-    # find boundary in header
-    bound_start = request.find("boundary=")
-    bound_end = request.find("\n", bound_start + 9)
-    boundary = "--" + request[bound_start + 9:bound_end]
-    b_len = len(boundary)
+    # check post type: files or data
+    post_type = request.find("Content-Type: ") + 14
+    if (post_type == -1):
+        return 400
+    elif (request[post_type:post_type + 33] == "application/x-www-form-urlencoded"):
+        return 200
+    elif (request[post_type:post_type + 19] != "multipart/form-data"):
+        return 400
+    else:
+        # find boundary in header
+        bound_start = request.find("boundary=")
+        bound_end = request.find("\n", bound_start + 9)
+        boundary = "--" + request[bound_start + 9:bound_end]
+        b_len = len(boundary)
 
-    # get n bodies of files
-    files = body.split(boundary)
-    if files[0] == "":
-        files = files[1:]
+        # get n bodies of files
+        files = body.split(boundary)
+        if files[0] == "":
+            files = files[1:]
 
-    # erase last boundary (check split problem)
-    # this might bring problems if the splits works correctly
-    i = b_len + 3
-    f = len(files[-1])
-    files[-1] = files[-1][0:f - i]
+        # erase last boundary (check split problem)
+        # this might bring problems if the splits works correctly
+        i = b_len + 3
+        f = len(files[-1])
+        files[-1] = files[-1][0:f - i]
 
-    count = 0
-    for file in files: # loop to create each file
-        filename = ""
-        entries = os.listdir(upload_dir)
-        filename_match = re.search(r'filename="(.*?)"', file) or re.search(r'name="(.*?)"', file)# get filename
+        count = 0
+        for file in files: # loop to create each file
+            filename = ""
+            entries = os.listdir(upload_dir)
+            filename_match = re.search(r'filename="(.*?)"', file) or re.search(r'name="(.*?)"', file)# get filename
 
-        if filename_match:
-            filename = filename_match.group(1)
-        elif filename == "":
-            return 400
+            if filename_match:
+                filename = filename_match.group(1)
+            elif filename == "":
+                return 400
 
-        for i in entries: # change file name if it already exists
-            if i == filename:
-                name = filename.split('.')[0]
-                ext = filename.split('.')[1]
-                # filename = name + "_" + str(int(time.time())) + "." + ext
-                if (count != 0):
-                    filename = f"{name}_{str(int(time.time()))}_{count}.{ext}"
-                else:
-                    filename = f"{name}_{str(int(time.time()))}.{ext}"
-                count += 1
-                break
-        
-        file_path = os.path.join(upload_dir, filename)
-        f = open(file_path, 'w')
-        pos = file.find("\r\n\r\n") + 4
-        content = file[pos:] # get file content
-        f.write(content)
-    return 200
+            for i in entries: # change file name if it already exists
+                if i == filename:
+                    name = filename.split('.')[0]
+                    ext = filename.split('.')[1]
+                    # filename = name + "_" + str(int(time.time())) + "." + ext
+                    if (count != 0):
+                        filename = f"{name}_{str(int(time.time()))}_{count}.{ext}"
+                    else:
+                        filename = f"{name}_{str(int(time.time()))}.{ext}"
+                    count += 1
+                    break
+            
+            file_path = os.path.join(upload_dir, filename)
+            f = open(file_path, 'w')
+            pos = file.find("\r\n\r\n") + 4
+            content = file[pos:] # get file content
+            f.write(content)
+        return 200
+    return 400
 
 def errorPage(status):
     filename = "error/" + f'{status}' + ".html"
@@ -134,7 +144,7 @@ if __name__ == "__main__" :
     elif method == "POST":
         status = POST()
         if status == 200:
-            response = "File uploaded successfully!"
+            response = "Data uploaded successfully!"
             header = f'HTTP/1.1 200 OK\nContent-Type: text/plain\n' + f'Content-Length: {len(response)}' + '\r\n'
         elif status == 400:
             response = errorPage(status)

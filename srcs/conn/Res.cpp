@@ -59,6 +59,9 @@ int Res::send(void)
 
 int Res::exec_CGI(void)
 {
+	RawData::print_uint(stream->req->data);
+	// RawData::print_uint(stream->req->raw_body);
+
 	Req *req = stream->req;
 
 	char *argv0;
