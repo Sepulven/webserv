@@ -42,6 +42,9 @@ bool Lexer::isspace(std::string str) {
 std::string Lexer::trimComments(std::string line) {
 	if (line.empty() || isspace(line) || *line.begin() == '#')
 		return std::string();
+	size_t i = line.find_first_of('#');
+	if (isspace(line.substr(0, i)))
+		return std::string();
 	std::string::iterator it = line.end() - 1;
 	while (*it != '#') {
 		if (it == line.begin())

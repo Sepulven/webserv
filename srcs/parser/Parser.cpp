@@ -121,7 +121,7 @@ bool Parser::directivesCase1() {
 	if (it->type != ROUTE)
 		return false;
 	std::string routePath = getRoute(*it);
-	if (routePath.empty())
+	if (routePath.empty() || it->content.find_first_of(':') == std::string::npos)
 		return false;
 	t_route newRoute;
 	serverNodes.back().route.push_back(newRoute);
@@ -186,7 +186,7 @@ bool Parser::directivesCase4() {
 	if (it->type != ROUTE)
 		return false;
 	std::string routePath = getRoute(*it);
-	if (routePath.empty())
+	if (routePath.empty() || it->content.find_first_of(':') == std::string::npos)
 		return false;
 	t_route newRoute;
 	serverNodes.back().route.push_back(newRoute);
@@ -318,7 +318,7 @@ bool Parser::parameterLstCase1(T& container) {
 		container.back().serverName = getParam(*it);
 	else if (it->type == MAX_CBSIZE && container.back().maxCBSize == -1)
 		container.back().maxCBSize = convertToByte(getParam(*it).c_str());
-	else if (it->type == MAX_CONN && container.back().maxConn == -1)
+	else if (it->type == MAX_CONN && container.back().maxConn == -1 && getParam(*it).find_first_not_of("1234567890") == std::string::npos)
 		container.back().maxConn = atoi(getParam(*it).c_str());
 	else if (it->type == DIR_LISTING && container.back().dirListing == -1) {
 		if (getParam(*it) == "on")

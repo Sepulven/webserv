@@ -26,11 +26,6 @@ typedef struct s_server {
 	std::list<t_route> route;
 } t_server;
 
-/*
-TODO: ROUTE SEM :
-TODO: ROUTE COM DOIS PATHS.
-*/
-
 class Parser
 {
 private:
