@@ -68,6 +68,7 @@ class WebServer
 		void read_request(int, int, t_event);
 		void send_response(int, int, t_event);
 		void close_conn(int, int);
+		void time_out(int);
 
 		class Error : public std::exception
 		{

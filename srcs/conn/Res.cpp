@@ -124,6 +124,7 @@ int Res::exec_CGI(void)
 
 		int status;
 		close(pipe_fd[0]);		  // Close read end
+		stream->pid = pid;
 		waitpid(pid, &status, 0); // Wait for the child process to finish
 		if (content == "")
 			content = "HTTP/1.1 500 Internal Server Error\nContent-Type:text/plain\nContent-Length: 20\r\n\r\nError running script\n";
@@ -200,7 +201,7 @@ void Res::exec_post(void)
 			boundary.erase(0, 1);
 			boundary.erase(boundary.length() - 1, 1);
 		}
-		this->code = FileManager::create_files(req->raw_body, boundary, "server_uploaded_files");
+		this->code = FileManager::create_files(req->raw_body, boundary, "uploads");
 		if (this->code == "201")
 			this->content = "What should be the content when we upload a file?";
 		else

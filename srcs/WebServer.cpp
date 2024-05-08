@@ -132,6 +132,34 @@ void WebServer::read_request(int epoll_fd, int fd, t_event event)
 	RawData::print_uint(this->streams[fd]->req->data);
 }
 
+void WebServer::time_out(int epoll_fd)
+{
+	std::map<int, ConnStream *>::iterator it = this->streams.begin();
+	std::map<int, ConnStream *>::iterator ite = this->streams.end();
+	ConnStream * current_conn;
+	long long	current_time;
+	struct timeval		t;
+
+	gettimeofday(&t, NULL);
+	current_time = (t.tv_sec * 1000) + (t.tv_usec / 1000);
+	for (; it != ite; it++)
+	{
+		current_conn = i->second;
+		if (current_conn.cgi_pid > 0 && current_conn.kill_cgi_time < current_time) //* Checks cgi kill time;
+		{
+			std::cout << "CGI killed" << std::endl;
+			kill(current_conn.cgi_pid, SIGTERM);
+			close_conn(epoll_fd, it->first);
+		}
+		else if (current_conn.close_conn_time < current_time) // * Checks conn based time;
+		{
+			std::cout << "Connection killed " << std::endl;
+			close_conn(epoll_fd, it->first);
+		}
+	}
+}
+
+
 void WebServer::listen(void)
 {
 	int num_events = 0;
@@ -141,9 +169,11 @@ void WebServer::listen(void)
 
 	while (is_running)
 	{
-		num_events = epoll_wait(epoll_fd, this->events.data(), this->max_events, -1);
+		num_events = epoll_wait(epoll_fd, this->events.data(), this->max_events, 1000 * 5);
 		if (num_events < 0 || !is_running)
 			break;
+		else
+			time_out(epoll_fd);
 		for (int i = 0; i < num_events; i++)
 		{
 			conn = &this->events[i];
