@@ -297,7 +297,7 @@ bool Parser::parameterLst(T& container) {
 	return false;
 }
 
-// [parameters]
+// [parameters] DEFAULT
 
 template<typename T>
 bool Parser::parameterLstCase1(T& container) {
@@ -380,6 +380,3 @@ bool Parser::parameterLstCase1<std::list<std::pair<int, std::string> > >(std::li
 	it++;
 	return true;
 }
-
-// CHECK ITERATION, TOKENIZATION NOT IN [name]->[param] FORM.
-// ACTUAL TOKENIZATION: [name][param]->[name][param].

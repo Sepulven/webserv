@@ -123,6 +123,9 @@ std::string Parser::getRoute(token token) {
 		}
 	}
 	size_t j = token.content.find_first_of(':') - 1;
+	for (size_t k = j; k != i; k--)
+		if (std::isspace(token.content[k]))
+			return std::string();
 	while (std::isspace(token.content[j]))
 		j--;
 	return token.content.substr(i, j - i + 1);
@@ -149,12 +152,14 @@ long long Parser::convertToByte(std::string str) {
 }
 
 void Parser::pushBackMultipleParams(std::list<std::string>& list, std::string str) {
-	size_t i = str.find_first_of(" \t\v\f\r"); // ! Multiple spaces and tabs.
+	size_t i = str.find_first_of(" \t\v\f\r");
 	if (i == std::string::npos) {
 		list.push_back(str.substr(0, str.size()));
 			return ;
 	}
 	list.push_back(str.substr(0, i));
-	str = str.substr(i + 1, str.size());
+	while (std::isspace(str[i]))
+		i++;
+	str = str.substr(i, str.size());
 	pushBackMultipleParams(list, str);
 }
