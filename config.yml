@@ -1,0 +1,33 @@
+# The first server block will be the default server, it will answer all requests
+# that dont belong to another server.
+
+server:
+    listen:                     # mandatory
+        host: localhost   
+        port: 8080
+    server_name: example.com
+    root: /www
+    index: index.html index2.html
+    error_pages:
+        404: error/404.html
+        403: error/403.html
+        400: error/400.html
+    max_cbsize: 2m              # to do: conversion and mapping
+    max_conn: 10
+    route /about:               # to do: HTTP redirect.
+        http_methods: GET POST
+        root: /www/about
+        index: about.html       # default file to open if the request is the dir
+        dir_listing: on         # 'on' or 'off'
+
+server:
+    listen:
+        host: localhost
+        port: 2020
+    server_name: example2.com
+    root: /home
+    index: xedni.html
+    error_pages:
+        400: error/400.html
+    max_cbsize: 1m
+    max_conn: 5
