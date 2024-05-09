@@ -124,7 +124,7 @@ int Res::exec_CGI(void)
 
 		int status;
 		close(pipe_fd[0]);		  // Close read end
-		stream->pid = pid;
+		stream->cgi_pid = pid;
 		waitpid(pid, &status, 0); // Wait for the child process to finish
 		if (content == "")
 			content = "HTTP/1.1 500 Internal Server Error\nContent-Type:text/plain\nContent-Length: 20\r\n\r\nError running script\n";

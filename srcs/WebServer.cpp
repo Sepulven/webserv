@@ -144,14 +144,14 @@ void WebServer::time_out(int epoll_fd)
 	current_time = (t.tv_sec * 1000) + (t.tv_usec / 1000);
 	for (; it != ite; it++)
 	{
-		current_conn = i->second;
-		if (current_conn.cgi_pid > 0 && current_conn.kill_cgi_time < current_time) //* Checks cgi kill time;
+		current_conn = it->second;
+		if (current_conn->cgi_pid > 0 && current_conn->kill_cgi_time < current_time) //* Checks cgi kill time;
 		{
 			std::cout << "CGI killed" << std::endl;
-			kill(current_conn.cgi_pid, SIGTERM);
+			kill(current_conn->cgi_pid, SIGTERM);
 			close_conn(epoll_fd, it->first);
 		}
-		else if (current_conn.close_conn_time < current_time) // * Checks conn based time;
+		else if (current_conn->close_conn_time < current_time) // * Checks conn based time;
 		{
 			std::cout << "Connection killed " << std::endl;
 			close_conn(epoll_fd, it->first);
@@ -172,8 +172,6 @@ void WebServer::listen(void)
 		num_events = epoll_wait(epoll_fd, this->events.data(), this->max_events, 1000 * 5);
 		if (num_events < 0 || !is_running)
 			break;
-		else
-			time_out(epoll_fd);
 		for (int i = 0; i < num_events; i++)
 		{
 			conn = &this->events[i];
@@ -188,6 +186,7 @@ void WebServer::listen(void)
 				close_conn(epoll_fd, event_data->fd);
 		}
 		this->events.clear();
+		time_out(epoll_fd);
 	}
 	if (num_events < 0 && is_running)
 		throw Error("Epoll_wait failed.");

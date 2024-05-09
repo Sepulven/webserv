@@ -22,9 +22,6 @@ class Res;
 class ConnStream
 {
 	protected:
-		long long last_action_time;
-		long long close_conn_time;
-		long long kill_cgi_time;
 	public:
 		ConnStream(int, ServerContext *);
 		virtual ~ConnStream();
@@ -34,6 +31,10 @@ class ConnStream
 
 		Req *req;
 		Res *res;
+
+		long long last_action_time;
+		long long close_conn_time;
+		long long kill_cgi_time;
 
 		ServerContext *server;
 
