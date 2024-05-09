@@ -46,6 +46,8 @@ void ConnStream::clean_conn()
 	res->content = "";
 	res->data = ""; 
 	res->add_ext= ""; 
+
+	this->cgi_pid = -1;
 }
 
 void ConnStream::set_time(void)

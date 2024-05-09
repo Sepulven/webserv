@@ -10,11 +10,11 @@ int main(void)
 
 	try
 	{
-		Lexer *lex = new Lexer;
-		lex->tokenize("config.yml");
-		Parser *par = new Parser;
-		par->parse(lex->getTokens());
-		delete lex;
+		// Lexer *lex = new Lexer;
+		// lex->tokenize("config.yml");
+		// Parser *par = new Parser;
+		// par->parse(lex->getTokens());
+		// delete lex;
 		WebServer server;
 		server.listen();
 	}

@@ -136,6 +136,7 @@ void WebServer::time_out(int epoll_fd)
 {
 	std::map<int, ConnStream *>::iterator it = this->streams.begin();
 	std::map<int, ConnStream *>::iterator ite = this->streams.end();
+	std::vector<int> keys_to_delete;
 	ConnStream * current_conn;
 	long long	current_time;
 	struct timeval		t;
@@ -147,16 +148,14 @@ void WebServer::time_out(int epoll_fd)
 		current_conn = it->second;
 		if (current_conn->cgi_pid > 0 && current_conn->kill_cgi_time < current_time) //* Checks cgi kill time;
 		{
-			std::cout << "CGI killed" << std::endl;
 			kill(current_conn->cgi_pid, SIGTERM);
-			close_conn(epoll_fd, it->first);
+			keys_to_delete.push_back(it->first);
 		}
 		else if (current_conn->close_conn_time < current_time) // * Checks conn based time;
-		{
-			std::cout << "Connection killed " << std::endl;
-			close_conn(epoll_fd, it->first);
-		}
+			keys_to_delete.push_back(it->first);
 	}
+	for (size_t i = 0; i < keys_to_delete.size(); i++)
+		close_conn(epoll_fd, keys_to_delete[i]);
 }
 
 
@@ -208,6 +207,7 @@ void WebServer::close_conn(int epoll_fd, int fd)
 		throw Error("Epoll_ctl failed");
 	close(fd);
 	delete this->streams[fd];
+	this->streams.erase(fd);
 }
 
 /*Exception class*/
