@@ -123,15 +123,17 @@ void WebServer::read_request(int epoll_fd, int fd, t_event event)
 {
 	int status = this->streams[fd]->req->read(fd);
 
-	this->streams[fd]->set_time(); // * Update last action;
+	this->streams[fd]->set_time();
 	if ((status == 1) && epoll_out_fd(epoll_fd, fd, event))
 		throw Error("Epoll_ctl failed");
 	if (status == -1)
 		this->close_conn(epoll_fd, fd);
-	std::cout << "req:\n";
-	RawData::print_uint(this->streams[fd]->req->data);
 }
 
+/*
+* Kills CGI if it hasn't finished yet, checks CGI time out and CGI status;
+* Kills connections after the close_conn_time has exceeded;
+*/
 void WebServer::time_out(int epoll_fd)
 {
 	std::map<int, ConnStream *>::iterator it = this->streams.begin();
@@ -140,17 +142,19 @@ void WebServer::time_out(int epoll_fd)
 	ConnStream * current_conn;
 	long long	current_time;
 	struct timeval		t;
+	int					CGI_status;
 
 	gettimeofday(&t, NULL);
 	current_time = (t.tv_sec * 1000) + (t.tv_usec / 1000);
+
 	for (; it != ite; it++)
 	{
 		current_conn = it->second;
-		if (current_conn->cgi_pid > 0 && current_conn->kill_cgi_time < current_time) //* Checks cgi kill time;
-		{
-			kill(current_conn->cgi_pid, SIGTERM);
+		CGI_status = 0;
+		if (current_conn->cgi_pid > 0)
+			waitpid(current_conn->cgi_pid, &CGI_status, WNOHANG);
+		if (CGI_status && current_conn->kill_cgi_time < current_time) //* Checks cgi kill time;
 			keys_to_delete.push_back(it->first);
-		}
 		else if (current_conn->close_conn_time < current_time) // * Checks conn based time;
 			keys_to_delete.push_back(it->first);
 	}
@@ -205,7 +209,9 @@ void WebServer::close_conn(int epoll_fd, int fd)
 {
 	if (epoll_del_fd(epoll_fd, fd) < 0)
 		throw Error("Epoll_ctl failed");
-	close(fd);
+	close(fd); // *  Closes connection fd;
+	if (this->streams[fd]->cgi_pid > 0)
+		kill(this->streams[fd]->cgi_pid, SIGTERM);
 	delete this->streams[fd];
 	this->streams.erase(fd);
 }

@@ -56,7 +56,7 @@ class WebServer
 	
 		std::vector<t_event> events; // epoll_events
 
-		// Each indivudal Connection
+		// * Connections
 		std::map<int, ConnStream *> streams;
 	public:
 		WebServer();
