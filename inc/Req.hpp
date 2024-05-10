@@ -44,7 +44,6 @@ enum PATH_TYPE
 
 class ConnStream;
 
-
 class Req
 {
 	private:

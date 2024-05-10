@@ -134,9 +134,8 @@ int Req::read(int fd)
 	catch (const ConnStream::Error &e)
 	{
 		std::cout << e.what() << std::endl;
-		return (-1);
+		return (1);
 	}
-
 	return (0);
 }
 

@@ -37,6 +37,8 @@ class Res
 		void exec_get(void);
 		void exec_post(void);
 		void exec_delete(void);
+
+		int build_http_response(void);
 	public:
 		std::string status_code;
 		std::string content; // * What is going to get rendered

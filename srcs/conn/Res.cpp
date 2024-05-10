@@ -17,44 +17,53 @@ Res::Res(ConnStream *_stream) : stream(_stream)
 Res::~Res() {}
 
 /*
+ * In case of success builds the response;
+ * In case of error gets the error page and loads it;
+*/
+int Res::build_http_response(void)
+{
+	std::stringstream ss;
+	Req *req = stream->req;
+
+	if (req->file_ext == "")
+		req->file_ext = ".html";
+	ss << "HTTP/1.1 " << status_code << " " << this->status[status_code] << "\r\n";
+	ss << "Content-Type: " << content_type[req->file_ext] << "\r\n";
+	ss << "Content-Length: " << content.length() << "\r\n\r\n";
+	ss << content;
+
+	this->data = ss.str();
+	return (write(stream->fd, this->data.c_str(), this->data.length()));
+}
+
+/*
  * Must check for the permissions before executing;
- * Must handle in case of the URL is a  directory;
+ * Execute the action of each individual method;
  */
 int Res::send(void)
 {
 	Req *req = stream->req;
-	std::stringstream ss;
-
-	// * We are going to check for permission before doing anything
 	std::vector<std::string>::iterator it = req->cgi_path.begin();
-	while (it != req->cgi_path.end())
+
+	try
 	{
-		if (req->file_path == *it)
-			return (this->exec_CGI());
-		it++;
+		while (it != req->cgi_path.end())
+		{
+			if (req->file_path == *it)
+				return (this->exec_CGI());
+			it++;
+		}
+		if (req->method == "GET")
+			exec_get();
+		else if (req->method == "POST")
+			exec_post();
+		else if (req->method == "DELETE")
+			exec_delete();
 	}
-
-	if (req->method == "GET")
-		exec_get();
-	else if (req->method == "POST")
-		exec_post();
-	else if (req->method == "DELETE")
-		exec_delete();
-
-	ss << "HTTP/1.1 " << status_code << " " << this->status[status_code] << "\r\n";
-
-	if (this->add_ext != "")
-		ss << "Content-Type: " << content_type[add_ext] << "\r\n";
-	else
-		ss << "Content-Type: " << content_type[stream->req->file_ext] << "\r\n";
-
-	ss << "Content-Length: " << content.length() << "\r\n\r\n";
-
-	ss << content;
-
-	RawData::print_uint(req->data);
-	this->data = ss.str();
-	return (write(stream->fd, this->data.c_str(), this->data.length()));
+	catch (const ConnStream::Error &e)
+	{
+	}
+	return (build_http_response());
 }
 
 int Res::exec_CGI(void)
@@ -142,7 +151,6 @@ void Res::exec_delete(void)
 
 	if (path[0] == '/')
 		path = path.substr(1);
-	// missing extension / content type of this responses
 	if (std::remove(path.c_str()) != 0)
 	{
 		this->content = FileManager::read_file("errors/404.html"); // change for error page variable
@@ -166,7 +174,6 @@ void Res::exec_get(void)
 	}
 	if (stream->req->path_type == _DIRECTORY)
 	{
-		// missing extension / content type of this responses
 		this->content = FileManager::directory_listing(stream->req->file_path);
 		this->add_ext = ".html";
 		this->status_code = "200";
