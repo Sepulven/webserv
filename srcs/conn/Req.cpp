@@ -116,18 +116,27 @@ int Req::read(int fd)
 
 	if (bytes_read <= 0)
 		return -1;
-	while (bytes_read > 0)
+	try
 	{
-		RawData::append(data, buffer, bytes_read);
-		if (method.empty() && RawData::find(data, "\r\n\r\n") != out_of_bound)
-			this->parser();
-		else if (!method.empty())
-			RawData::append(raw_body, buffer, bytes_read);
-		bytes_read = ::read(fd, buffer, 4096);
+		while (bytes_read > 0)
+		{
+			RawData::append(data, buffer, bytes_read);
+			if (method.empty() && RawData::find(data, "\r\n\r\n") != out_of_bound)
+				this->parser();
+			else if (!method.empty())
+				RawData::append(raw_body, buffer, bytes_read);
+			bytes_read = ::read(fd, buffer, 4096);
+		}
+		if (RawData::find(data, "\r\n\r\n") != out_of_bound 
+			&& raw_body.size() >= content_length)
+			return (1);
+	} 
+	catch (const ConnStream::Error &e)
+	{
+		std::cout << e.what() << std::endl;
+		return (-1);
 	}
-	if (RawData::find(data, "\r\n\r\n") != out_of_bound 
-		&& raw_body.size() >= content_length)
-		return (1);
+
 	return (0);
 }
 

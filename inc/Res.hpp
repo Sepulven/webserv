@@ -30,7 +30,6 @@ class Res
 		ConnStream *stream;
 
 		/* Status */
-
 		std::map<std::string, std::string> status;
 		std::map<std::string, std::string> content_type;
  
@@ -39,7 +38,7 @@ class Res
 		void exec_post(void);
 		void exec_delete(void);
 	public:
-		std::string code;
+		std::string status_code;
 		std::string content; // * What is going to get rendered
 		std::string data; // * Final Result
 		std::string add_ext;

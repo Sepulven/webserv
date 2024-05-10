@@ -40,7 +40,7 @@ void ConnStream::clean_conn()
 	req->file_ext = "";
 	req->query_string = "";
 
-	res->code = "";
+	res->status_code = "";
 	res->content = "";
 	res->data = ""; 
 	res->add_ext= ""; 
@@ -56,4 +56,13 @@ void ConnStream::set_time(void)
 	this->last_action_time = (t.tv_sec * 1000) + (t.tv_usec / 1000);
 	this->close_conn_time = this->last_action_time + 20000; // * The connection can last 20 seconds without events;
 	this->kill_cgi_time = this->last_action_time + 5000; // * The connection can take 5 seconds to run the CGI
+}
+
+
+/*Exception class*/
+ConnStream::Error::Error(const char *_msg) : msg(_msg) {}
+
+const char *ConnStream::Error::what() const throw()
+{
+	return (msg);
 }

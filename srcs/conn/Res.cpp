@@ -41,7 +41,7 @@ int Res::send(void)
 	else if (req->method == "DELETE")
 		exec_delete();
 
-	ss << "HTTP/1.1 " << code << " " << this->status[code] << "\r\n";
+	ss << "HTTP/1.1 " << status_code << " " << this->status[status_code] << "\r\n";
 
 	if (this->add_ext != "")
 		ss << "Content-Type: " << content_type[add_ext] << "\r\n";
@@ -147,13 +147,13 @@ void Res::exec_delete(void)
 	{
 		this->content = FileManager::read_file("errors/404.html"); // change for error page variable
 		this->add_ext = ".html";
-		this->code = "404";
+		this->status_code = "404";
 	}
 	else
 	{
 		this->content = "We've deleted the file succesfully!";
 		this->add_ext = ".txt";
-		this->code = "200";
+		this->status_code = "200";
 	}
 }
 
@@ -162,20 +162,20 @@ void Res::exec_get(void)
 	if (stream->req->path_type == _FILE)
 	{
 		this->content = FileManager::read_file(stream->req->file_path);
-		this->code = "200";
+		this->status_code = "200";
 	}
 	if (stream->req->path_type == _DIRECTORY)
 	{
 		// missing extension / content type of this responses
 		this->content = FileManager::directory_listing(stream->req->file_path);
 		this->add_ext = ".html";
-		this->code = "200";
+		this->status_code = "200";
 	}
 	if (stream->req->path_type == _NONE)
 	{
 		this->content = FileManager::read_file("errors/404.html"); // change for error page variable
 		this->add_ext = ".html";
-		this->code = "404";
+		this->status_code = "404";
 	}
 }
 
@@ -201,15 +201,15 @@ void Res::exec_post(void)
 			boundary.erase(0, 1);
 			boundary.erase(boundary.length() - 1, 1);
 		}
-		this->code = FileManager::create_files(req->raw_body, boundary, "uploads");
-		if (this->code == "201")
+		this->status_code = FileManager::create_files(req->raw_body, boundary, "uploads");
+		if (this->status_code == "201")
 			this->content = "What should be the content when we upload a file?";
 		else
 			this->content = "Error while dealing with your post request!";
 	}
 	else
 	{
-		this->code = "406";
+		this->status_code = "406";
 		this->content = "We can't execute this type of request";
 	}
 }

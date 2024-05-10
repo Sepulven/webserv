@@ -35,12 +35,16 @@ WebServer::~WebServer()
 		 << "  ░ ▒ ▒░  ░      ░     ░ ░ ▒  ░ ▒ ░░ ░░   ░ ▒░ ░ ░  ░" << std::endl
 		 << "░ ░ ░ ▒   ░ ░    ░ ░     ░ ░    ▒ ░   ░   ░ ░    ░   " << std::endl
 		 << "    ░ ░                    ░  ░ ░           ░    ░  ░" << std::endl << "\033[0m";
-	for (std::map<int, ServerContext*>::iterator it = servers.begin(); it != servers.end(); it++)
-		delete it->second;
 	for (std::map<int, ConnStream*>::iterator it = streams.begin(); it != streams.end(); it++)
 		close_conn(this->epoll_fd, it->second->fd);
+	for (std::map<int, ServerContext*>::iterator it = servers.begin(); it != servers.end(); it++)
+		delete it->second;
 }
 
+
+/*
+ * Starts the servers to a specific port;
+*/
 void WebServer::init_servers(void)
 {
 	struct sockaddr_in server_addr;
@@ -87,6 +91,10 @@ void WebServer::init_servers(void)
 	this->events.reserve(this->max_events);
 }
 
+/*
+ * Creates a new connection fd and push it to the pool;
+ * In case of it couln't accept the connection if throws an error;
+*/
 void WebServer::accept_connection(int epoll_fd, int fd)
 {
 	struct epoll_event event;
@@ -107,6 +115,10 @@ void WebServer::accept_connection(int epoll_fd, int fd)
 	this->streams[client_fd] = new ConnStream(client_fd, servers[fd]);
 }
 
+/*
+ * Process the request and send the response for a specific connection;
+ * In case of error closes the connections;
+*/
 void WebServer::send_response(int epoll_fd, int fd, t_event event)
 {
 	int status = this->streams[fd]->res->send();
@@ -119,6 +131,11 @@ void WebServer::send_response(int epoll_fd, int fd, t_event event)
 		close_conn(epoll_fd, fd);
 }
 
+/*
+ * Process the request until it reaches the end condition, 
+ * either content-length or the end of the header;
+ * In case of error closes the connection;
+*/
 void WebServer::read_request(int epoll_fd, int fd, t_event event)
 {
 	int status = this->streams[fd]->req->read(fd);
@@ -163,6 +180,9 @@ void WebServer::time_out(int epoll_fd)
 }
 
 
+/*
+ * Listen to new connections and events within the connections;
+*/
 void WebServer::listen(void)
 {
 	int num_events = 0;

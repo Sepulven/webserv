@@ -19,6 +19,7 @@
 class Req;
 class Res;
 
+
 class ConnStream
 {
 	protected:
@@ -40,4 +41,12 @@ class ConnStream
 
 		void set_time(void);
 		void clean_conn();
+
+		class Error : public std::exception
+		{
+			public:
+				const char *msg;
+				virtual const char *what() const throw();
+				Error(const char *_msg);
+		};
 };
