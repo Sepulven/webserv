@@ -3,6 +3,7 @@
 Res::Res(ConnStream *_stream) : stream(_stream)
 {
 	status["200"] = "OK";
+	status["201"] = "CREATED";
 	status["400"] = "BAD REQUEST";
 	status["403"] = "FORBIDDEN";
 	status["404"] = "NOT FOUND";
@@ -59,6 +60,8 @@ int Res::send(void)
 			exec_post();
 		else if (req->method == "DELETE")
 			exec_delete();
+		if (this->status[status_code] == "")
+			throw ConnStream::Error("200", "Status code not found");
 	}
 	catch (const ConnStream::Error &e)
 	{

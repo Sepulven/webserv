@@ -45,8 +45,12 @@ class ConnStream
 		class Error : public std::exception
 		{
 			public:
+				const char *status;
 				const char *msg;
 				virtual const char *what() const throw();
-				Error(const char *_msg);
+
+				const char *get_msg(void) const;
+				const char *get_status(void) const;
+				Error(const char *, const char *);
 		};
 };

@@ -60,7 +60,17 @@ void ConnStream::set_time(void)
 
 
 /*Exception class*/
-ConnStream::Error::Error(const char *_msg) : msg(_msg) {}
+ConnStream::Error::Error(const char *_status, const char *_msg) : status(_status), msg(_msg) {}
+
+const char *ConnStream::Error::get_msg(void) const
+{
+	return (msg);
+}
+
+const char *ConnStream::Error::get_status(void) const
+{
+	return (status);
+}
 
 const char *ConnStream::Error::what() const throw()
 {
