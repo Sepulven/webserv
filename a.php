@@ -61,7 +61,6 @@ if ($_SERVER['method'] === 'GET') {
         $status = 400;
     else
     {
-        // application/vnd.openxmlformats-officedocument.wordprocessingml.document
         $end = strpos($body, "\r\n");
         $boundary = "";
         $boundary = substr($body, 0, $end);

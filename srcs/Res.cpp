@@ -105,14 +105,14 @@ int Res::exec_CGI(void)
 		envp[i] = NULL;
 
 		close(pipe_fd[0]); // Close read end
-		dup2(pipe_fd[1], STDOUT_FILENO); // Redirect stdout to the write end
+		dup2(stream->fd, STDOUT_FILENO); // Redirect stdout to the write end
 
 		close(pipe_fd_aux[1]); // Close write end
 		dup2(pipe_fd_aux[0], STDIN_FILENO); // Redirect stdin to the read end
 
-		// int dev_null = open("/dev/null", O_WRONLY);
-		// dup2(dev_null, STDERR_FILENO); // redirecting stderr to /dev/null
-		// close(dev_null);
+		int dev_null = open("/dev/null", O_WRONLY);
+		dup2(dev_null, STDERR_FILENO); // redirecting stderr to /dev/null
+		close(dev_null);
 
 		execve(argv[0], argv, envp);
 		delete[] envp;
@@ -120,25 +120,19 @@ int Res::exec_CGI(void)
 	}
 	else
 	{
+		// write body input to cgi
 		close(pipe_fd_aux[0]);
 		int nb = write(pipe_fd_aux[1], req->raw_body.data(), req->raw_body.size());
-		std::cout << "writen: " << nb << std::endl;
 		close(pipe_fd_aux[1]);
 
 		close(pipe_fd[1]); // Close write end
 		char buffer[4096];
 		ssize_t bytes_read;
 		std::string content = "";
-		while ((bytes_read = read(pipe_fd[0], buffer, sizeof(buffer))) > 0) // Read output from the pipe
-			content.append(buffer, bytes_read);
 
 		int status;
 		close(pipe_fd[0]); // Close read end
-		waitpid(pid, &status, 0); // Wait for the child process to finish
-		if (content == "")
-			content = "HTTP/1.1 500 Internal Server Error\nContent-Type:text/plain\nContent-Length: 20\r\n\r\nError running script\n";
-		std::cout << "\n>>>>>>>>>>>>>>>\n" << content;
-		return (write(stream->fd, content.c_str(), content.length()));
+		return 1;
 	}
 	return 1;
 }
