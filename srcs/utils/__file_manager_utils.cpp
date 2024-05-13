@@ -1,5 +1,16 @@
 #include <__file_manager_utils.hpp>
-	
+
+
+/*
+	* Returns the content of the error pages in case of success;
+	* Builds an error page in case none exists;
+*/
+std::string FileManager::build_error_pages(const std::string &path, const std::string &code, const std::string &error_msg)
+{
+	std::ofstream out_file;
+
+}
+
 /*
 	* Reads file given a path;
 	* If path starts with '/', jumps it;

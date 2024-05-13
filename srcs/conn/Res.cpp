@@ -1,18 +1,30 @@
 #include <Res.hpp>
 
+
+/*
+ * We must have this map globally;
+ ! Performance issue with error handling issue;
+*/
 Res::Res(ConnStream *_stream) : stream(_stream)
 {
+	// * Error maps;
 	status["200"] = "OK";
 	status["201"] = "CREATED";
 	status["400"] = "BAD REQUEST";
 	status["403"] = "FORBIDDEN";
 	status["404"] = "NOT FOUND";
 
+	// * Content type definition
 	content_type[".txt"] = "text/plain";
 	content_type[".cpp"] = "text/plain";
 	content_type[".hpp"] = "text/plain";
 	content_type[".html"] = "text/html";
 	content_type[".pdf"] = "application/pdf";
+
+
+	// * In case there is no extension;
+	std::string &file_ext = stream->req->file_ext;
+	file_ext = file_ext == "" ? ".html" : file_ext;
 }
 
 Res::~Res() {}
@@ -20,14 +32,19 @@ Res::~Res() {}
 /*
  * In case of success builds the response;
  * In case of error gets the error page and loads it;
+ * If the error page is not found builds a new one;
 */
 int Res::build_http_response(void)
 {
 	std::stringstream ss;
 	Req *req = stream->req;
 
-	if (req->file_ext == "")
-		req->file_ext = ".html";
+
+	if (status_code[0] != '2') // * Sucess;
+	{
+		this->content = FileManager::read_file(); // * Update to the error page what if it can't read?
+		// * What if the page doesn't exist?
+	}
 	ss << "HTTP/1.1 " << status_code << " " << this->status[status_code] << "\r\n";
 	ss << "Content-Type: " << content_type[req->file_ext] << "\r\n";
 	ss << "Content-Length: " << content.length() << "\r\n\r\n";
@@ -40,33 +57,31 @@ int Res::build_http_response(void)
 /*
  * Must check for the permissions before executing;
  * Execute the action of each individual method;
+ * In case of error during the execution, changes the state of the response;
  */
 int Res::send(void)
 {
 	Req *req = stream->req;
-	std::vector<std::string>::iterator it = req->cgi_path.begin();
+	std::vector<std::string> &cgi_path = req->cgi_path;
+	std::vector<std::string>::iterator it = std::find(cgi_path.begin(), cgi_path.end(), req->file_path);
 
-	this->status_code = "";
+	if (!this->status_code.empty() && !this->error_msg.empty())
+		return (build_http_response());
 	try
 	{
-		while (it != req->cgi_path.end())
-		{
-			if (req->file_path == *it)
-				return (this->exec_CGI());
-			it++;
-		}
+		if (it != req->cgi_path.end())
+			return (this->exec_CGI());
 		if (req->method == "GET")
 			exec_get();
 		else if (req->method == "POST")
 			exec_post();
 		else if (req->method == "DELETE")
 			exec_delete();
-		if (this->status[status_code] == "")
-			throw HttpError("200", "Status code not found");
 	}
 	catch (const HttpError &e)
 	{
-		std::cout << e.what() << std::endl;
+		this->error_msg = e.get_msg();
+		this->status_code = e.get_status();
 	}
 	return (build_http_response());
 }

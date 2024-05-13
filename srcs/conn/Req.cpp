@@ -106,13 +106,15 @@ void	Req::parser(void)
 /*
  * Returns 0 in case the read hasn't been finished;
  * Returns 1 when the whole request has been read;
- * Returns -1 to close the connection
+ * Returns -1 to close the connection;
+
+ * If an error is found, sets the response's status
+ * and finishes the request;
 */
 int Req::read(int fd)
 {
 	uint8_t buffer[4096 + 1];
 	int bytes_read = ::read(fd, buffer, 4096);
-
 
 	if (bytes_read <= 0)
 		return -1;
@@ -134,6 +136,7 @@ int Req::read(int fd)
 	catch (const HttpError &e)
 	{
 		std::cout << e.what() << std::endl;
+		stream->res->status_code = e.get_status();
 		return (1);
 	}
 	return (0);

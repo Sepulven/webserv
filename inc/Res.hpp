@@ -42,8 +42,10 @@ class Res
 		int build_http_response(void);
 	public:
 		std::string status_code;
+		std::string error_msg;
+	
 		std::string content; // * What is going to get rendered
-		std::string data; // * Final Result
+		std::string data; // * Final Result in case it is not the CGI
 		std::string add_ext;
 
 		Res(ConnStream *);
