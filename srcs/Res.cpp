@@ -19,7 +19,7 @@ Res::~Res() {}
 /*
  * Must check for the permissions before executing;
  * Must handle in case of the URL is a  directory;
- */
+*/
 int Res::send(void)
 {
 	Req *req = stream->req;
@@ -42,20 +42,18 @@ int Res::send(void)
 		exec_delete();
 
 	ss << "HTTP/1.1 " << code << " " << this->status[code] << "\r\n";
-
 	if (this->add_ext != "")
 		ss << "Content-Type: " << content_type[add_ext] << "\r\n";
 	else
 		ss << "Content-Type: " << content_type[stream->req->file_ext] << "\r\n";
 
-	ss << "Content-Length: " << content.length() << "\r\n";
-
+	ss << "Content-Length: " << content.length() << "\r\n\r\n";
 	// ss << "set-cookie: lang=en;" << "\r\n\r\n";
-
 	ss << content;
 
 	RawData::print_uint(req->data);
 	this->data = ss.str();
+	std::cout << this->data << std::endl;
 	return (write(stream->fd, this->data.c_str(), this->data.length()));
 }
 
@@ -106,11 +104,11 @@ int Res::exec_CGI(void)
 		}
 		envp[i] = NULL;
 
-		close(pipe_fd[0]);				 // Close read end
+		close(pipe_fd[0]); // Close read end
 		dup2(pipe_fd[1], STDOUT_FILENO); // Redirect stdout to the write end
 
-		close(pipe_fd_aux[1]);				 // Close write end
-		dup2(pipe_fd_aux[0], STDIN_FILENO);  // Redirect stdin to the read end
+		close(pipe_fd_aux[1]); // Close write end
+		dup2(pipe_fd_aux[0], STDIN_FILENO); // Redirect stdin to the read end
 
 		// int dev_null = open("/dev/null", O_WRONLY);
 		// dup2(dev_null, STDERR_FILENO); // redirecting stderr to /dev/null
@@ -135,12 +133,11 @@ int Res::exec_CGI(void)
 			content.append(buffer, bytes_read);
 
 		int status;
-		close(pipe_fd[0]);		  // Close read end
+		close(pipe_fd[0]); // Close read end
 		waitpid(pid, &status, 0); // Wait for the child process to finish
 		if (content == "")
 			content = "HTTP/1.1 500 Internal Server Error\nContent-Type:text/plain\nContent-Length: 20\r\n\r\nError running script\n";
-		std::cout << "\n>>>>>>>>>>>>>>>\n"
-				  << content;
+		std::cout << "\n>>>>>>>>>>>>>>>\n" << content;
 		return (write(stream->fd, content.c_str(), content.length()));
 	}
 	return 1;
@@ -170,9 +167,12 @@ void Res::exec_delete(void)
 
 void Res::exec_get(void)
 {
+	std::cout << "check 0\n";
 	if (stream->req->path_type == _FILE)
 	{
+		std::cout << "check 1\n";
 		this->content = FileManager::read_file(stream->req->file_path);
+		std::cout << "check 2\n";
 		this->code = "200";
 	}
 	if (stream->req->path_type == _DIRECTORY)

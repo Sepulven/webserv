@@ -129,4 +129,3 @@ int Req::read(int fd)
 		return (1);
 	return (0);
 }
-

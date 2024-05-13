@@ -10,7 +10,7 @@ import sys
 def POST():
     raw_body = sys.stdin.buffer.read()
 
-    upload_dir = "uploads/"
+    upload_dir = "server_uploaded_files/"
     if not os.path.exists(upload_dir):
         os.mkdir(upload_dir)
     entries = os.listdir(upload_dir)
@@ -32,7 +32,6 @@ def POST():
         return 400
     else:
         # find boundary in header
-        # print("\nform data ok\n")
         bound_start = request.find("boundary=")
         bound_end = request.find("\n", bound_start + 9)
         boundary = "--" + request[bound_start + 9:bound_end]
@@ -91,15 +90,15 @@ def GET():
     res += '<html>\n'
     res += "<head><title>Navigation</title></head>\n"
     res += "<body>\n"
-    res += "<h1>File_upload</h1>\n"
+    res += "<h1>File Upload</h1>\n"
 
     res += '<form method="post" enctype="multipart/form-data">\n'
-    res += '<label for="file-content">Choose a simple file (text only):</label><br>\n'
+    res += '<label for="file-content">Choose a file:</label><br>\n'
     res += '<input type="file" name="file-content" required multiple>\n'
     res += '<input class="submit-button" type="submit" value="Upload">\n'
     res += '</form>\n'
 
-    upload_dir = "uploads/"
+    upload_dir = "server_uploaded_files/"
     if os.path.exists(upload_dir) and os.listdir(upload_dir):
         entries = os.listdir(upload_dir)
         res += '<p>Uploaded Files:</p>'

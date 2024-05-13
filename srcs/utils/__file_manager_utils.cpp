@@ -14,7 +14,6 @@ std::string FileManager::read_file(const std::string path)
 	std::stringstream buff;
 
 	file.open(&path.c_str()[path.c_str()[0] == '/']);
-
 	if (!file.is_open())
 	{
 		if (!not_found.is_open())
