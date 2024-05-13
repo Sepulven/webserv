@@ -5,6 +5,7 @@ import cgi
 import re
 import time
 import uuid
+import sys
 
 content_type = {
     ".txt": "text/plain",
@@ -25,14 +26,19 @@ def repeated_file(filename, entries):
     return filename
 
 def POST():
+    # print("\n\nhelloooooo\n\n")
+    raw_body = sys.stdin.buffer.read()
+    print("RAW_BODY:")
+    print(raw_body)
+
 
     upload_dir = "uploads/"
     if not os.path.exists(upload_dir):
         os.mkdir(upload_dir)
     entries = os.listdir(upload_dir)
 
-    body = os.environ.get("body")
-    if body is None:
+    # body = os.environ.get("body")
+    if raw_body is None:
         return 400
     request = os.environ.get("request")
     if request is None:
@@ -48,13 +54,14 @@ def POST():
         return 400
     else:
         # find boundary in header
+        # print("\nform data ok\n")
         bound_start = request.find("boundary=")
         bound_end = request.find("\n", bound_start + 9)
         boundary = "--" + request[bound_start + 9:bound_end]
         b_len = len(boundary)
 
         # get n bodies of files
-        files = body.split(boundary)
+        files = raw_body.split(boundary)
         if files[0] == "":
             files = files[1:]
 
@@ -110,7 +117,7 @@ def GET():
 
     res += '<form method="post" enctype="multipart/form-data">\n'
     res += '<label for="file-content">Choose a simple file (text only):</label><br>\n'
-    res += '<input type="file" name="file-content" accept=".txt,.css,.scss,.html,.js,.svg" required multiple>\n'
+    res += '<input type="file" name="file-content" required multiple>\n'
     res += '<input class="submit-button" type="submit" value="Upload">\n'
     res += '</form>\n'
 

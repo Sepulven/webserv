@@ -128,7 +128,6 @@ void WebServer::read_request(int epoll_fd, int fd, t_event event)
 		throw Error("Epoll_ctl failed");
 	if (status == -1)
 		this->close_conn(epoll_fd, fd);
-	std::cout << "req:\n";
 	RawData::print_uint(this->streams[fd]->req->data);
 }
 

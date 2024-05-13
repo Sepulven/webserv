@@ -48,7 +48,9 @@ int Res::send(void)
 	else
 		ss << "Content-Type: " << content_type[stream->req->file_ext] << "\r\n";
 
-	ss << "Content-Length: " << content.length() << "\r\n\r\n";
+	ss << "Content-Length: " << content.length() << "\r\n";
+
+	// ss << "set-cookie: lang=en;" << "\r\n\r\n";
 
 	ss << content;
 
@@ -78,6 +80,9 @@ int Res::exec_CGI(void)
 	int pipe_fd[2];
 	pipe(pipe_fd);
 
+	int pipe_fd_aux[2];
+	pipe(pipe_fd_aux);
+
 	pid_t pid = fork();
 
 	std::string raw_body(req->raw_body.begin(), req->raw_body.end());
@@ -104,6 +109,9 @@ int Res::exec_CGI(void)
 		close(pipe_fd[0]);				 // Close read end
 		dup2(pipe_fd[1], STDOUT_FILENO); // Redirect stdout to the write end
 
+		close(pipe_fd_aux[1]);				 // Close write end
+		dup2(pipe_fd_aux[0], STDIN_FILENO);  // Redirect stdin to the read end
+
 		// int dev_null = open("/dev/null", O_WRONLY);
 		// dup2(dev_null, STDERR_FILENO); // redirecting stderr to /dev/null
 		// close(dev_null);
@@ -114,6 +122,10 @@ int Res::exec_CGI(void)
 	}
 	else
 	{
+		close(pipe_fd_aux[0]);
+		int nb = write(pipe_fd_aux[1], req->raw_body.data(), req->raw_body.size());
+		std::cout << "writen: " << nb << std::endl;
+		close(pipe_fd_aux[1]);
 
 		close(pipe_fd[1]); // Close write end
 		char buffer[4096];

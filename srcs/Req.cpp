@@ -112,7 +112,6 @@ int Req::read(int fd)
 	uint8_t buffer[4096 + 1];
 	int bytes_read = ::read(fd, buffer, 4096);
 
-
 	if (bytes_read <= 0)
 		return -1;
 	int i = 0;
