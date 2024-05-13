@@ -57,22 +57,3 @@ void ConnStream::set_time(void)
 	this->close_conn_time = this->last_action_time + 20000; // * The connection can last 20 seconds without events;
 	this->kill_cgi_time = this->last_action_time + 5000; // * The connection can take 5 seconds to run the CGI
 }
-
-
-/*Exception class*/
-ConnStream::Error::Error(const char *_status, const char *_msg) : status(_status), msg(_msg) {}
-
-const char *ConnStream::Error::get_msg(void) const
-{
-	return (msg);
-}
-
-const char *ConnStream::Error::get_status(void) const
-{
-	return (status);
-}
-
-const char *ConnStream::Error::what() const throw()
-{
-	return (msg);
-}

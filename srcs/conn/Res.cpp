@@ -46,6 +46,7 @@ int Res::send(void)
 	Req *req = stream->req;
 	std::vector<std::string>::iterator it = req->cgi_path.begin();
 
+	this->status_code = "";
 	try
 	{
 		while (it != req->cgi_path.end())
@@ -61,10 +62,11 @@ int Res::send(void)
 		else if (req->method == "DELETE")
 			exec_delete();
 		if (this->status[status_code] == "")
-			throw ConnStream::Error("200", "Status code not found");
+			throw HttpError("200", "Status code not found");
 	}
-	catch (const ConnStream::Error &e)
+	catch (const HttpError &e)
 	{
+		std::cout << e.what() << std::endl;
 	}
 	return (build_http_response());
 }

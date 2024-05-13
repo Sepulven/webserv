@@ -11,6 +11,7 @@
 /* Classes */
 #include <Req.hpp>
 #include <Res.hpp>
+#include <HttpError.hpp>
 #include <ServerContext.hpp>
 
 /*Utils*/
@@ -18,7 +19,6 @@
 
 class Req;
 class Res;
-
 
 class ConnStream
 {
@@ -41,16 +41,4 @@ class ConnStream
 
 		void set_time(void);
 		void clean_conn();
-
-		class Error : public std::exception
-		{
-			public:
-				const char *status;
-				const char *msg;
-				virtual const char *what() const throw();
-
-				const char *get_msg(void) const;
-				const char *get_status(void) const;
-				Error(const char *, const char *);
-		};
 };

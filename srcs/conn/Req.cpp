@@ -131,7 +131,7 @@ int Req::read(int fd)
 			&& raw_body.size() >= content_length)
 			return (1);
 	} 
-	catch (const ConnStream::Error &e)
+	catch (const HttpError &e)
 	{
 		std::cout << e.what() << std::endl;
 		return (1);

@@ -1,9 +1,10 @@
 NAME		=	webserv
 CXX			=	c++
-CXXFLAGS 	=	-Wall -Werror -Wextra -std=c++98 -g # -fsanitize=address
+CXXFLAGS 	=	#-Wall -Werror -Wextra -std=c++98 -g # -fsanitize=address
 
-SRCS		=	main.cpp ServerContext.cpp WebServer.cpp \
-				/parser/Lexer.cpp /parser/Parser.cpp /parser/ParserUtils.cpp
+SRCS		=	main.cpp ServerContext.cpp WebServer.cpp HttpError.cpp
+
+PARSER		=	Parser.cpp ParserUtils.cpp Lexer.cpp
 
 UTILS		=	__raw_data_utils.cpp __file_manager_utils.cpp __webserv_utils.cpp
 
@@ -11,6 +12,7 @@ CONN		=	Req.cpp Res.cpp ConnStream.cpp
 
 SRC			=	$(addprefix srcs/,$(SRCS)) \
 				$(addprefix srcs/utils/,$(UTILS)) \
+				$(addprefix srcs/parser/,$(PARSER)) \
 				$(addprefix srcs/conn/,$(CONN)) 
 
 INCLUDES	=	-I ./inc

@@ -31,6 +31,7 @@
 
 /* Classes */
 #include <ConnStream.hpp>
+#include <HttpError.hpp>
 
 /* Utils */
 #include <__raw_data_utils.hpp>

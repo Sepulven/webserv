@@ -13,6 +13,7 @@
 
 /* Classes */
 #include <Req.hpp>
+#include <HttpError.hpp>
 #include <ConnStream.hpp>
 
 enum RES_STATUS {
