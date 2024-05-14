@@ -1,11 +1,21 @@
 #include <WebServer.hpp>
 
+
+/*
+ * Inits the webserver;
+ * Receives serverNodes from parser t start everything;
+*/
 WebServer::WebServer(std::list<t_server> serverNodes)
 {
-	this->max_events = 0;
-	this->init_servers(serverNodes);
-	signal(SIGINT, &WebServer::sig_handler);
+	std::list<t_server>::iterator it = serverNodes.begin();
+	std::vector<ServerContext *> vec;
 
+	signal(SIGINT, &WebServer::sig_handler);
+	for (; it != serverNodes.end(); it++)
+		vec.push_back(new ServerContext(*it));
+	this->init_servers(vec);
+
+	// * Logs the online logo;
 	std::cout << "\r" << "\033[32m" << std::endl
 		<<  "                                                  " << std::endl
 		<<  " ▒█████   ███▄    █  ██▓     ██▓ ███▄    █ ▓█████ " << std::endl
@@ -22,6 +32,7 @@ WebServer::WebServer(std::list<t_server> serverNodes)
 
 WebServer::~WebServer()
 {
+	
 	std::cout << "\r" << "\033[31m" << std::endl
 		 << "                                                     " << std::endl
 		 << " ▒█████    █████▒ █████▒██▓     ██▓ ███▄    █ ▓█████ " << std::endl
@@ -39,19 +50,14 @@ WebServer::~WebServer()
 		delete it->second;
 }
 
-
 /*
- * Starts the servers to a specific port;
+ * Starts the servers to listen to a specific port;
 */
-void WebServer::init_servers(std::list<t_server> serverNodes)
+void WebServer::init_servers(std::vector<ServerContext *> vec)
 {
 	struct sockaddr_in server_addr;
 	struct epoll_event event;
 	int server_fd;
-	std::vector<ServerContext *> vec;
-	for (std::list<t_server>::iterator it = serverNodes.begin(); it != serverNodes.end(); it++) {
-		vec.push_back(new ServerContext(*it));
-	}
 
 	this->epoll_fd = epoll_create1(0);
 	if (this->epoll_fd < 0)
@@ -65,6 +71,7 @@ void WebServer::init_servers(std::list<t_server> serverNodes)
 
 		server_fd = socket(AF_INET, SOCK_STREAM, 0);
 		vec[i]->socket = server_fd;
+
 		if (server_fd < 0)
 			throw Error("Socket failed.");
 		if (sfd_non_blocking(server_fd) < 0)
@@ -79,8 +86,10 @@ void WebServer::init_servers(std::list<t_server> serverNodes)
 		memset(&event, 0, sizeof(struct epoll_event));
 		event.events = EPOLLIN;
 		event.data.ptr = new t_event_data(server_fd, SERVER);
+
 		if (epoll_add_fd(this->epoll_fd, server_fd, event))
 			throw Error("epoll_ctl failed.");
+	
 		this->max_events += vec[i]->max_events;
 		this->servers[server_fd] = vec[i];
 		std::cout << "[" << vec[i]->max_events << "] Listening on port: " << vec[i]->port << std::endl;

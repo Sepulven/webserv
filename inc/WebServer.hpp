@@ -64,7 +64,7 @@ class WebServer
 		~WebServer();
 
 		void listen(void);
-		void init_servers(std::list<t_server> serverNodes);
+		void init_servers(std::vector<ServerContext *>);
 		void accept_connection(int, int);
 		void read_request(int, int, t_event);
 		void send_response(int, int, t_event);
