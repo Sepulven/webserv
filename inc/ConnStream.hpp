@@ -11,6 +11,7 @@
 /* Classes */
 #include <Req.hpp>
 #include <Res.hpp>
+#include <HttpError.hpp>
 #include <ServerContext.hpp>
 
 /*Utils*/
@@ -22,16 +23,19 @@ class Res;
 class ConnStream
 {
 	protected:
-		long long last_action;
-		long long close_conn_time;
 	public:
 		ConnStream(int, ServerContext *);
 		virtual ~ConnStream();
 
 		int fd;
+		int cgi_pid;
 
 		Req *req;
 		Res *res;
+
+		long long last_action_time;
+		long long close_conn_time;
+		long long kill_cgi_time;
 
 		ServerContext *server;
 

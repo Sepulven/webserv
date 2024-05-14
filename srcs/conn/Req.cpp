@@ -37,6 +37,7 @@ void	Req::set_header(std::vector<std::string>& header)
 	TODO: Fix edgy cases of the extension ex.: .a ; a. ; a..a ; a..
 	* Parsing on the URL;
 */
+
 void	Req::set_URL_data(std::string& URL)
 {
 	std::vector<std::string> vec = RawData::split(URL, "?");
@@ -105,7 +106,10 @@ void	Req::parser(void)
 /*
  * Returns 0 in case the read hasn't been finished;
  * Returns 1 when the whole request has been read;
- * Returns -1 to close the connection
+ * Returns -1 to close the connection;
+
+ * If an error is found, sets the response's status
+ * and finishes the request;
 */
 int Req::read(int fd)
 {
@@ -114,17 +118,26 @@ int Req::read(int fd)
 
 	if (bytes_read <= 0)
 		return -1;
-	while (bytes_read > 0)
+	try
 	{
-		RawData::append(data, buffer, bytes_read);
-		if (method.empty() && RawData::find(data, "\r\n\r\n") != out_of_bound)
-			this->parser();
-		else if (!method.empty())
-			RawData::append(raw_body, buffer, bytes_read);
-		bytes_read = ::read(fd, buffer, 4096);
+		while (bytes_read > 0)
+		{
+			RawData::append(data, buffer, bytes_read);
+			if (method.empty() && RawData::find(data, "\r\n\r\n") != out_of_bound)
+				this->parser();
+			else if (!method.empty())
+				RawData::append(raw_body, buffer, bytes_read);
+			bytes_read = ::read(fd, buffer, 4096);
+		}
+		if (RawData::find(data, "\r\n\r\n") != out_of_bound 
+			&& raw_body.size() >= content_length)
+			return (1);
 	}
-	if (RawData::find(data, "\r\n\r\n") != out_of_bound 
-		&& raw_body.size() >= content_length)
+	catch (const HttpError &e)
+	{
+		std::cout << e.what() << std::endl;
+		stream->res->status_code = e.get_status();
 		return (1);
+	}
 	return (0);
 }

@@ -1,60 +1,91 @@
 #include <Res.hpp>
 
+
+/*
+ * We must have this map globally;
+ ! Performance issue with error handling issue;
+*/
 Res::Res(ConnStream *_stream) : stream(_stream)
 {
+	// * Error maps;
 	status["200"] = "OK";
+	status["201"] = "CREATED";
 	status["400"] = "BAD REQUEST";
 	status["403"] = "FORBIDDEN";
 	status["404"] = "NOT FOUND";
 
+	// * Content type definition
 	content_type[".txt"] = "text/plain";
 	content_type[".cpp"] = "text/plain";
 	content_type[".hpp"] = "text/plain";
 	content_type[".html"] = "text/html";
 	content_type[".pdf"] = "application/pdf";
+
+
+	// * In case there is no extension;
+	std::string &file_ext = stream->req->file_ext;
+	file_ext = file_ext == "" ? ".html" : file_ext;
 }
 
 Res::~Res() {}
 
 /*
- * Must check for the permissions before executing;
- * Must handle in case of the URL is a  directory;
+ * In case of success builds the response;
+ * In case of error gets the error page and loads it;
+ * If the error page is not found builds a new one;
 */
+int Res::build_http_response(void)
+{
+	std::stringstream ss;
+	Req *req = stream->req;
+
+
+	if (status_code[0] != '2') // * Sucess;
+	{
+		this->content = FileManager::build_error_pages("", this->status_code, this->error_msg);
+		// * What if the page doesn't exist? We it does not exist, we build it;
+	}
+	ss << "HTTP/1.1 " << status_code << " " << this->status[status_code] << "\r\n";
+	ss << "Content-Type: " << content_type[req->file_ext] << "\r\n";
+	ss << "Content-Length: " << content.length() << "\r\n\r\n";
+	ss << content;
+
+	this->data = ss.str();
+	return (write(stream->fd, this->data.c_str(), this->data.length()));
+}
+
+/*
+ * Must check for the permissions before executing;
+ * Execute the action of each individual method;
+ * In case of error during the execution, changes the state of the response;
+ */
 int Res::send(void)
 {
 	Req *req = stream->req;
-	std::stringstream ss;
+	std::vector<std::string> &cgi_path = req->cgi_path;
+std::vector<std::string>::iterator it = std::find(cgi_path.begin(), cgi_path.end(), req->file_path);
 
-	// * We are going to check for permission before doing anything
-	std::vector<std::string>::iterator it = req->cgi_path.begin();
-	while (it != req->cgi_path.end())
+	// this->status_code = "404";
+	// this->error_msg = "NOT FOUND";
+	if (!this->status_code.empty() && !this->error_msg.empty())
+		return (build_http_response());
+	try
 	{
-		if (req->file_path == *it)
+		if (it != req->cgi_path.end())
 			return (this->exec_CGI());
-		it++;
+		if (req->method == "GET")
+			exec_get();
+		else if (req->method == "POST")
+			exec_post();
+		else if (req->method == "DELETE")
+			exec_delete();
 	}
-
-	if (req->method == "GET")
-		exec_get();
-	else if (req->method == "POST")
-		exec_post();
-	else if (req->method == "DELETE")
-		exec_delete();
-
-	ss << "HTTP/1.1 " << code << " " << this->status[code] << "\r\n";
-	if (this->add_ext != "")
-		ss << "Content-Type: " << content_type[add_ext] << "\r\n";
-	else
-		ss << "Content-Type: " << content_type[stream->req->file_ext] << "\r\n";
-
-	ss << "Content-Length: " << content.length() << "\r\n\r\n";
-	// ss << "set-cookie: lang=en;" << "\r\n\r\n";
-	ss << content;
-
-	// RawData::print_uint(req->data);
-	this->data = ss.str();
-	// std::cout << this->data << std::endl;
-	return (write(stream->fd, this->data.c_str(), this->data.length()));
+	catch (const HttpError &e)
+	{
+		this->error_msg = e.get_msg();
+		this->status_code = e.get_status();
+	}
+	return (build_http_response());
 }
 
 int Res::exec_CGI(void)
@@ -139,25 +170,24 @@ void Res::exec_delete(void)
 	if (path[0] == '/')
 		path = path.substr(1);
 	// missing extension / content type of this responses
-	std::cout << "type: " << stream->req->path_type << std::endl;
 	if (stream->req->path_type == _DIRECTORY)
 	{
 		std::cout << "DIR\n";
 		this->content = FileManager::read_file("error/403.html"); // change for error page variable
 		this->add_ext = ".html";
-		this->code = "403";
+		this->status_code = "403";
 	}
 	else if (std::remove(path.c_str()) != 0)
 	{
 		this->content = FileManager::read_file("error/404.html"); // change for error page variable
 		this->add_ext = ".html";
-		this->code = "404";
+		this->status_code = "404";
 	}
 	else
 	{
 		this->content = "We've deleted the file succesfully!\n";
 		this->add_ext = ".txt";
-		this->code = "200";
+		this->status_code = "200";
 	}
 }
 
@@ -166,20 +196,19 @@ void Res::exec_get(void)
 	if (stream->req->path_type == _FILE)
 	{
 		this->content = FileManager::read_file(stream->req->file_path);
-		this->code = "200";
+		this->status_code = "200";
 	}
 	if (stream->req->path_type == _DIRECTORY)
 	{
-		// missing extension / content type of this responses
 		this->content = FileManager::directory_listing(stream->req->file_path);
 		this->add_ext = ".html";
-		this->code = "200";
+		this->status_code = "200";
 	}
 	if (stream->req->path_type == _NONE)
 	{
 		this->content = FileManager::read_file("errors/404.html"); // change for error page variable
 		this->add_ext = ".html";
-		this->code = "404";
+		this->status_code = "404";
 	}
 }
 
@@ -205,15 +234,15 @@ void Res::exec_post(void)
 			boundary.erase(0, 1);
 			boundary.erase(boundary.length() - 1, 1);
 		}
-		this->code = FileManager::create_files(req->raw_body, boundary, "server_uploaded_files");
-		if (this->code == "201")
+		this->status_code = FileManager::create_files(req->raw_body, boundary, "uploads");
+		if (this->status_code == "201")
 			this->content = "What should be the content when we upload a file?";
 		else
 			this->content = "Error while dealing with your post request!";
 	}
 	else
 	{
-		this->code = "406";
+		this->status_code = "406";
 		this->content = "We can't execute this type of request";
 	}
 }

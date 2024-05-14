@@ -33,12 +33,16 @@ WebServer::~WebServer()
 		 << "  ░ ▒ ▒░  ░      ░     ░ ░ ▒  ░ ▒ ░░ ░░   ░ ▒░ ░ ░  ░" << std::endl
 		 << "░ ░ ░ ▒   ░ ░    ░ ░     ░ ░    ▒ ░   ░   ░ ░    ░   " << std::endl
 		 << "    ░ ░                    ░  ░ ░           ░    ░  ░" << std::endl << "\033[0m";
-	for (std::map<int, ServerContext*>::iterator it = servers.begin(); it != servers.end(); it++)
-		delete it->second;
 	for (std::map<int, ConnStream*>::iterator it = streams.begin(); it != streams.end(); it++)
 		close_conn(this->epoll_fd, it->second->fd);
+	for (std::map<int, ServerContext*>::iterator it = servers.begin(); it != servers.end(); it++)
+		delete it->second;
 }
 
+
+/*
+ * Starts the servers to a specific port;
+*/
 void WebServer::init_servers(void)
 {
 	struct sockaddr_in server_addr;
@@ -85,6 +89,10 @@ void WebServer::init_servers(void)
 	this->events.reserve(this->max_events);
 }
 
+/*
+ * Creates a new connection fd and push it to the pool;
+ * In case of it couln't accept the connection if throws an error;
+*/
 void WebServer::accept_connection(int epoll_fd, int fd)
 {
 	struct epoll_event event;
@@ -105,6 +113,10 @@ void WebServer::accept_connection(int epoll_fd, int fd)
 	this->streams[client_fd] = new ConnStream(client_fd, servers[fd]);
 }
 
+/*
+ * Process the request and send the response for a specific connection;
+ * In case of error closes the connections;
+*/
 void WebServer::send_response(int epoll_fd, int fd, t_event event)
 {
 	int status = this->streams[fd]->res->send();
@@ -116,18 +128,58 @@ void WebServer::send_response(int epoll_fd, int fd, t_event event)
 		close_conn(epoll_fd, fd);
 }
 
+/*
+ * Process the request until it reaches the end condition, 
+ * either content-length or the end of the header;
+ * In case of error closes the connection;
+*/
 void WebServer::read_request(int epoll_fd, int fd, t_event event)
 {
 	int status = this->streams[fd]->req->read(fd);
 
-	this->streams[fd]->set_time(); // * Update last action;
+	this->streams[fd]->set_time();
 	if ((status == 1) && epoll_out_fd(epoll_fd, fd, event))
 		throw Error("Epoll_ctl failed");
 	if (status == -1)
 		this->close_conn(epoll_fd, fd);
-	RawData::print_uint(this->streams[fd]->req->data);
 }
 
+/*
+* Kills CGI if it hasn't finished yet, checks CGI time out and CGI status;
+* Kills connections after the close_conn_time has exceeded;
+*/
+void WebServer::time_out(int epoll_fd)
+{
+	std::map<int, ConnStream *>::iterator it = this->streams.begin();
+	std::map<int, ConnStream *>::iterator ite = this->streams.end();
+	std::vector<int> keys_to_delete;
+	ConnStream * current_conn;
+	long long	current_time;
+	struct timeval		t;
+	int					CGI_status;
+
+	gettimeofday(&t, NULL);
+	current_time = (t.tv_sec * 1000) + (t.tv_usec / 1000);
+
+	for (; it != ite; it++)
+	{
+		current_conn = it->second;
+		CGI_status = 0;
+		if (current_conn->cgi_pid > 0)
+			waitpid(current_conn->cgi_pid, &CGI_status, WNOHANG);
+		if (CGI_status && current_conn->kill_cgi_time < current_time) //* Checks cgi kill time;
+			keys_to_delete.push_back(it->first);
+		else if (current_conn->close_conn_time < current_time) // * Checks conn based time;
+			keys_to_delete.push_back(it->first);
+	}
+	for (size_t i = 0; i < keys_to_delete.size(); i++)
+		close_conn(epoll_fd, keys_to_delete[i]);
+}
+
+
+/*
+ * Listen to new connections and events within the connections;
+*/
 void WebServer::listen(void)
 {
 	int num_events = 0;
@@ -137,7 +189,7 @@ void WebServer::listen(void)
 
 	while (is_running)
 	{
-		num_events = epoll_wait(epoll_fd, this->events.data(), this->max_events, -1);
+		num_events = epoll_wait(epoll_fd, this->events.data(), this->max_events, 1000 * 5);
 		if (num_events < 0 || !is_running)
 			break;
 		for (int i = 0; i < num_events; i++)
@@ -154,6 +206,7 @@ void WebServer::listen(void)
 				close_conn(epoll_fd, event_data->fd);
 		}
 		this->events.clear();
+		time_out(epoll_fd);
 	}
 	if (num_events < 0 && is_running)
 		throw Error("Epoll_wait failed.");
@@ -173,8 +226,11 @@ void WebServer::close_conn(int epoll_fd, int fd)
 {
 	if (epoll_del_fd(epoll_fd, fd) < 0)
 		throw Error("Epoll_ctl failed");
-	close(fd);
+	close(fd); // *  Closes connection fd;
+	if (this->streams[fd]->cgi_pid > 0)
+		kill(this->streams[fd]->cgi_pid, SIGTERM);
 	delete this->streams[fd];
+	this->streams.erase(fd);
 }
 
 /*Exception class*/

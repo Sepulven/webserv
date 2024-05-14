@@ -5,6 +5,8 @@ ConnStream::ConnStream(int _fd, ServerContext *_server) : fd(_fd), server(_serve
 	this->req = new Req(this);
 	this->res = new Res(this);
 	this->set_time();
+
+	this->cgi_pid = -1;
 }
 
 ConnStream::~ConnStream()
@@ -38,12 +40,12 @@ void ConnStream::clean_conn()
 	req->file_ext = "";
 	req->query_string = "";
 
-	// req->cgi_path = "";
-
-	res->code = "";
+	res->status_code = "";
 	res->content = "";
 	res->data = ""; 
 	res->add_ext= ""; 
+
+	this->cgi_pid = -1;
 }
 
 void ConnStream::set_time(void)
@@ -51,6 +53,7 @@ void ConnStream::set_time(void)
 	struct timeval		t;
 
 	gettimeofday(&t, NULL);
-	this->last_action = (t.tv_sec * 1000) + (t.tv_usec / 1000);
-	this->close_conn_time = this->last_action + 20000; // * The connection can last 20 seconds without events;
+	this->last_action_time = (t.tv_sec * 1000) + (t.tv_usec / 1000);
+	this->close_conn_time = this->last_action_time + 20000; // * The connection can last 20 seconds without events;
+	this->kill_cgi_time = this->last_action_time + 5000; // * The connection can take 5 seconds to run the CGI
 }

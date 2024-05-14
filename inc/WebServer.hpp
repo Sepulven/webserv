@@ -56,7 +56,7 @@ class WebServer
 	
 		std::vector<t_event> events; // epoll_events
 
-		// Each indivudal Connection
+		// * Connections
 		std::map<int, ConnStream *> streams;
 	public:
 		WebServer();
@@ -69,6 +69,7 @@ class WebServer
 		void read_request(int, int, t_event);
 		void send_response(int, int, t_event);
 		void close_conn(int, int);
+		void time_out(int);
 
 		class Error : public std::exception
 		{

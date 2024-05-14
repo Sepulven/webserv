@@ -12,8 +12,8 @@
 
 namespace RawData
 {
-	typedef typename std::vector<uint8_t>::iterator iterator;
-	typedef typename std::vector<uint8_t>::const_iterator const_iterator;
+	typedef std::vector<uint8_t>::iterator iterator;
+	typedef std::vector<uint8_t>::const_iterator const_iterator;
 
 	void print_uint(const std::vector<uint8_t> &str);
 

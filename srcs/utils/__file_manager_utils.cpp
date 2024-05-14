@@ -1,5 +1,46 @@
 #include <__file_manager_utils.hpp>
-	
+
+
+/*
+ * Returns a html page given a content;
+ * Styles it;
+*/
+std::string html_template(const std::string &content, const std::string &title)
+{
+	std::stringstream ss;
+
+	ss << "<!DOCTYPE html><html lang='en'>"
+		<< "<html><head><title>"<< title << "</title></head>" 
+		<< "<body>";
+	ss << content;
+	ss << "</body></html>" << std::endl;
+	return (ss.str());
+}
+
+/*
+	* Returns the content of the error pages in case of success;
+	* Builds an error page in case none exists;
+*/
+std::string FileManager::build_error_pages(const std::string &path, const std::string &code, const std::string &error_msg)
+{
+	std::ifstream file;
+	std::stringstream content ;
+
+	file.open(&path.c_str()[path.c_str()[0] == '/']);
+	// * If we can't open, we build it;
+	if (!file.is_open())
+	{
+		content << "<h1>"<< code << " " << "</h1>"
+				<< "<p>" << error_msg << "</p>";
+	}
+	else
+	{
+		content << file.rdbuf();
+		file.close();
+	}
+	return (html_template(content.str(), "Error " + code));
+}
+
 /*
 	* Reads file given a path;
 	* If path starts with '/', jumps it;
@@ -32,14 +73,13 @@ std::string FileManager::read_file(const std::string path)
 */
 std::string FileManager::directory_listing(const std::string path)
 {
-	std::stringstream ss;
 	DIR* dir = opendir(path.c_str());
+	std::stringstream ss;
 	struct dirent* entry;
-
-	ss << "<!DOCTYPE html><html lang='en'>"
-		<< "<html><head><title>Directory Listing</title></head>" 
-		<< "<body><h1>Directory Listing</h1><ul>";
 	entry = readdir(dir);
+
+	ss << "<h1>Directory Listing</h1>";
+	ss << "<ul>";
 	while (entry)
 	{
 		ss  << "<li>"
@@ -47,9 +87,9 @@ std::string FileManager::directory_listing(const std::string path)
 			<< "</li>" << std::endl;
 		entry = readdir(dir);
 	}
-	ss << "</ul></body></html>" << std::endl;
+	ss << "</ul>";
 	closedir(dir);
-	return (ss.str());
+	return (html_template(ss.str(), "Directory Listing"));
 }
 
 /*
@@ -69,6 +109,7 @@ std::vector<uint8_t> get_file(const std::vector<uint8_t>& content)
 
 /*
  * Returns the status code of the operation;
+ * Creates multiple files from POST request;
 */
 std::string FileManager::create_files(const std::vector<uint8_t>& body, const std::string & boundary, const std::string dir)
 {
@@ -96,6 +137,7 @@ std::string FileManager::create_files(const std::vector<uint8_t>& body, const st
 
 /*
  * Returns the status code of the operation;
+ * Creates one file;
 */
 std::string FileManager::create_file(const std::vector<uint8_t>& body, const std::string dir)
 {

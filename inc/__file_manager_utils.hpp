@@ -22,10 +22,14 @@
 	* Reading files;
 	* Directory listing;
 	* Creating files;
+	* Biuilding error pages;
 */
 
 namespace FileManager
 {
+	// * Error cases;
+	std::string build_error_pages(const std::string &, const std::string &, const std::string &);
+
 	// * Get method
 	std::string read_file(const std::string);
 	std::string directory_listing(const std::string);

@@ -13,6 +13,7 @@
 
 /* Classes */
 #include <Req.hpp>
+#include <HttpError.hpp>
 #include <ConnStream.hpp>
 
 enum RES_STATUS {
@@ -30,7 +31,6 @@ class Res
 		ConnStream *stream;
 
 		/* Status */
-
 		std::map<std::string, std::string> status;
 		std::map<std::string, std::string> content_type;
  
@@ -38,10 +38,14 @@ class Res
 		void exec_get(void);
 		void exec_post(void);
 		void exec_delete(void);
+
+		int build_http_response(void);
 	public:
-		std::string code;
+		std::string status_code;
+		std::string error_msg;
+	
 		std::string content; // * What is going to get rendered
-		std::string data; // * Final Result
+		std::string data; // * Final Result in case it is not the CGI
 		std::string add_ext;
 
 		Res(ConnStream *);
