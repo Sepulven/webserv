@@ -11,11 +11,14 @@ int main(void)
 	{
 		Lexer *lex = new Lexer;
 		lex->tokenize("config.yml");
+		Lexer::printTokens(lex->getTokens());   // Print tokens.
 		Parser *par = new Parser;
 		par->parse(lex->getTokens());
 		delete lex;
+		par->printServerNodes(par->getServerNodesIt());  // Print server nodes.
 		WebServer server;
 		server.listen();
+		delete par;
 	}
 	catch (const std::exception& e)
 	{

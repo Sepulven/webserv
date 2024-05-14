@@ -24,6 +24,7 @@ enum nodeType {
 	ROUTE,
 	METHOD,
 	DIR_LISTING,
+	REDIRECT
 };
 
 typedef struct token {

@@ -3,8 +3,8 @@
 Lexer::Lexer() {
 	std::string tmp[] = {"server", "listen", "host", "port", "server_name",
 	"root", "index", "error_pages", "max_cbsize", "max_conn", "route", "http_methods",
-	"dir_listing"};
-	for (int i = 0; i < 13; i++)
+	"dir_listing", "redirect"};
+	for (int i = 0; i < 14; i++)
 		types.insert(std::make_pair(tmp[i], i));
 }
 
