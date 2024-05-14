@@ -4,13 +4,15 @@ server:
         port: 8080
     server_name: fgsdfg dfgs
     root: /www
-    index: index.html index2.html   fdf fgf ffff    
     error_pages:
+    index: index.html index2.html   fdf fgf ffff    
         404: error/404.html
         403: error/403.html
         400: error/400.html
     max_cbsize: 2m            # to do: conversion and mapping
     max_conn: 0
+    route /:
+
     route /about/hjk:               # to do: HTTP redirect.
         http_methods: gdfhdfh
         root: /www/about

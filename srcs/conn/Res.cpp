@@ -42,8 +42,8 @@ int Res::build_http_response(void)
 
 	if (status_code[0] != '2') // * Sucess;
 	{
-		this->content = FileManager::read_file(); // * Update to the error page what if it can't read?
-		// * What if the page doesn't exist?
+		this->content = FileManager::build_error_pages("", this->status_code, this->error_msg);
+		// * What if the page doesn't exist? We it does not exist, we build it;
 	}
 	ss << "HTTP/1.1 " << status_code << " " << this->status[status_code] << "\r\n";
 	ss << "Content-Type: " << content_type[req->file_ext] << "\r\n";
@@ -63,8 +63,10 @@ int Res::send(void)
 {
 	Req *req = stream->req;
 	std::vector<std::string> &cgi_path = req->cgi_path;
-	std::vector<std::string>::iterator it = std::find(cgi_path.begin(), cgi_path.end(), req->file_path);
+std::vector<std::string>::iterator it = std::find(cgi_path.begin(), cgi_path.end(), req->file_path);
 
+	// this->status_code = "404";
+	// this->error_msg = "NOT FOUND";
 	if (!this->status_code.empty() && !this->error_msg.empty())
 		return (build_http_response());
 	try

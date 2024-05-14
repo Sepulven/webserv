@@ -132,7 +132,7 @@ int Req::read(int fd)
 		if (RawData::find(data, "\r\n\r\n") != out_of_bound 
 			&& raw_body.size() >= content_length)
 			return (1);
-	} 
+	}
 	catch (const HttpError &e)
 	{
 		std::cout << e.what() << std::endl;
