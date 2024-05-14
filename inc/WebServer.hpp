@@ -60,7 +60,6 @@ class WebServer
 		std::map<int, ConnStream *> streams;
 	public:
 		WebServer();
-		WebServer();
 		~WebServer();
 
 		void listen(void);

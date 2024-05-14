@@ -19,6 +19,7 @@
 
 /* C++ headers*/
 #include <string>
+#include <vector>
 
 /* Classes */
 
