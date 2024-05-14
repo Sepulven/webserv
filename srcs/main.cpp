@@ -7,14 +7,13 @@ const char* RESET_COLOR = "\033[0m";
 
 int main(void)
 {
-
 	try
 	{
-		// Lexer *lex = new Lexer;
-		// lex->tokenize("config.yml");
-		// Parser *par = new Parser;
-		// par->parse(lex->getTokens());
-		// delete lex;
+		Lexer *lex = new Lexer;
+		lex->tokenize("config.yml");
+		Parser *par = new Parser;
+		par->parse(lex->getTokens());
+		delete lex;
 		WebServer server;
 		server.listen();
 	}
@@ -23,4 +22,3 @@ int main(void)
 		std::cout << RED_TEXT << "ERROR: " << e.what() << RESET_COLOR << std::endl;
 	}
 }
-
