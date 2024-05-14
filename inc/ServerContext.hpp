@@ -22,6 +22,7 @@
 #include <vector>
 
 /* Classes */
+#include "Parser.hpp"
 
 /*
 	Server contexts:
@@ -32,6 +33,7 @@
 
 typedef struct s_location
 {
+	std::string path;
 	std::string	root;
 	std::string	redirect;
 	std::vector<std::string>	http_methods;
@@ -50,7 +52,11 @@ class ServerContext
 		int			port;
 		int			max_events;
 		int			socket;
+		long long	max_cb_size;
+		std::map<int, std::string> error_pages;
+		std::vector<t_location> routes;
+		// Routes missing.
 
-		ServerContext(std::string, std::string, int);
+		ServerContext(t_server serverNode);
 		virtual ~ServerContext();
 };

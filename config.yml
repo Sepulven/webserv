@@ -16,7 +16,7 @@ server:
     max_cbsize: 2m              # to do: conversion and mapping
     max_conn: 10
     route /about:               # to do: HTTP redirect.
-        root: /www/about
+        root: /www
         index: about.html       # default file to open if the request is the dir
         dir_listing: on         # 'on' or 'off'
         redirect: ola
@@ -26,6 +26,18 @@ server:
     listen:
         host: localhost
         port: 2020
+    server_name: example2.com
+    root: /home
+    index: xedni.html
+    error_pages:
+        400: error/400.html
+    max_cbsize: 1m
+    max_conn: 5
+
+server:
+    listen:
+        host: localhost
+        port: 1234
     server_name: example2.com
     root: /home
     index: xedni.html

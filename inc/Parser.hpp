@@ -79,5 +79,6 @@ public:
 	
 	void	parse(std::list<token> tokens);
 	std::list<t_server>::iterator getServerNodesIt(void);
+	std::list<t_server> getServerNodes(void);
 	void	printServerNodes(std::list<t_server>::iterator it);
 };

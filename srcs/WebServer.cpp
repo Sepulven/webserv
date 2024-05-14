@@ -1,9 +1,9 @@
 #include <WebServer.hpp>
 
-WebServer::WebServer()
+WebServer::WebServer(std::list<t_server> serverNodes)
 {
 	this->max_events = 0;
-	this->init_servers();
+	this->init_servers(serverNodes);
 	signal(SIGINT, &WebServer::sig_handler);
 
 	std::cout << "\r" << "\033[32m" << std::endl
@@ -43,16 +43,15 @@ WebServer::~WebServer()
 /*
  * Starts the servers to a specific port;
 */
-void WebServer::init_servers(void)
+void WebServer::init_servers(std::list<t_server> serverNodes)
 {
 	struct sockaddr_in server_addr;
 	struct epoll_event event;
 	int server_fd;
 	std::vector<ServerContext *> vec;
-
-	vec.push_back(new ServerContext("asepulve.com.br", "localhost", 8080));
-	vec.push_back(new ServerContext("ratavare.com.br", "localhost", 8088));
-	vec.push_back(new ServerContext("mvicent.com.br", "localhost", 8888));
+	for (std::list<t_server>::iterator it = serverNodes.begin(); it != serverNodes.end(); it++) {
+		vec.push_back(new ServerContext(*it));
+	}
 
 	this->epoll_fd = epoll_create1(0);
 	if (this->epoll_fd < 0)

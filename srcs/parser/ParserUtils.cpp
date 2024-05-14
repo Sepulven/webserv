@@ -180,3 +180,7 @@ void Parser::pushBackMultipleParams(std::list<std::string>& list, std::string st
 std::list<t_server>::iterator Parser::getServerNodesIt(void) {
 	return serverNodes.begin();
 }
+
+std::list<t_server> Parser::getServerNodes(void) {
+	return serverNodes;
+}
