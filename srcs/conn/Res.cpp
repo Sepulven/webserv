@@ -110,6 +110,7 @@ int Res::exec_CGI(void)
 	pipe(pipe_fd);
 	pipe(pipe_fd_aux);
 	pid_t pid = fork();
+
 	if (pid == 0)
 	{
 		std::vector<std::string> request;
@@ -143,17 +144,14 @@ int Res::exec_CGI(void)
 		delete[] envp;
 		exit(EXIT_FAILURE); // check this
 	}
-	else
-	{
-		stream->cgi_pid = pid;
-		close(pipe_fd_aux[0]);
-		write(pipe_fd_aux[1], req->raw_body.data(), req->raw_body.size()); // send request to cgi
-		close(pipe_fd_aux[1]);
+	// * Parent Process
+	close(pipe_fd_aux[0]);
+	write(pipe_fd_aux[1], req->raw_body.data(), req->raw_body.size()); // send request to cgi
+	close(pipe_fd_aux[1]);
 
-		close(pipe_fd[1]); // Close write end
-		close(pipe_fd[0]); // Close read end
-		return 1;
-	}
+	close(pipe_fd[1]); // Close write end
+	close(pipe_fd[0]); // Close read end
+	this->stream->cgi_pid = pid;
 	return 1;
 }
 

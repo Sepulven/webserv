@@ -59,12 +59,11 @@ class WebServer
 		// * Connections
 		std::map<int, ConnStream *> streams;
 	public:
-		// WebServer();
 		WebServer(std::list<t_server> serverNodes);
 		~WebServer();
 
 		void listen(void);
-		void init_servers(std::vector<ServerContext *>);
+		void init_servers(std::vector<ServerContext *>&);
 		void accept_connection(int, int);
 		void read_request(int, int, t_event);
 		void send_response(int, int, t_event);

@@ -10,6 +10,8 @@ WebServer::WebServer(std::list<t_server> serverNodes)
 	std::list<t_server>::iterator it = serverNodes.begin();
 	std::vector<ServerContext *> vec;
 
+	this->max_events = 0;
+
 	signal(SIGINT, &WebServer::sig_handler);
 	for (; it != serverNodes.end(); it++)
 		vec.push_back(new ServerContext(*it));
@@ -53,7 +55,7 @@ WebServer::~WebServer()
 /*
  * Starts the servers to listen to a specific port;
 */
-void WebServer::init_servers(std::vector<ServerContext *> vec)
+void WebServer::init_servers(std::vector<ServerContext *>& vec)
 {
 	struct sockaddr_in server_addr;
 	struct epoll_event event;
@@ -65,10 +67,11 @@ void WebServer::init_servers(std::vector<ServerContext *> vec)
 	for (size_t i = 0; i < vec.size(); i++)
 	{
 		memset(&server_addr, 0, sizeof(struct sockaddr_in));
+	
 		server_addr.sin_family = AF_INET;
 		server_addr.sin_addr.s_addr = vec[i]->domain;
 		server_addr.sin_port = htons(vec[i]->port);
-
+		
 		server_fd = socket(AF_INET, SOCK_STREAM, 0);
 		vec[i]->socket = server_fd;
 
@@ -91,7 +94,6 @@ void WebServer::init_servers(std::vector<ServerContext *> vec)
 			throw Error("epoll_ctl failed.");
 	
 		this->max_events += vec[i]->max_events;
-		this->servers[server_fd] = vec[i];
 		std::cout << "[" << vec[i]->max_events << "] Listening on port: " << vec[i]->port << std::endl;
 	}
 	this->events.reserve(this->max_events);
@@ -158,27 +160,30 @@ void WebServer::read_request(int epoll_fd, int fd, t_event event)
 */
 void WebServer::time_out(int epoll_fd)
 {
-	std::map<int, ConnStream *>::iterator it = this->streams.begin();
-	std::map<int, ConnStream *>::iterator ite = this->streams.end();
+	std::map<int, ConnStream *>::iterator it = this->streams.begin(), ite = this->streams.end();
 	std::vector<int> keys_to_delete;
 	ConnStream * current_conn;
 	long long	current_time;
 	struct timeval		t;
-	int					CGI_status;
 
 	gettimeofday(&t, NULL);
 	current_time = (t.tv_sec * 1000) + (t.tv_usec / 1000);
-
+	std::cout << "Number of conn:" << this->streams.size() << std::endl;
 	for (; it != ite; it++)
 	{
 		current_conn = it->second;
-		CGI_status = 0;
-		if (current_conn->cgi_pid > 0)
-			waitpid(current_conn->cgi_pid, &CGI_status, WNOHANG);
-		if (CGI_status && current_conn->kill_cgi_time < current_time) //* Checks cgi kill time;
+		int wpid;
+		wpid = waitpid(current_conn->cgi_pid, NULL, WNOHANG);
+		std::cout << wpid << std::endl;
+		if (wpid == -1)
+			current_conn->cgi_pid = -1;
+		if (wpid > 0) // * pid of the child process has changed
+			current_conn->cgi_pid = -1;
+		if (wpid == 0 && current_conn->kill_cgi_time < current_time) //* Checks cgi kill time;
 			keys_to_delete.push_back(it->first);
 		else if (current_conn->close_conn_time < current_time) // * Checks conn based time;
 			keys_to_delete.push_back(it->first);
+			
 	}
 	for (size_t i = 0; i < keys_to_delete.size(); i++)
 		close_conn(epoll_fd, keys_to_delete[i]);
@@ -197,7 +202,7 @@ void WebServer::listen(void)
 
 	while (is_running)
 	{
-		num_events = epoll_wait(epoll_fd, this->events.data(), this->max_events, 1000 * 5);
+		num_events = epoll_wait(epoll_fd, this->events.data(), this->max_events, 100 * 5);
 		if (num_events < 0 || !is_running)
 			break;
 		for (int i = 0; i < num_events; i++)
@@ -235,10 +240,15 @@ void WebServer::close_conn(int epoll_fd, int fd)
 	if (epoll_del_fd(epoll_fd, fd) < 0)
 		throw Error("Epoll_ctl failed");
 	close(fd); // *  Closes connection fd;
-	if (this->streams[fd]->cgi_pid > 0)
-		kill(this->streams[fd]->cgi_pid, SIGTERM);
+	// std::cout <<waitpid(this->streams[fd]->cgi_pid, NULL, WNOHANG) << std::endl;
+	if (waitpid(this->streams[fd]->cgi_pid, NULL, WNOHANG) == 0)
+	{
+		std::cout << "Here we are" << std::endl;
+		kill(this->streams[fd]->cgi_pid, SIGKILL);
+	}
 	delete this->streams[fd];
 	this->streams.erase(fd);
+	std::cout << "we've closed the connection on fd " << fd << std::endl;
 }
 
 /*Exception class*/

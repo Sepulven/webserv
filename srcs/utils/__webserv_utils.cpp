@@ -12,10 +12,13 @@ int ServerUtils::set_reuseaddr(int sfd)
 	return (setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)));
 }
 
+#include <iostream>
+
 int ServerUtils::bind(int sfd, struct sockaddr_in *server_addr)
 {
 	if (!server_addr)
 		return (-1);
+
 	return (::bind(sfd, (struct sockaddr *)server_addr, sizeof(struct sockaddr_in)));
 }
 
