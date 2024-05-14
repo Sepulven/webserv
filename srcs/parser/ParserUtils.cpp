@@ -17,12 +17,16 @@ void Parser::printServerNodes(std::list<t_server>::iterator it) {
 	std::cout << "    Index: ";
 	for (std::list<std::string>::iterator tmp = it->index.begin(); tmp != it->index.end(); tmp++)
 		std::cout << *tmp << "$ ";
+	std::cout << std::endl << "    HTTP methods: ";
+	for (std::list<std::string>::iterator tmp = it->httpMethods.begin(); tmp != it->httpMethods.end(); tmp++)
+		std::cout << *tmp << "$ ";
 	std::cout << std::endl << "    Error pages:" << std::endl;
 	for (std::list<std::pair<int, std::string> > ::iterator tmp = it->errorPages.begin(); tmp != it->errorPages.end(); tmp++)
 		std::cout << "        "<< tmp->first << " " << tmp->second << std::endl;
 	for (std::list<t_route>::iterator tmp = it->route.begin(); tmp != it->route.end(); tmp++) {
 		std::cout << "    Route: " << tmp->path << std::endl;
 		std::cout << "        Root: " << tmp->rroot << std::endl;
+		std::cout << "        Redirection: " << tmp->redir << std::endl;
 		std::cout << "        HTTP methods: ";
 		for (std::list<std::string>::iterator tmp2 = tmp->httpMethods.begin(); tmp2 != tmp->httpMethods.end(); tmp2++)
 			std::cout << *tmp2 << " ";
@@ -46,16 +50,23 @@ s_server::s_server() {
 
 s_route::s_route() {
 	this->rroot = std::string();
+	this->redir = std::string();
 	this->dirListing = -1;
 }
 
 void Parser::resetParam(int type, int identLevel) {
-	std::cout << "CLEARED VALUES ON TYPE: " << type << " IDENT LVL: " << identLevel << std::endl;
+	// std::cout << "CLEARED VALUES ON TYPE: " << type << " IDENT LVL: " << identLevel << std::endl;
 	if (type == INDEX) {
 		if (identLevel == 1)
 			serverNodes.back().index.clear();
 		if (identLevel == 2)
-			serverNodes.back().route.back().index.pop_back();
+			serverNodes.back().route.back().index.pop_back(); // ! Might need a clear instead of pop_back
+	}
+	if (type == METHOD) {
+		if (identLevel == 1)
+			serverNodes.back().httpMethods.clear();
+		if (identLevel == 2)
+			serverNodes.back().route.back().httpMethods.clear();
 	}
 	if (type == LISTEN) {
 		serverNodes.back().host = std::string();
@@ -85,6 +96,8 @@ void Parser::resetParam(int type, int identLevel) {
 		serverNodes.back().maxCBSize = -1;
 	if (type == MAX_CONN)
 		serverNodes.back().maxConn = -1;
+	if (type == REDIRECT)
+		serverNodes.back().route.back().redir = std::string();
 }
 
 std::list<token>::iterator Parser::getLastTokenIt(std::list<token> tokens) {
@@ -162,4 +175,8 @@ void Parser::pushBackMultipleParams(std::list<std::string>& list, std::string st
 		i++;
 	str = str.substr(i, str.size());
 	pushBackMultipleParams(list, str);
+}
+
+std::list<t_server>::iterator Parser::getServerNodesIt(void) {
+	return serverNodes.begin();
 }

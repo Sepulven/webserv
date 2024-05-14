@@ -21,3 +21,4 @@ server:
     route /gdfgh/ghdfgh:
         http_methods: fgf
         root: fgsd
+        redirect: /dfgds

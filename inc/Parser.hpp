@@ -6,6 +6,7 @@
 typedef struct s_route {
 	s_route();
 	std::string path;
+	std::string redir;
 	std::list<std::string> httpMethods;
 	std::list<std::string> index;
 	std::string rroot;
@@ -18,6 +19,7 @@ typedef struct s_server {
 	int port;
 	std::string serverName;
 	std::string root;
+	std::list<std::string> httpMethods;
 	std::list<std::string> index;
 	std::list<std::pair<int, std::string> > errorPages;
 	long long maxCBSize;
@@ -37,7 +39,6 @@ private:
 	std::map<int, bool> nodeCheck;
 
 	std::list<token>::iterator getLastTokenIt(std::list<token> tokens);
-	void		printServerNodes(std::list<t_server>::iterator it);
 	void 		resetParam(int type, int identLevel);
 	std::string getParam(token token);
 	std::string getRoute(token token);
@@ -77,4 +78,6 @@ public:
 	~Parser();
 	
 	void	parse(std::list<token> tokens);
+	std::list<t_server>::iterator getServerNodesIt(void);
+	void	printServerNodes(std::list<t_server>::iterator it);
 };

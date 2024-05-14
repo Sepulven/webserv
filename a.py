@@ -5,34 +5,18 @@ import cgi
 import re
 import time
 import uuid
-
-content_type = {
-    ".txt": "text/plain",
-    ".cpp": "text/plain",
-    ".hpp": "text/plain",
-    ".py": "text/plain",
-    ".html": "text/html",
-    ".pdf": "application/pdf"
-}
-
-def repeated_file(filename, entries):
-    for i in entries: # change file name if it already exists
-        if i == filename:
-            name = filename.split('.')[0]
-            ext = filename.split('.')[1]
-            filename = name + "_" + str(int(time.time())) + "." + ext
-
-    return filename
+import sys
 
 def POST():
+    raw_body = sys.stdin.buffer.read()
 
-    upload_dir = "uploads/"
+    upload_dir = "server_uploaded_files/"
     if not os.path.exists(upload_dir):
         os.mkdir(upload_dir)
     entries = os.listdir(upload_dir)
 
-    body = os.environ.get("body")
-    if body is None:
+    # body = os.environ.get("body")
+    if raw_body is None:
         return 400
     request = os.environ.get("request")
     if request is None:
@@ -54,7 +38,7 @@ def POST():
         b_len = len(boundary)
 
         # get n bodies of files
-        files = body.split(boundary)
+        files = raw_body.split(bytes(boundary, 'utf-8'))
         if files[0] == "":
             files = files[1:]
 
@@ -68,12 +52,12 @@ def POST():
         for file in files: # loop to create each file
             filename = ""
             entries = os.listdir(upload_dir)
-            filename_match = re.search(r'filename="(.*?)"', file) or re.search(r'name="(.*?)"', file)# get filename
-
+            decoded_request = file.decode('utf-8', errors='ignore') # decode the content to get the filename
+            filename_match = re.search(r'filename="(.*?)"', decoded_request) or re.search(r'name="(.*?)"', decoded_request)
             if filename_match:
                 filename = filename_match.group(1)
-            elif filename == "":
-                return 400
+            if filename == "":
+                continue
 
             for i in entries: # change file name if it already exists
                 if i == filename:
@@ -88,8 +72,8 @@ def POST():
                     break
             
             file_path = os.path.join(upload_dir, filename)
-            f = open(file_path, 'w')
-            pos = file.find("\r\n\r\n") + 4
+            f = open(file_path, 'wb')
+            pos = file.find(b'\r\n\r\n') + 4
             content = file[pos:] # get file content
             f.write(content)
         return 200
@@ -106,15 +90,15 @@ def GET():
     res += '<html>\n'
     res += "<head><title>Navigation</title></head>\n"
     res += "<body>\n"
-    res += "<h1>File_upload</h1>\n"
+    res += "<h1>File Upload</h1>\n"
 
     res += '<form method="post" enctype="multipart/form-data">\n'
-    res += '<label for="file-content">Choose a simple file (text only):</label><br>\n'
-    res += '<input type="file" name="file-content" accept=".txt,.css,.scss,.html,.js,.svg" required multiple>\n'
+    res += '<label for="file-content">Choose a file:</label><br>\n'
+    res += '<input type="file" name="file-content" required multiple>\n'
     res += '<input class="submit-button" type="submit" value="Upload">\n'
     res += '</form>\n'
 
-    upload_dir = "uploads/"
+    upload_dir = "server_uploaded_files/"
     if os.path.exists(upload_dir) and os.listdir(upload_dir):
         entries = os.listdir(upload_dir)
         res += '<p>Uploaded Files:</p>'

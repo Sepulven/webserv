@@ -1,7 +1,5 @@
 #include <WebServer.hpp>
 
-
-
 WebServer::WebServer()
 {
 	this->max_events = 0;
@@ -122,7 +120,6 @@ void WebServer::accept_connection(int epoll_fd, int fd)
 void WebServer::send_response(int epoll_fd, int fd, t_event event)
 {
 	int status = this->streams[fd]->res->send();
-
 	this->streams[fd]->set_time(); // * Update last action;
 	if ((status > 0) && epoll_in_fd(epoll_fd, fd, event) < 0)
 		throw Error("Epoll_ctl failed");

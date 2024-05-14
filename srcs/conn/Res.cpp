@@ -109,6 +109,9 @@ int Res::exec_CGI(void)
 	int pipe_fd[2];
 	pipe(pipe_fd);
 
+	int pipe_fd_aux[2];
+	pipe(pipe_fd_aux);
+
 	pid_t pid = fork();
 
 	std::string raw_body(req->raw_body.begin(), req->raw_body.end());
@@ -132,12 +135,15 @@ int Res::exec_CGI(void)
 		}
 		envp[i] = NULL;
 
-		close(pipe_fd[0]);				 // Close read end
-		dup2(pipe_fd[1], STDOUT_FILENO); // Redirect stdout to the write end
+		close(pipe_fd[0]); // Close read end
+		dup2(stream->fd, STDOUT_FILENO); // Redirect stdout to the write end
 
-		// int dev_null = open("/dev/null", O_WRONLY);
-		// dup2(dev_null, STDERR_FILENO); // redirecting stderr to /dev/null
-		// close(dev_null);
+		close(pipe_fd_aux[1]); // Close write end
+		dup2(pipe_fd_aux[0], STDIN_FILENO); // Redirect stdin to the read end
+
+		int dev_null = open("/dev/null", O_WRONLY);
+		dup2(dev_null, STDERR_FILENO); // redirecting stderr to /dev/null
+		close(dev_null);
 
 		execve(argv[0], argv, envp);
 		delete[] envp;
@@ -145,23 +151,13 @@ int Res::exec_CGI(void)
 	}
 	else
 	{
+		close(pipe_fd_aux[0]);
+		write(pipe_fd_aux[1], req->raw_body.data(), req->raw_body.size()); // send request to cgi
+		close(pipe_fd_aux[1]);
 
 		close(pipe_fd[1]); // Close write end
-		char buffer[4096];
-		ssize_t bytes_read;
-		std::string content = "";
-		while ((bytes_read = read(pipe_fd[0], buffer, sizeof(buffer))) > 0) // Read output from the pipe
-			content.append(buffer, bytes_read);
-
-		int status;
-		close(pipe_fd[0]);		  // Close read end
-		stream->cgi_pid = pid;
-		waitpid(pid, &status, 0); // Wait for the child process to finish
-		if (content == "")
-			content = "HTTP/1.1 500 Internal Server Error\nContent-Type:text/plain\nContent-Length: 20\r\n\r\nError running script\n";
-		std::cout << "\n>>>>>>>>>>>>>>>\n"
-				  << content;
-		return (write(stream->fd, content.c_str(), content.length()));
+		close(pipe_fd[0]); // Close read end
+		return 1;
 	}
 	return 1;
 }
@@ -173,15 +169,23 @@ void Res::exec_delete(void)
 
 	if (path[0] == '/')
 		path = path.substr(1);
-	if (std::remove(path.c_str()) != 0)
+	// missing extension / content type of this responses
+	if (stream->req->path_type == _DIRECTORY)
 	{
-		this->content = FileManager::read_file("errors/404.html"); // change for error page variable
+		std::cout << "DIR\n";
+		this->content = FileManager::read_file("error/403.html"); // change for error page variable
+		this->add_ext = ".html";
+		this->status_code = "403";
+	}
+	else if (std::remove(path.c_str()) != 0)
+	{
+		this->content = FileManager::read_file("error/404.html"); // change for error page variable
 		this->add_ext = ".html";
 		this->status_code = "404";
 	}
 	else
 	{
-		this->content = "We've deleted the file succesfully!";
+		this->content = "We've deleted the file succesfully!\n";
 		this->add_ext = ".txt";
 		this->status_code = "200";
 	}

@@ -5,17 +5,18 @@ $type = "";
 
 if ($_SERVER['method'] === 'GET') {
     $items = "";
-    if (is_dir("uploads/") && scandir("uploads/"))
+    $entries = "";
+    if (count(scandir("server_uploaded_files/")) === 2)
+        $items .= '<p>No files uploaded yet</p>';
+    else
     {
-        $entries = scandir("uploads/");
+        $entries = scandir("server_uploaded_files/");
         $items = '<p>Uploaded Files:</p><ul>';
         foreach ($entries as $file_name)
             if ($file_name !== "." && $file_name !== "..")
                 $items .= "<li>{$file_name}</li>\n";
         $items .= '</ul>';
     }
-    else
-        $items .= '<p>No files uploaded yet</p>';
     ob_start(); // Start output buffering to capture HTML output
     ?>
     <!DOCTYPE html>
@@ -26,8 +27,8 @@ if ($_SERVER['method'] === 'GET') {
     <body>
         <h1>File Upload</h1>
         <form method="post" enctype="multipart/form-data">
-            <label for="file-content">Choose a file (text only):</label><br>
-            <input type="file" name="file-content" accept=".txt,.css,.scss,.html,.js,.svg" required multiple><br>
+            <label for="file-content">Choose a file:</label><br>
+            <input type="file" name="file-content" required multiple>
             <input type="submit" value="Upload">
         </form>
     <?= $items ?>
@@ -38,6 +39,8 @@ if ($_SERVER['method'] === 'GET') {
     $status = "200 OK";
     $type = "html";
 } elseif ($_SERVER['method'] === 'POST') {
+    $raw_body = file_get_contents('php://stdin');
+
     // get boundary of post 
     $body = $_SERVER['body'];
     $request = $_SERVER['request'];
@@ -63,16 +66,16 @@ if ($_SERVER['method'] === 'GET') {
         $boundary = substr($body, 0, $end);
 
         // get n bodies of files
-        $parts = explode("$boundary", $body);
+        $parts = explode("$boundary", $raw_body);
         array_pop($parts); // erases last element "--"
     
-        if (!is_dir("uploads/"))
-            mkdir("uploads/", 0777, true); // Creates the directory recursively
+        if (!is_dir("server_uploaded_files/"))
+            mkdir("server_uploaded_files/", 0777, true); // Creates the directory recursively
     
         // loop to create each file
         $count = 0;
         foreach ($parts as $part) {
-            $entries = scandir("uploads/"); // get files present int the 'uploads' directory
+            $entries = scandir("server_uploaded_files/"); // get files present int the 'server_uploaded_files' directory
             if (empty($part))
                 continue;
             $filename = '';
@@ -101,7 +104,7 @@ if ($_SERVER['method'] === 'GET') {
                 }
             }
             
-            $file_to_create = fopen("uploads/" . $filename, "w"); // create file
+            $file_to_create = fopen("server_uploaded_files/" . $filename, "w"); // create file
             $start = strpos($part, "\r\n\r\n") + 4;
             $content = substr($part, $start); // get content from uploaded file
     
