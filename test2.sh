@@ -33,7 +33,7 @@ execute_curl() {
 
 # GET
 
-execute_curl "GET" "\033[1;34mGet: existing file\033[0m" "http://localhost:8080/index.html"
+# execute_curl "GET" "\033[1;34mGet: existing file\033[0m" "http://localhost:8080/index.html"
 # execute_curl "GET" "\033[1;34mGet: non existing file\033[0m" "http://localhost:8080/index13534.html" 
 # execute_curl "GET" "\033[1;34mGet: url with query\033[0m" "http://localhost:8080/index.html?param1=value1&param2=value2"
 # execute_curl "GET" "\033[1;34mGet: custom header \033[0m" "http://localhost:8080/index.html -H "Custom-Header: Value""
@@ -70,3 +70,5 @@ echo -e "\033[1;35m----------------------------\033[0m"
 # execute_curl "POST" "\033[1;34mPost: CGI 2 files with content\033[0m" "http://localhost:8080/a.php -F "a.txt=helloooo" -F "b.txt=helloooo22222""
 # echo -e "\033[1;34mPost: CGI 2 not allowed content\033[0m"
 # curl -X POST http://localhost:8080/a.php -H "Content-Type: appation/x-www-form-urlencoded" -d "key1=qetrerqwerq"
+
+curl -X DELETE http://localhost:8080/error/test/test.html

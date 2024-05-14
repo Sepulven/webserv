@@ -120,17 +120,11 @@ int Res::exec_CGI(void)
 	}
 	else
 	{
-		// write body input to cgi
 		close(pipe_fd_aux[0]);
-		int nb = write(pipe_fd_aux[1], req->raw_body.data(), req->raw_body.size());
+		write(pipe_fd_aux[1], req->raw_body.data(), req->raw_body.size()); // send request to cgi
 		close(pipe_fd_aux[1]);
 
 		close(pipe_fd[1]); // Close write end
-		char buffer[4096];
-		ssize_t bytes_read;
-		std::string content = "";
-
-		int status;
 		close(pipe_fd[0]); // Close read end
 		return 1;
 	}
@@ -145,15 +139,23 @@ void Res::exec_delete(void)
 	if (path[0] == '/')
 		path = path.substr(1);
 	// missing extension / content type of this responses
-	if (std::remove(path.c_str()) != 0)
+	std::cout << "type: " << stream->req->path_type << std::endl;
+	if (stream->req->path_type == _DIRECTORY)
 	{
-		this->content = FileManager::read_file("errors/404.html"); // change for error page variable
+		std::cout << "DIR\n";
+		this->content = FileManager::read_file("error/403.html"); // change for error page variable
+		this->add_ext = ".html";
+		this->code = "403";
+	}
+	else if (std::remove(path.c_str()) != 0)
+	{
+		this->content = FileManager::read_file("error/404.html"); // change for error page variable
 		this->add_ext = ".html";
 		this->code = "404";
 	}
 	else
 	{
-		this->content = "We've deleted the file succesfully!";
+		this->content = "We've deleted the file succesfully!\n";
 		this->add_ext = ".txt";
 		this->code = "200";
 	}
@@ -161,12 +163,9 @@ void Res::exec_delete(void)
 
 void Res::exec_get(void)
 {
-	std::cout << "check 0\n";
 	if (stream->req->path_type == _FILE)
 	{
-		std::cout << "check 1\n";
 		this->content = FileManager::read_file(stream->req->file_path);
-		std::cout << "check 2\n";
 		this->code = "200";
 	}
 	if (stream->req->path_type == _DIRECTORY)
