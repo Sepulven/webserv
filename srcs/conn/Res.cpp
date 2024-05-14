@@ -63,7 +63,7 @@ int Res::send(void)
 {
 	Req *req = stream->req;
 	std::vector<std::string> &cgi_path = req->cgi_path;
-std::vector<std::string>::iterator it = std::find(cgi_path.begin(), cgi_path.end(), req->file_path);
+	std::vector<std::string>::iterator it = std::find(cgi_path.begin(), cgi_path.end(), req->file_path);
 
 	// this->status_code = "404";
 	// this->error_msg = "NOT FOUND";
@@ -90,10 +90,11 @@ std::vector<std::string>::iterator it = std::find(cgi_path.begin(), cgi_path.end
 
 int Res::exec_CGI(void)
 {
-	RawData::print_uint(stream->req->data);
-	// RawData::print_uint(stream->req->raw_body);
-
 	Req *req = stream->req;
+	std::string raw_body(req->raw_body.begin(), req->raw_body.end());
+	std::string data(req->data.begin(), req->data.end());
+	int pipe_fd[2];
+	int pipe_fd_aux[2];
 
 	char *argv0;
 	if (req->file_ext == ".py")
@@ -106,16 +107,9 @@ int Res::exec_CGI(void)
 	char *argv1 = const_cast<char *>(req->file_path.c_str());
 	char *const argv[] = {argv0, argv1, NULL};
 
-	int pipe_fd[2];
 	pipe(pipe_fd);
-
-	int pipe_fd_aux[2];
 	pipe(pipe_fd_aux);
-
 	pid_t pid = fork();
-
-	std::string raw_body(req->raw_body.begin(), req->raw_body.end());
-	std::string data(req->data.begin(), req->data.end());
 	if (pid == 0)
 	{
 		std::vector<std::string> request;
@@ -151,6 +145,7 @@ int Res::exec_CGI(void)
 	}
 	else
 	{
+		stream->cgi_pid = pid;
 		close(pipe_fd_aux[0]);
 		write(pipe_fd_aux[1], req->raw_body.data(), req->raw_body.size()); // send request to cgi
 		close(pipe_fd_aux[1]);
