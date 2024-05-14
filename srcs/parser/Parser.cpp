@@ -161,7 +161,7 @@ bool Parser::directivesCase3() {
 		return false;
 	// std::cout << "Entered directivesCase3 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->type != NAME && it->type != ROOT && it->type != INDEX && 
-	it->type != MAX_CBSIZE && it->type != MAX_CONN && it->type != DIR_LISTING)
+	it->type != MAX_CBSIZE && it->type != MAX_CONN && it->type != DIR_LISTING && it->type != METHOD)
 		return false;
 	if (it->identLevel != 1)
 		return false;
@@ -219,7 +219,7 @@ bool Parser::directivesCase6() {
 		return false;
 	// std::cout << "Entered directivesCase6 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->type != NAME && it->type != ROOT && it->type != INDEX && 
-	it->type != MAX_CBSIZE && it->type != MAX_CONN && it->type != DIR_LISTING)
+	it->type != MAX_CBSIZE && it->type != MAX_CONN && it->type != DIR_LISTING && it->type != METHOD)
 		return false;
 	if (it->identLevel != 1)
 		return false;
@@ -306,6 +306,8 @@ bool Parser::parameterLstCase1(T& container) {
 		return false;
 	if (it->type == HOST && container.back().host.empty())
 		container.back().host = getParam(*it);
+	else if (it->type == METHOD && container.back().httpMethods.empty())
+		pushBackMultipleParams(container.back().httpMethods, getParam(*it));
 	else if (it->type == PORT && container.back().port == -1)
 		container.back().port = atoi(getParam(*it).c_str());
 	else if (it->type == INDEX && container.back().index.empty())

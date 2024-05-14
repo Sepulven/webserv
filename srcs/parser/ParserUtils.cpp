@@ -17,6 +17,9 @@ void Parser::printServerNodes(std::list<t_server>::iterator it) {
 	std::cout << "    Index: ";
 	for (std::list<std::string>::iterator tmp = it->index.begin(); tmp != it->index.end(); tmp++)
 		std::cout << *tmp << "$ ";
+	std::cout << std::endl << "    HTTP methods: ";
+	for (std::list<std::string>::iterator tmp = it->httpMethods.begin(); tmp != it->httpMethods.end(); tmp++)
+		std::cout << *tmp << "$ ";
 	std::cout << std::endl << "    Error pages:" << std::endl;
 	for (std::list<std::pair<int, std::string> > ::iterator tmp = it->errorPages.begin(); tmp != it->errorPages.end(); tmp++)
 		std::cout << "        "<< tmp->first << " " << tmp->second << std::endl;
@@ -57,7 +60,13 @@ void Parser::resetParam(int type, int identLevel) {
 		if (identLevel == 1)
 			serverNodes.back().index.clear();
 		if (identLevel == 2)
-			serverNodes.back().route.back().index.pop_back();
+			serverNodes.back().route.back().index.pop_back(); // ! Might need a clear instead of pop_back
+	}
+	if (type == METHOD) {
+		if (identLevel == 1)
+			serverNodes.back().httpMethods.clear();
+		if (identLevel == 2)
+			serverNodes.back().route.back().httpMethods.clear();
 	}
 	if (type == LISTEN) {
 		serverNodes.back().host = std::string();
