@@ -34,6 +34,8 @@ int Res::send(void)
 		it++;
 	}
 
+
+
 	if (req->method == "GET")
 		exec_get();
 	else if (req->method == "POST")
@@ -206,7 +208,14 @@ void Res::exec_post(void)
 		else
 			this->content = "Error while dealing with your post request!";
 	}
-	else
+	else if (content_type.find("application/x-www-form-urlencoded") == 1)
+	{
+		if (req->filename == "auth.html")
+		{
+			
+		}
+	}
+	else // missing right content type
 	{
 		this->code = "406";
 		this->content = "We can't execute this type of request";
