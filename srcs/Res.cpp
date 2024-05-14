@@ -51,9 +51,9 @@ int Res::send(void)
 	// ss << "set-cookie: lang=en;" << "\r\n\r\n";
 	ss << content;
 
-	RawData::print_uint(req->data);
+	// RawData::print_uint(req->data);
 	this->data = ss.str();
-	std::cout << this->data << std::endl;
+	// std::cout << this->data << std::endl;
 	return (write(stream->fd, this->data.c_str(), this->data.length()));
 }
 
