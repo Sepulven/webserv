@@ -86,5 +86,8 @@ class Req
 		void set_raw_body(size_t);
 		void set_URL_data(std::string &);
 		void set_header(std::vector<std::string> &);
+		void set_path_type();
+		void set_file_ext();
+		void set_content_length();
 		void parser(void);
 };
