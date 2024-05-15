@@ -21,13 +21,16 @@ std::string html_template(const std::string &content, const std::string &title)
 	* Returns the content of the error pages in case of success;
 	* Builds an error page in case none exists;
 */
-std::string FileManager::build_error_pages(const std::string &path, const std::string &code, const std::string &error_msg)
+std::string FileManager::build_error_pages(const std::map<int, std::string> &error_pages, const std::string &code, const std::string &error_msg)
 {
 	std::ifstream file;
-	std::stringstream content ;
+	std::stringstream content;
+	std::string path;
+	int error_code = atoi(code.c_str());
 
+	path = error_pages.at(error_code);
 	file.open(&path.c_str()[path.c_str()[0] == '/']);
-	// * If we can't open, we build it;
+	// * If we can't open it, we build it;
 	if (!file.is_open())
 	{
 		content << "<h1>"<< code << " " << "</h1>"

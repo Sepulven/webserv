@@ -35,14 +35,12 @@ Res::~Res() {}
 */
 int Res::build_http_response(void)
 {
-	std::stringstream ss;
+	std::map<int, std::string> error_pages = stream->server->error_pages;
 	Req *req = stream->req;
+	std::stringstream ss;
 
 	if (status_code[0] != '2') // * Sucess;
-	{
-		this->content = FileManager::build_error_pages("", this->status_code, this->error_msg);
-		// * What if the page doesn't exist? We it does not exist, we build it;
-	}
+		this->content = FileManager::build_error_pages(error_pages, status_code, error_msg);
 	ss << "HTTP/1.1 " << status_code << " " << this->status[status_code] << "\r\n";
 	ss << "Content-Type: " << content_type[req->file_ext] << "\r\n";
 	ss << "Content-Length: " << content.length() << "\r\n\r\n";
@@ -87,15 +85,7 @@ int Res::send(void)
 	std::vector<std::string>::iterator it = std::find(cgi_path.begin(), cgi_path.end(), req->file_path);
 
 	if (!this->status_code.empty() && !this->error_msg.empty())
-		return (build_http_response());
-	// if (check_method() == -1)
-	// {
-	// 	std::cout <<  "check method error\n";
-	// 	this->content = FileManager::read_file("error/403.html"); // change for error page variable
-	// 	this->add_ext = ".html";
-	// 	this->status_code = "403";
-	// 	return (build_http_response());
-	// }
+		return (build_http_response());	
 	try
 	{
 		if (it != req->cgi_path.end())
@@ -185,25 +175,14 @@ int Res::exec_CGI(void)
 
 void Res::exec_delete(void)
 {
-	// check permissions (deleting objects in allowed directory)
 	std::string path = stream->req->file_path;
 
 	if (path[0] == '/')
 		path = path.substr(1);
-	// missing extension / content type of this responses
 	if (stream->req->path_type == _DIRECTORY)
-	{
-		std::cout << "DIR\n";
-		this->content = FileManager::read_file("error/403.html"); // change for error page variable
-		this->add_ext = ".html";
-		this->status_code = "403";
-	}
+		throw HttpError("403", "We can't delete a directory.");
 	else if (std::remove(path.c_str()) != 0)
-	{
-		this->content = FileManager::read_file("error/404.html"); // change for error page variable
-		this->add_ext = ".html";
-		this->status_code = "404";
-	}
+		throw HttpError("404", "Couldn't delete the file");
 	else
 	{
 		this->content = "We've deleted the file succesfully!\n";
@@ -226,10 +205,30 @@ void Res::exec_get(void)
 		this->status_code = "200";
 	}
 	if (stream->req->path_type == _NONE)
+		throw HttpError("404", "Not Found");
+}
+
+/*
+ * Return the boundary from the content-type;
+ * Throws errors if boundary is not well formatted;
+*/
+std::string get_boundary(const std::string &content_type)
+{
+	std::string boundary;
+
+	try
 	{
-		this->content = FileManager::read_file("errors/404.html"); // change for error page variable
-		this->add_ext = ".html";
-		this->status_code = "404";
+		boundary = content_type.substr(content_type.find("=") + 1);
+		if (boundary[0] == '"' && boundary[boundary.length() - 1] == '"')
+		{
+			boundary.erase(0, 1);
+			boundary.erase(boundary.length() - 1, 1);
+		}
+		return boundary;	
+	}
+	catch(const std::exception& e)
+	{
+		throw HttpError("400", "Bad Request");
 	}
 }
 
@@ -244,26 +243,10 @@ void Res::exec_post(void)
 	const std::string &content_type = req->header["Content-Type"];
 	std::string boundary;
 
-	if (content_type.find("multipart/form-data;") == 1)
-	{
-		// * I am assuming that the boundary is well formated and it is there;
-		boundary = content_type.substr(content_type.find("=") + 1);
-
-		// * In case the boundary is inside quotes;
-		if (boundary[0] == '"' && boundary[boundary.length() - 1] == '"')
-		{
-			boundary.erase(0, 1);
-			boundary.erase(boundary.length() - 1, 1);
-		}
-		this->status_code = FileManager::create_files(req->raw_body, boundary, req->file_path);
-		if (this->status_code == "201")
-			this->content = "What should be the content when we upload a file?";
-		else
-			this->content = "Error while dealing with your post request!";
-	}
-	else
-	{
-		this->status_code = "406";
-		this->content = "We can't execute this type of request";
-	}
+	if (content_type.find("multipart/form-data;") != 1)
+		throw HttpError("406", "We can't execute this type of request");
+	boundary = get_boundary(content_type);
+	this->status_code = FileManager::create_files(req->raw_body, boundary, req->file_path);
+	if (this->status_code == "201")
+		this->content = "What should be the content when we upload a file?";
 }
