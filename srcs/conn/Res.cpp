@@ -58,6 +58,11 @@ int Res::build_http_response(void)
  * In case of error during the execution, changes the state of the response;
  */
 
+bool Res::validate_route_name(std::string name, std::string filePath) {
+	size_t i = filePath.find_first_of('/') + 1;
+	if (std::strncmp(name, filePath))
+}
+
 int	Res::check_method(void)
 {
 	Req *req = stream->req;

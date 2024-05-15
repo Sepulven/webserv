@@ -16,7 +16,7 @@ server:
     max_cbsize: 2m              # to do: conversion and mapping
     max_conn: 10
     route /conn:               # to do: HTTP redirect.
-        root: srcs
+        root: /srcs
         index: main.cpp       # default file to open if the request is the dir
         dir_listing: on         # 'on' or 'off'
         redirect: ola
