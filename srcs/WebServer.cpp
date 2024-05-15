@@ -157,6 +157,11 @@ void WebServer::read_request(int epoll_fd, int fd, t_event event)
 /*
 * Kills CGI if it hasn't finished yet, checks CGI time out and CGI status;
 * Kills connections after the close_conn_time has exceeded;
+
+	* waitpid return value
+	> 0 The pid of a child process whose state has changed;
+	0 No state has been detected(the child is still running);
+	-1 An error occurred -> error
 */
 void WebServer::time_out(int epoll_fd)
 {
@@ -165,25 +170,21 @@ void WebServer::time_out(int epoll_fd)
 	ConnStream * current_conn;
 	long long	current_time;
 	struct timeval		t;
+	int wpid = -1;
 
 	gettimeofday(&t, NULL);
 	current_time = (t.tv_sec * 1000) + (t.tv_usec / 1000);
-	std::cout << "Number of conn:" << this->streams.size() << std::endl;
 	for (; it != ite; it++)
 	{
 		current_conn = it->second;
-		int wpid;
-		wpid = waitpid(current_conn->cgi_pid, NULL, WNOHANG);
-		std::cout << wpid << std::endl;
-		if (wpid == -1)
-			current_conn->cgi_pid = -1;
+		if (current_conn->cgi_pid != -1)
+			wpid = waitpid(current_conn->cgi_pid, NULL, WNOHANG);
 		if (wpid > 0) // * pid of the child process has changed
 			current_conn->cgi_pid = -1;
 		if (wpid == 0 && current_conn->kill_cgi_time < current_time) //* Checks cgi kill time;
 			keys_to_delete.push_back(it->first);
 		else if (current_conn->close_conn_time < current_time) // * Checks conn based time;
 			keys_to_delete.push_back(it->first);
-			
 	}
 	for (size_t i = 0; i < keys_to_delete.size(); i++)
 		close_conn(epoll_fd, keys_to_delete[i]);
@@ -202,7 +203,7 @@ void WebServer::listen(void)
 
 	while (is_running)
 	{
-		num_events = epoll_wait(epoll_fd, this->events.data(), this->max_events, 100 * 5);
+		num_events = epoll_wait(epoll_fd, this->events.data(), this->max_events, 100);
 		if (num_events < 0 || !is_running)
 			break;
 		for (int i = 0; i < num_events; i++)
@@ -234,21 +235,18 @@ void WebServer::sig_handler(int sig)
 
 /*
  * Close a conn, and clean up the resources.
+ * Receives server fd;
+ * Checks if the CGI is running, if it is kills the child process;
  */
-void WebServer::close_conn(int epoll_fd, int fd)
+void WebServer::close_conn(int epoll_fd, int sfd)
 {
-	if (epoll_del_fd(epoll_fd, fd) < 0)
+	if (epoll_del_fd(epoll_fd, sfd) < 0)
 		throw Error("Epoll_ctl failed");
-	close(fd); // *  Closes connection fd;
-	// std::cout <<waitpid(this->streams[fd]->cgi_pid, NULL, WNOHANG) << std::endl;
-	if (waitpid(this->streams[fd]->cgi_pid, NULL, WNOHANG) == 0)
-	{
-		std::cout << "Here we are" << std::endl;
-		kill(this->streams[fd]->cgi_pid, SIGKILL);
-	}
-	delete this->streams[fd];
-	this->streams.erase(fd);
-	std::cout << "we've closed the connection on fd " << fd << std::endl;
+	close(sfd);
+	if (waitpid(streams[sfd]->cgi_pid, NULL, WNOHANG) == 0)
+		kill(this->streams[sfd]->cgi_pid, SIGKILL);
+	delete this->streams[sfd];
+	this->streams.erase(sfd);
 }
 
 /*Exception class*/

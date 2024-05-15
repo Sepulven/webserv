@@ -117,7 +117,7 @@ def GET():
 if __name__ == "__main__" :
 
     while True:
-    print("This is an infinite loop with a delay")
+        print("This is an infinite loop with a delay")
 
     path = os.environ.get('path')
     method = os.environ.get('method')

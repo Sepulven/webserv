@@ -12,3 +12,5 @@ You will be able to test it with a real browser. HTTP is one of the most used pr
 
 ## Note (epoll performance compared to other polling APIs)
 	`https://suchprogramming.com/epoll-in-3-easy-steps/`
+
+# ps -p 1234 > /dev/null && echo true || echo false
