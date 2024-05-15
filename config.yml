@@ -13,7 +13,7 @@ server:
         404: error/404.html
         403: error/403.html
         400: error/400.html
-    max_cbsize: 2m              # to do: conversion and mapping
+    max_cbsize: 0m              # to do: conversion and mapping
     max_conn: 10
     route /about:               # to do: HTTP redirect.
         root: /www

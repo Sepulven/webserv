@@ -96,8 +96,11 @@ void	Req::parser(void)
 	this->set_URL_data(this->URL);
 	this->set_header(message_header);
 
+
 	if (header["Content-Length"] != "")
 		this->content_length = std::atoi(&this->header["Content-Length"].c_str()[1]);
+	if (header["Content-Length"] != "" && this->content_length > (size_t)stream->server->max_cb_size)
+		throw HttpError("413", "Payload Too Large");
 	std::vector<uint8_t> sub_vec = RawData::substr(data, end_header_pos + 4, data.size() - end_header_pos - 4);
 	if (end_header_pos != out_of_bound)
 		RawData::append(raw_body, sub_vec);
@@ -135,8 +138,8 @@ int Req::read(int fd)
 	}
 	catch (const HttpError &e)
 	{
-		std::cout << e.what() << std::endl;
 		stream->res->status_code = e.get_status();
+		stream->res->error_msg = e.get_msg();
 		return (1);
 	}
 	return (0);

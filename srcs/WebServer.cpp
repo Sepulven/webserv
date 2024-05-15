@@ -74,7 +74,8 @@ void WebServer::init_servers(std::vector<ServerContext *>& vec)
 		
 		server_fd = socket(AF_INET, SOCK_STREAM, 0);
 		vec[i]->socket = server_fd;
-
+		this->servers[server_fd] = vec[i];
+	
 		if (server_fd < 0)
 			throw Error("Socket failed.");
 		if (sfd_non_blocking(server_fd) < 0)
@@ -92,7 +93,7 @@ void WebServer::init_servers(std::vector<ServerContext *>& vec)
 
 		if (epoll_add_fd(this->epoll_fd, server_fd, event))
 			throw Error("epoll_ctl failed.");
-	
+
 		this->max_events += vec[i]->max_events;
 		std::cout << "[" << vec[i]->max_events << "] Listening on port: " << vec[i]->port << std::endl;
 	}

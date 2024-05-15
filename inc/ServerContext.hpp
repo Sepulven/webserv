@@ -6,7 +6,7 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 12:31:02 by asepulve          #+#    #+#             */
-/*   Updated: 2024/04/25 23:21:25 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/05/15 01:13:29 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,6 @@ class ServerContext
 		long long	max_cb_size;
 		std::map<int, std::string> error_pages;
 		std::vector<t_location> routes;
-		// Routes missing.
 
 		ServerContext(t_server serverNode);
 		virtual ~ServerContext();

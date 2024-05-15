@@ -65,8 +65,6 @@ int Res::send(void)
 	std::vector<std::string> &cgi_path = req->cgi_path;
 	std::vector<std::string>::iterator it = std::find(cgi_path.begin(), cgi_path.end(), req->file_path);
 
-	// this->status_code = "404";
-	// this->error_msg = "NOT FOUND";
 	if (!this->status_code.empty() && !this->error_msg.empty())
 		return (build_http_response());
 	try
