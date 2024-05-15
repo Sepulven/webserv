@@ -59,26 +59,37 @@ int Res::build_http_response(void)
  */
 
 bool Res::validate_route_name(std::string name, std::string filePath) {
-	size_t i = filePath.find_first_of('/') + 1;
-	if (std::strncmp(name, filePath))
+	if (name == filePath)
+		return true;
+	size_t i = filePath.find_first_of('/');
+	if (i != std::string::npos)
+		if (std::strncmp(name.c_str(), filePath.c_str(), name.size()) == 0)
+			return true;
+	return false;
 }
 
 int	Res::check_method(void)
 {
 	Req *req = stream->req;
 
-	for (long unsigned int i = 0; i < this->stream->server->routes.size(); i++) {
-		std::cout << "route: " << this->stream->server->routes[i].name << " " << req->file_path << std::endl;
-		if (this->stream->server->routes[i].name == req->file_path) // change to function that finds route name at the beggining of the url
+	for (size_t i = 0; i < this->stream->server->routes.size(); i++) {
+		std::cout << "name: " << this->stream->server->routes[i].name << " | file_path: " << req->file_path << std::endl;
+		if (validate_route_name(this->stream->server->routes[i].name, req->file_path))
 		{
+			// std::cout << "DEBUG" << std::endl;
+			// size_t j = 0;
+			// while (j <= req->file_path.size() && this->stream->server->routes[i].name[j] == req->file_path[j])
+			// 	j++;
+			// j--;
+			// if (!req->file_path[j])
+			// 	req->file_path = this->stream->server->routes[i].root.substr(1);
+			// else
+			// 	req->file_path = this->stream->server->routes[i].root.substr(1) + req->file_path.substr(j);
+			std::cout << "new file_path: " << req->file_path << std::endl;
 			// expand file path (replace name for root: /gatos/Req.cpp -> srcs/conn/Req.cpp)
 			// req->file_path = 
 			// check if method is allowed
-			for (long unsigned int f = 0; f < this->stream->server->routes[i].http_methods.size(); f++) {
-				if (req->method == this->stream->server->routes[i].http_methods[f])
-					return (1);
-			}
-			return -1;
+			return 1;
 		}
 	}
 	return -1;
@@ -93,7 +104,7 @@ int Res::send(void)
 
 	if (!this->status_code.empty() && !this->error_msg.empty())
 		return (build_http_response());
-	// if (check_method() == -1)
+	// if (req->path_type == _DIRECTORY && check_method() == -1)
 	// {
 	// 	std::cout <<  "check method error\n";
 	// 	this->content = FileManager::read_file("error/403.html"); // change for error page variable
