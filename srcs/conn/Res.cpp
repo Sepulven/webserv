@@ -62,23 +62,12 @@ int	Res::check_method(void)
 {
 	Req *req = stream->req;
 
-	// get dir of request (srcs/main.cpp -> srcs/)
-	std::string dir;
-	size_t found = req->file_path.find_last_of("/\\");
-	if (found != std::string::npos)
-		dir = req->file_path.substr(0, found);
-	else
-		dir = "";
-
-	std::string path_aux;
 	for (long unsigned int i = 0; i < this->stream->server->routes.size(); i++) {
-		if (this->stream->server->routes[i].root != "") // root + location
-			path_aux = this->stream->server->routes[i].root + "/" + this->stream->server->routes[i].path;
-		else
-			path_aux = this->stream->server->routes[i].path;
-		// check if the path request matches this route
-		if ((dir != "" && path_aux == dir) || (dir == "" && path_aux == req->file_path))
+		std::cout << "route: " << this->stream->server->routes[i].name << " " << req->file_path << std::endl;
+		if (this->stream->server->routes[i].name == req->file_path) // change to function that finds route name at the beggining of the url
 		{
+			// expand file path (replace name for root: /gatos/Req.cpp -> srcs/conn/Req.cpp)
+			// req->file_path = 
 			// check if method is allowed
 			for (long unsigned int f = 0; f < this->stream->server->routes[i].http_methods.size(); f++) {
 				if (req->method == this->stream->server->routes[i].http_methods[f])

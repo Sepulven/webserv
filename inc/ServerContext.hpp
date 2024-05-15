@@ -33,7 +33,7 @@
 
 typedef struct s_location
 {
-	std::string path;
+	std::string name;
 	std::string	root;
 	std::string	redirect;
 	std::vector<std::string>	http_methods;

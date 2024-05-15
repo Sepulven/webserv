@@ -23,13 +23,11 @@ server:
         http_methods: GET
     route /uploads:                    
         dir_listing: on         
-        redirect: ola
         http_methods: GET POST DELETE
     route /uploads_other:                  
-        dir_listing: on        
-        redirect: ola
-        http_methods: GET POST DELETE
-    route /pages:
+        dir_listing: off       
+        http_methods: GET POST
+    route /ola:
         http_methods: GET
 
 server:
@@ -43,6 +41,8 @@ server:
         400: error/400.html
     max_cbsize: 1m
     max_conn: 5
+    route /srcs:
+        root: srcs/conn/
 
 server:
     listen:
