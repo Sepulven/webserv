@@ -13,14 +13,24 @@ server:
         404: error/404.html
         403: error/403.html
         400: error/400.html
-    max_cbsize: 0m              # to do: conversion and mapping
+    max_cbsize: 2m              # to do: conversion and mapping
     max_conn: 10
-    route /about:               # to do: HTTP redirect.
-        root: /www
-        index: about.html       # default file to open if the request is the dir
+    route /conn:               # to do: HTTP redirect.
+        root: srcs
+        index: main.cpp       # default file to open if the request is the dir
         dir_listing: on         # 'on' or 'off'
         redirect: ola
-        http_methods: GET POST
+        http_methods: GET
+    route /uploads:                    
+        dir_listing: on         
+        redirect: ola
+        http_methods: GET POST DELETE
+    route /uploads_other:                  
+        dir_listing: on        
+        redirect: ola
+        http_methods: GET POST DELETE
+    route /pages:
+        http_methods: GET
 
 server:
     listen:

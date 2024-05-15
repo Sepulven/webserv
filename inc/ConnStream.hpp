@@ -1,6 +1,5 @@
 #pragma once
 
-
 /* C headers */
 #include <stdint.h>
 

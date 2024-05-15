@@ -83,6 +83,7 @@ void	Req::parser(void)
 	size_t end_header_pos = RawData::find(data, "\r\n\r\n");
 	std::vector<uint8_t> __header  = RawData::substr(data, 0, end_header_pos);
 	std::string request(__header.begin(), __header.end());
+	
 	std::vector<std::string> message_header = RawData::split(request, "\r\n");
 
 	this->request_line = message_header[0];
@@ -95,7 +96,6 @@ void	Req::parser(void)
 
 	this->set_URL_data(this->URL);
 	this->set_header(message_header);
-
 
 	if (header["Content-Length"] != "")
 		this->content_length = std::atoi(&this->header["Content-Length"].c_str()[1]);

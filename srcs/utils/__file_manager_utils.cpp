@@ -122,8 +122,10 @@ std::string FileManager::create_files(const std::vector<uint8_t>& body, const st
 	for (size_t i = 1; i < files.size() - 1; i++)
 	{
 		file = get_file(files[i]);
-		filename = dir + "/" + get_random_filename() + "_" + (char)(i+48);
-
+		if (dir[dir.size() - 1] != '/')
+			filename = dir + "/" + get_random_filename() + "_" + (char)(i+48);
+		else
+			filename = dir + get_random_filename() + "_" + (char)(i+48);
 		out_file.open(filename.c_str(), std::ios::binary);
 		if (!out_file.is_open())
 			return ("500");

@@ -40,6 +40,8 @@ class Res
 		void exec_delete(void);
 
 		int build_http_response(void);
+
+		int	check_method(void);
 	public:
 		std::string status_code;
 		std::string error_msg;

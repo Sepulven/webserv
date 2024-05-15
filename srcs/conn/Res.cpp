@@ -1,6 +1,5 @@
 #include <Res.hpp>
 
-
 /*
  * We must have this map globally;
  ! Performance issue with error handling issue;
@@ -39,7 +38,6 @@ int Res::build_http_response(void)
 	std::stringstream ss;
 	Req *req = stream->req;
 
-
 	if (status_code[0] != '2') // * Sucess;
 	{
 		this->content = FileManager::build_error_pages("", this->status_code, this->error_msg);
@@ -59,14 +57,55 @@ int Res::build_http_response(void)
  * Execute the action of each individual method;
  * In case of error during the execution, changes the state of the response;
  */
+
+int	Res::check_method(void)
+{
+	Req *req = stream->req;
+
+	// get dir of request (srcs/main.cpp -> srcs/)
+	std::string dir;
+	size_t found = req->file_path.find_last_of("/\\");
+	if (found != std::string::npos)
+		dir = req->file_path.substr(0, found);
+	else
+		dir = "";
+
+	std::string path_aux;
+	for (long unsigned int i = 0; i < this->stream->server->routes.size(); i++) {
+		if (this->stream->server->routes[i].root != "") // root + location
+			path_aux = this->stream->server->routes[i].root + "/" + this->stream->server->routes[i].path;
+		else
+			path_aux = this->stream->server->routes[i].path;
+		// check if the path request matches this route
+		if ((dir != "" && path_aux == dir) || (dir == "" && path_aux == req->file_path))
+		{
+			// check if method is allowed
+			for (long unsigned int f = 0; f < this->stream->server->routes[i].http_methods.size(); f++) {
+				if (req->method == this->stream->server->routes[i].http_methods[f])
+					return (1);
+			}
+			return -1;
+		}
+	}
+	return -1;
+}
+
 int Res::send(void)
 {
 	Req *req = stream->req;
+
 	std::vector<std::string> &cgi_path = req->cgi_path;
 	std::vector<std::string>::iterator it = std::find(cgi_path.begin(), cgi_path.end(), req->file_path);
 
 	if (!this->status_code.empty() && !this->error_msg.empty())
 		return (build_http_response());
+	if (check_method() == -1)
+	{
+		this->content = FileManager::read_file("error/403.html"); // change for error page variable
+		this->add_ext = ".html";
+		this->status_code = "403";
+		return (build_http_response());
+	}
 	try
 	{
 		if (it != req->cgi_path.end())
@@ -225,7 +264,7 @@ void Res::exec_post(void)
 			boundary.erase(0, 1);
 			boundary.erase(boundary.length() - 1, 1);
 		}
-		this->status_code = FileManager::create_files(req->raw_body, boundary, "uploads");
+		this->status_code = FileManager::create_files(req->raw_body, boundary, req->file_path);
 		if (this->status_code == "201")
 			this->content = "What should be the content when we upload a file?";
 		else
