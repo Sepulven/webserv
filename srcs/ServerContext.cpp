@@ -26,7 +26,7 @@ ServerContext::ServerContext(t_server serverNode)
 	for (; it != serverNode.route.end(); it++)
 	{
 		t_location new_location;
-		new_location.path = it->path;
+		new_location.name = it->path;
 		new_location.root = it->rroot;
 		new_location.redirect = it->redir;
 		new_location.dir_listing = it->dirListing;

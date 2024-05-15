@@ -88,13 +88,14 @@ int Res::send(void)
 
 	if (!this->status_code.empty() && !this->error_msg.empty())
 		return (build_http_response());
-	if (check_method() == -1)
-	{
-		this->content = FileManager::read_file("error/403.html"); // change for error page variable
-		this->add_ext = ".html";
-		this->status_code = "403";
-		return (build_http_response());
-	}
+	// if (check_method() == -1)
+	// {
+	// 	std::cout <<  "check method error\n";
+	// 	this->content = FileManager::read_file("error/403.html"); // change for error page variable
+	// 	this->add_ext = ".html";
+	// 	this->status_code = "403";
+	// 	return (build_http_response());
+	// }
 	try
 	{
 		if (it != req->cgi_path.end())
