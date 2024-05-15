@@ -124,6 +124,7 @@ int Res::exec_CGI(void)
 	int pipe_fd_aux[2];
 
 	char *argv0;
+
 	if (req->file_ext == ".py")
 		argv0 = const_cast<char *>("/usr/bin/python3");
 	else if (req->file_ext == ".php")

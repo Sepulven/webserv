@@ -8,6 +8,7 @@ ServerContext::ServerContext(t_server serverNode)
 	std::list<t_route>::iterator it = serverNode.route.begin();
 	std::list<std::pair<int, std::string> >::iterator _it = serverNode.errorPages.begin();
 	std::list<std::string>::iterator tmp;
+
 	if (this->ip == "localhost" || this->ip != "localhost")
 		this->domain = INADDR_ANY;
 
@@ -21,7 +22,7 @@ ServerContext::ServerContext(t_server serverNode)
 	// * Error pages
 	for (;_it != serverNode.errorPages.end(); _it++)
 		this->error_pages.insert(std::make_pair(_it->first, _it->second));
-	
+
 	// * Routes
 	for (; it != serverNode.route.end(); it++)
 	{

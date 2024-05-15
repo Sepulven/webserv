@@ -123,9 +123,9 @@ std::string FileManager::create_files(const std::vector<uint8_t>& body, const st
 	{
 		file = get_file(files[i]);
 		if (dir[dir.size() - 1] != '/')
-			filename = dir + "/" + get_random_filename() + "_" + (char)(i+48);
+			filename = dir + "/" + get_random_filename(files[i]);
 		else
-			filename = dir + get_random_filename() + "_" + (char)(i+48);
+			filename = dir + get_random_filename(files[i]);
 		out_file.open(filename.c_str(), std::ios::binary);
 		if (!out_file.is_open())
 			return ("500");
@@ -137,35 +137,26 @@ std::string FileManager::create_files(const std::vector<uint8_t>& body, const st
 	return ("201");
 }
 
-/*
- * Returns the status code of the operation;
- * Creates one file;
-*/
-std::string FileManager::create_file(const std::vector<uint8_t>& body, const std::string dir)
-{
-	std::ofstream out_file;
-	std::string filename = dir + "/" + get_random_filename() + "_chunked";
-
-	out_file.open(filename.c_str(), std::ios::binary);
-
-	if (!out_file.is_open())
-		return ("500");
-
-	out_file.write((const char*)&body[0], body.size());
-
-	if (out_file.fail())
-		return ("500");
-
-	out_file.close();
-	return ("201");
-}
-
-std::string FileManager::get_random_filename(void) 
+std::string FileManager::get_random_filename(const std::vector<uint8_t> & file) 
 {
 	struct timeval		t;
 	std::stringstream filename;
+	std::string str_filename; 
+	std::vector<uint8_t> raw_filename;
+	size_t start_pos;
+	size_t end_pos;
 
 	gettimeofday(&t, NULL);
+
+	start_pos = RawData::find(file, "filename=\"") + 10;
+	end_pos = RawData::find(file, "\"", start_pos);
+
 	filename << (t.tv_sec * 1000) + (t.tv_usec / 1000);
+	if (start_pos != std::string::npos && end_pos != std::string::npos)
+	{
+		raw_filename = RawData::substr(file, start_pos, end_pos - start_pos);
+		str_filename = std::string(raw_filename.begin(), raw_filename.end());
+		filename << "_" << str_filename;
+	}
 	return (filename.str());
 }
