@@ -105,6 +105,10 @@ int Res::send(void)
 	return (build_http_response());
 }
 
+
+/*
+TODO: Shrink the size of the function;
+*/
 int Res::exec_CGI(void)
 {
 	Req *req = stream->req;
@@ -173,12 +177,16 @@ int Res::exec_CGI(void)
 	return 1;
 }
 
+/*
+ * Delete the specified file;
+ * Throws an error when is a directory;
+ * Throws an error when it can't delete the file;
+*/
 void Res::exec_delete(void)
 {
 	std::string path = stream->req->file_path;
 
-	if (path[0] == '/')
-		path = path.substr(1);
+	path = path[0] == '/' ? path.substr(1) : path;
 	if (stream->req->path_type == _DIRECTORY)
 		throw HttpError("403", "We can't delete a directory.");
 	else if (std::remove(path.c_str()) != 0)
@@ -191,6 +199,11 @@ void Res::exec_delete(void)
 	}
 }
 
+/*
+ * Builds the file as specified in the directory listing;
+ * Read the speficied file;
+ * Throws a Not Found when there no type of file;
+*/
 void Res::exec_get(void)
 {
 	if (stream->req->path_type == _FILE)
