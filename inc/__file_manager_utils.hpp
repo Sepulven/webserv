@@ -17,6 +17,10 @@
 /* Utils */
 #include <__raw_data_utils.hpp>
 
+/* Classes */
+#include <HttpError.hpp>
+
+
 /*
 	* The only responsability of this class is to deal with the file system;
 	* Reading files;

@@ -39,7 +39,7 @@ int Res::build_http_response(void)
 	Req *req = stream->req;
 	std::stringstream ss;
 
-	if (status_code[0] != '2') // * Sucess;
+	if (status_code[0] != '2') // * There is an error;
 		this->content = FileManager::build_error_pages(error_pages, status_code, error_msg);
 	ss << "HTTP/1.1 " << status_code << " " << this->status[status_code] << "\r\n";
 	ss << "Content-Type: " << content_type[req->file_ext] << "\r\n";
@@ -215,22 +215,19 @@ void Res::exec_get(void)
 std::string get_boundary(const std::string &content_type)
 {
 	std::string boundary;
+	size_t start_pos = content_type.find("=");
 
-	try
-	{
-		boundary = content_type.substr(content_type.find("=") + 1);
-		if (boundary[0] == '"' && boundary[boundary.length() - 1] == '"')
-		{
-			boundary.erase(0, 1);
-			boundary.erase(boundary.length() - 1, 1);
-		}
-		return boundary;	
-	}
-	catch(const std::exception& e)
-	{
+	if (start_pos == std::string::npos)
 		throw HttpError("400", "Bad Request");
+	boundary = content_type.substr(start_pos + 1);
+	if (boundary[0] == '"' && boundary[boundary.length() - 1] == '"')
+	{
+		boundary.erase(0, 1);
+		boundary.erase(boundary.length() - 1, 1);
 	}
+	return boundary;	
 }
+
 
 /*
  * * Only deals with content-type multipart/form-data

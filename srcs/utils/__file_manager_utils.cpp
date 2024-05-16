@@ -47,27 +47,18 @@ std::string FileManager::build_error_pages(const std::map<int, std::string> &err
 /*
 	* Reads file given a path;
 	* If path starts with '/', jumps it;
-
-	TODO: Get the error page from the route;
-	TODO: Set the correct status code;
 */
 std::string FileManager::read_file(const std::string path)
 {
 	std::ifstream file;
-	std::ifstream not_found("error/404.html");
 	std::stringstream buff;
 
 	file.open(&path.c_str()[path.c_str()[0] == '/']);
 	if (!file.is_open())
-	{
-		if (!not_found.is_open())
-			std::cout << "WE COULND'T OPEN THE ERROR FILE" << std::endl;
-		buff << not_found.rdbuf();
-	}
+			throw HttpError("404", "Not Found");
 	if (file.is_open())
 		buff << file.rdbuf();
 	file.close();
-	not_found.close();
 	return (buff.str());
 }
 
@@ -79,8 +70,10 @@ std::string FileManager::directory_listing(const std::string path)
 	DIR* dir = opendir(path.c_str());
 	std::stringstream ss;
 	struct dirent* entry;
-	entry = readdir(dir);
 
+	if (!dir)
+		throw HttpError("500", "Internal Server Error");
+	entry = readdir(dir);
 	ss << "<h1>Directory Listing</h1>";
 	ss << "<ul>";
 	while (entry)
@@ -102,10 +95,13 @@ std::string FileManager::directory_listing(const std::string path)
 std::vector<uint8_t> get_file(const std::vector<uint8_t>& content)
 {
 	std::vector<uint8_t> file;
+	size_t pos;
+	size_t length;
 
-	size_t pos = RawData::find(content, "\r\n\r\n") + 4;
-	size_t length = content.size() - pos - 2;
-
+	pos = RawData::find(content, "\r\n\r\n") + 4;
+	if (pos == std::string::npos)
+		throw HttpError("400", "Bad Request");
+	length = content.size() - pos - 2;
 	file = RawData::substr(content, pos, length);
 	return (file);
 }
@@ -121,20 +117,17 @@ std::string FileManager::create_files(const std::vector<uint8_t>& body, const st
 	std::string filename;
 	std::vector<uint8_t> file;
 
-
 	for (size_t i = 1; i < files.size() - 1; i++)
 	{
 		file = get_file(files[i]);
-		if (dir[dir.size() - 1] != '/')
-			filename = dir + "/" + get_random_filename(files[i]);
-		else
-			filename = dir + get_random_filename(files[i]);
+		filename = dir + (dir.empty() || dir[dir.size() - 1] == '/' ? "" : "/") 
+					+ get_random_filename(files[i]);
 		out_file.open(filename.c_str(), std::ios::binary);
 		if (!out_file.is_open())
-			return ("500");
+			throw HttpError("500", "Internal Server error");
 		out_file.write((const char*)&file[0], file.size());
 		if (out_file.fail())
-			return ("500");
+			throw HttpError("500", "Internal Server error");
 		out_file.close();
 	}
 	return ("201");
