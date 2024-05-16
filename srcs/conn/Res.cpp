@@ -239,8 +239,8 @@ std::string get_boundary(const std::string &content_type)
  */
 void Res::exec_post(void)
 {
+	const std::string &content_type = stream->req->header["Content-Type"];
 	Req *req = stream->req;
-	const std::string &content_type = req->header["Content-Type"];
 	std::string boundary;
 
 	if (content_type.find("multipart/form-data;") != 1)

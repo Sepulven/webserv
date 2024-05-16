@@ -13,7 +13,6 @@ Req::~Req() {}
 /*
  * Gets the values from header nad set them in the map;
  * Validates the headers, checks if they are in key-value pairs;
- TODO: white space after the : ;
 */
 void	Req::set_header(std::vector<std::string>& header)
 {
@@ -28,9 +27,9 @@ void	Req::set_header(std::vector<std::string>& header)
 	{
 		line = header[j];
 
-		i = line.find(":");
-		if (i == std::string::npos || line.length() + 1 > i) // * Out of bound;
-			throw ("400", "Invalid Request");
+		i = line.find(": ");
+		if (i == std::string::npos || line.length() + 1 < i) // * Out of bound;
+			throw HttpError("400", "Invalid Request");
 		key = line.substr(0, i);
 		value = line.substr(i+1);
 		this->header[key] = value;
@@ -99,8 +98,9 @@ void	Req::set_URL_data(std::string& URL)
 
 void Req::set_content_length(void)
 {
+
 	if (header["Content-Length"] != "")
-		content_length = std::atoi(&header["Content-Length"].c_str()[1]);
+		content_length = std::atoi(header["Content-Length"].c_str());
 	if (header["Content-Length"] != "" && content_length > (size_t)stream->server->max_cb_size)
 		throw HttpError("413", "Payload Too Large");
 }
