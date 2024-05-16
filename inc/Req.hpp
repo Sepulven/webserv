@@ -81,12 +81,14 @@ class Req
 
 		enum PATH_TYPE path_type;
 
+		// * I think this will be useful;
+		enum PATH_TYPE get_path_type(std::string&);
+
 		int read(int);
 		// * Parsing
 		void set_raw_body(size_t);
 		void set_URL_data(std::string &);
 		void set_header(std::vector<std::string> &);
-		void set_path_type(void);
 		void set_file_ext(void);
 		void set_content_length(void);
 		void set_rest_raw_data(size_t);

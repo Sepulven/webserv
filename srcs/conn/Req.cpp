@@ -37,22 +37,22 @@ void	Req::set_header(std::vector<std::string>& header)
 }
 
 /*
- * Set file path;
- * Don't throw an error;
+ * Returns the path_type as a ENUM given a relative path;
 */
-void	Req::set_path_type(void)
+enum PATH_TYPE 
+Req::get_path_type(std::string &file_path)
 {
 	struct stat fileStat;
 
 	// * Sets the file_type - related to how the request is going to get treated
 	if (stat(file_path.c_str(), &fileStat) < -1)
-		path_type = _NONE;
+		return (_NONE);
 	if (S_ISDIR(fileStat.st_mode))
-		path_type = _DIRECTORY;
+		return (_DIRECTORY);
 	else if (S_ISREG(fileStat.st_mode))
-		path_type = _FILE;
+		return (_FILE);
 	else
-		path_type = _NONE;
+		return (_NONE);
 }
 
 /*
@@ -92,7 +92,7 @@ void	Req::set_URL_data(std::string& URL)
 	else
 		filename = file_path.substr(pos + 1);
 
-	set_path_type();
+	path_type = get_path_type(file_path);
 	set_file_ext();
 }
 

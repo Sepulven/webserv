@@ -64,4 +64,3 @@ int ServerUtils::epoll_out_fd(int epoll_fd, int fd, t_event event)
 	event.events = EPOLLOUT | EPOLLET;
 	return (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event));
 }
-
