@@ -44,12 +44,14 @@ ServerContext::ServerContext(t_server serverNode)
 		// * Pushes the new route to the server context;
 		this->routes.push_back(new_location);
 	}
-	t_location root_location;
-	root_location.name = ".";
-	root_location.root = std::string();
-	root_location.redirect = std::string();
-	root_location.dir_listing = "off"; // ! NEEDS TO BE CHANGED LATER.
-	this->routes.push_back(root_location);
+	t_location server_location;
+	server_location.name = ".";
+	server_location.root = serverNode.root;
+	server_location.redirect = std::string();
+	for (std::list<std::string>::iterator it = serverNode.index.begin(); it != serverNode.index.end(); it++)
+		server_location.index.push_back(*it);
+	server_location.dir_listing = "off"; // ! NEEDS TO BE CHANGED LATER.
+	this->routes.push_back(server_location);
 }
 
 /*

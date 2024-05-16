@@ -41,7 +41,7 @@ class Res
 
 		int build_http_response(void);
 
-		int	check_method(void);
+		void expand_file_path(void);
 		bool validate_route_name(std::string name, std::string filePath);
 	public:
 		std::string status_code;

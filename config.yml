@@ -6,8 +6,8 @@ server:
         host: localhost   
         port: 8080
     server_name: example.com
-    root: /www
-    index: index.html index2.html
+    root: /pages
+    index: ind3x.html index.html
     http_methods: GET POST
     error_pages:
         404: error/404.html
@@ -15,9 +15,9 @@ server:
         400: error/400.html
     max_cbsize: 2m              # to do: conversion and mapping
     max_conn: 10
-    route /conn:               # to do: HTTP redirect.
-        root: /srcs
-        index: main.cpp       # default file to open if the request is the dir
+    route /main:               # to do: HTTP redirect.
+        root: /pages
+        index: index.html       # default file to open if the request is the dir
         dir_listing: on         # 'on' or 'off'
         redirect: ola
         http_methods: GET
@@ -27,8 +27,6 @@ server:
     route /uploads_other:                  
         dir_listing: off       
         http_methods: GET POST
-    route /ola:
-        http_methods: GET
 
 server:
     listen:

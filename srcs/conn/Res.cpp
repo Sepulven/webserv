@@ -68,31 +68,34 @@ bool Res::validate_route_name(std::string name, std::string filePath) {
 	return false;
 }
 
-int	Res::check_method(void)
+void	Res::expand_file_path(void)
 {
 	Req *req = stream->req;
 
-	for (size_t i = 0; i < this->stream->server->routes.size(); i++) {
+	std::cout << "==========AFTER CHECK==========" << std::endl;
+	for (size_t i = 0; i < this->stream->server->routes.size(); i++)  // * For debug purposes
 		std::cout << "name: " << this->stream->server->routes[i].name << " | file_path: " << req->file_path << std::endl;
+
+	for (size_t i = 0; i < this->stream->server->routes.size(); i++) {
 		if (validate_route_name(this->stream->server->routes[i].name, req->file_path))
 		{
-			// std::cout << "DEBUG" << std::endl;
-			// size_t j = 0;
-			// while (j <= req->file_path.size() && this->stream->server->routes[i].name[j] == req->file_path[j])
-			// 	j++;
-			// j--;
-			// if (!req->file_path[j])
-			// 	req->file_path = this->stream->server->routes[i].root.substr(1);
-			// else
-			// 	req->file_path = this->stream->server->routes[i].root.substr(1) + req->file_path.substr(j);
+			std::cout << "DEBUG" << std::endl;
+			size_t j = 0;
+			while (j <= req->file_path.size() && this->stream->server->routes[i].name[j] == req->file_path[j])
+				j++;
+			j--;
+			if (!req->file_path[j])
+				req->file_path = this->stream->server->routes[i].root.substr(1);
+			else
+				req->file_path = this->stream->server->routes[i].root.substr(1) + req->file_path.substr(j);
+			if (!this->stream->server->routes[i].index.empty()) {
+				req->file_path = req->file_path + "/" + this->stream->server->routes[i].index.back();
+				req->path_type = _FILE;
+			}
 			std::cout << "new file_path: " << req->file_path << std::endl;
 			// expand file path (replace name for root: /gatos/Req.cpp -> srcs/conn/Req.cpp)
-			// req->file_path = 
-			// check if method is allowed
-			return 1;
 		}
 	}
-	return -1;
 }
 
 int Res::send(void)
@@ -104,14 +107,17 @@ int Res::send(void)
 
 	if (!this->status_code.empty() && !this->error_msg.empty())
 		return (build_http_response());
-	// if (req->path_type == _DIRECTORY && check_method() == -1)
-	// {
-	// 	std::cout <<  "check method error\n";
-	// 	this->content = FileManager::read_file("error/403.html"); // change for error page variable
-	// 	this->add_ext = ".html";
-	// 	this->status_code = "403";
-	// 	return (build_http_response());
-	// }
+
+	std::cout << "File_path: " << req->file_path << "$" << std::endl;
+	if (req->file_path.find('.') == std::string::npos || (req->file_path.size() == 1 && req->file_path[0] == '.')) // TODO: Ememndar gambiarra usando URL_DATA (req->path_type == _DIRECTORY)
+		expand_file_path();
+	else {
+		std::cout <<  "ERRO FDD\n";
+		this->content = FileManager::read_file("error/403.html"); // change for error page variable
+		this->add_ext = ".html";
+		this->status_code = "403";
+		return (build_http_response());
+	}
 	try
 	{
 		if (it != req->cgi_path.end())
