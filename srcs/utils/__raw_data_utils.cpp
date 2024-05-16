@@ -10,7 +10,7 @@ size_t RawData::find(const std::vector<uint8_t> &_h, const std::vector<uint8_t> 
 {
 	RawData::const_iterator it = std::search(_h.begin() + _p, _h.end(), _n.begin(), _n.end());
 
-	if (it == _h.end())
+	if (it == _h.end() || _p == std::string::npos)
 		return (std::string::npos);
 	return (static_cast<size_t>(std::distance(_h.begin(), it)));
 }
@@ -26,7 +26,7 @@ size_t RawData::find(const std::vector<uint8_t> &_h, std::string _n, size_t _p /
 	std::vector<uint8_t> __n(_n.begin(), _n.begin() + _n.length());
 	RawData::const_iterator it = std::search(_h.begin() + _p, _h.end(), __n.begin(), __n.end()); // * I don't to compore the \0
 
-	if (it == _h.end())
+	if (it == _h.end() || _p == std::string::npos)
 		return (std::string::npos);
 	return (static_cast<size_t>(std::distance(_h.begin(), it)));
 }
@@ -143,7 +143,6 @@ RawData::split(const std::vector<uint8_t> &base, const std::string delimiter)
 /*
  * Returns std::vector<std::string>
  * Split with base std::vector<uint8_t> delimitador std::string
- TODO: Check whether it is needed or not.
  */
 std::vector<std::string>
 RawData::splitToString(const std::vector<uint8_t> &base, const std::string delimiter)

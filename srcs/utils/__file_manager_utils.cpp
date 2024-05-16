@@ -21,13 +21,16 @@ std::string html_template(const std::string &content, const std::string &title)
 	* Returns the content of the error pages in case of success;
 	* Builds an error page in case none exists;
 */
-std::string FileManager::build_error_pages(const std::string &path, const std::string &code, const std::string &error_msg)
+std::string FileManager::build_error_pages(const std::map<int, std::string> &error_pages, const std::string &code, const std::string &error_msg)
 {
 	std::ifstream file;
-	std::stringstream content ;
+	std::stringstream content;
+	std::string path;
+	int error_code = atoi(code.c_str());
 
+	path = error_pages.at(error_code);
 	file.open(&path.c_str()[path.c_str()[0] == '/']);
-	// * If we can't open, we build it;
+	// * If we can't open it, we build it;
 	if (!file.is_open())
 	{
 		content << "<h1>"<< code << " " << "</h1>"
@@ -44,27 +47,18 @@ std::string FileManager::build_error_pages(const std::string &path, const std::s
 /*
 	* Reads file given a path;
 	* If path starts with '/', jumps it;
-
-	TODO: Get the error page from the route;
-	TODO: Set the correct status code;
 */
 std::string FileManager::read_file(const std::string path)
 {
 	std::ifstream file;
-	std::ifstream not_found("error/404.html");
 	std::stringstream buff;
 
 	file.open(&path.c_str()[path.c_str()[0] == '/']);
 	if (!file.is_open())
-	{
-		if (!not_found.is_open())
-			std::cout << "WE COULND'T OPEN THE ERROR FILE" << std::endl;
-		buff << not_found.rdbuf();
-	}
+			throw HttpError("404", "Not Found");
 	if (file.is_open())
 		buff << file.rdbuf();
 	file.close();
-	not_found.close();
 	return (buff.str());
 }
 
@@ -76,8 +70,10 @@ std::string FileManager::directory_listing(const std::string path)
 	DIR* dir = opendir(path.c_str());
 	std::stringstream ss;
 	struct dirent* entry;
-	entry = readdir(dir);
 
+	if (!dir)
+		throw HttpError("500", "Internal Server Error");
+	entry = readdir(dir);
 	ss << "<h1>Directory Listing</h1>";
 	ss << "<ul>";
 	while (entry)
@@ -99,10 +95,13 @@ std::string FileManager::directory_listing(const std::string path)
 std::vector<uint8_t> get_file(const std::vector<uint8_t>& content)
 {
 	std::vector<uint8_t> file;
+	size_t pos;
+	size_t length;
 
-	size_t pos = RawData::find(content, "\r\n\r\n") + 4;
-	size_t length = content.size() - pos - 2;
-
+	pos = RawData::find(content, "\r\n\r\n") + 4;
+	if (pos == std::string::npos)
+		throw HttpError("400", "Bad Request");
+	length = content.size() - pos - 2;
 	file = RawData::substr(content, pos, length);
 	return (file);
 }
@@ -118,54 +117,42 @@ std::string FileManager::create_files(const std::vector<uint8_t>& body, const st
 	std::string filename;
 	std::vector<uint8_t> file;
 
-
 	for (size_t i = 1; i < files.size() - 1; i++)
 	{
 		file = get_file(files[i]);
-		if (dir[dir.size() - 1] != '/')
-			filename = dir + "/" + get_random_filename() + "_" + (char)(i+48);
-		else
-			filename = dir + get_random_filename() + "_" + (char)(i+48);
+		filename = dir + (dir.empty() || dir[dir.size() - 1] == '/' ? "" : "/") 
+					+ get_random_filename(files[i]);
 		out_file.open(filename.c_str(), std::ios::binary);
 		if (!out_file.is_open())
-			return ("500");
+			throw HttpError("500", "Internal Server error");
 		out_file.write((const char*)&file[0], file.size());
 		if (out_file.fail())
-			return ("500");
+			throw HttpError("500", "Internal Server error");
 		out_file.close();
 	}
 	return ("201");
 }
 
-/*
- * Returns the status code of the operation;
- * Creates one file;
-*/
-std::string FileManager::create_file(const std::vector<uint8_t>& body, const std::string dir)
-{
-	std::ofstream out_file;
-	std::string filename = dir + "/" + get_random_filename() + "_chunked";
-
-	out_file.open(filename.c_str(), std::ios::binary);
-
-	if (!out_file.is_open())
-		return ("500");
-
-	out_file.write((const char*)&body[0], body.size());
-
-	if (out_file.fail())
-		return ("500");
-
-	out_file.close();
-	return ("201");
-}
-
-std::string FileManager::get_random_filename(void) 
+std::string FileManager::get_random_filename(const std::vector<uint8_t> & file) 
 {
 	struct timeval		t;
 	std::stringstream filename;
+	std::string str_filename; 
+	std::vector<uint8_t> raw_filename;
+	size_t start_pos;
+	size_t end_pos;
 
 	gettimeofday(&t, NULL);
+
+	start_pos = RawData::find(file, "filename=\"") + 10;
+	end_pos = RawData::find(file, "\"", start_pos);
+
 	filename << (t.tv_sec * 1000) + (t.tv_usec / 1000);
+	if (start_pos != std::string::npos && end_pos != std::string::npos)
+	{
+		raw_filename = RawData::substr(file, start_pos, end_pos - start_pos);
+		str_filename = std::string(raw_filename.begin(), raw_filename.end());
+		filename << "_" << str_filename;
+	}
 	return (filename.str());
 }

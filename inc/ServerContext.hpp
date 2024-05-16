@@ -41,6 +41,7 @@ typedef struct s_location
 	bool	dir_listing;
 } t_location;
 
+
 class ServerContext
 {
 	private:
@@ -53,6 +54,7 @@ class ServerContext
 		int			max_events;
 		int			socket;
 		long long	max_cb_size;
+
 		std::map<int, std::string> error_pages;
 		std::vector<t_location> routes;
 
