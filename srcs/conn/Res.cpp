@@ -66,6 +66,15 @@ bool Res::validate_route_name(std::string name, std::string filePath) {
 	return false;
 }
 
+/*
+ * Reformular esta funcao, ela deve tentar igualar todos o campos do path
+ * a uma route, ex:
+ * srcs/conn/Req.cpp, deve tentar ver se srcs/conn ou apenas srcs/ faz
+ * parte de alguma route. Se nao fizer automaticamente assume-se a Server_Route
+ * fazendo com que neste caso o new_path passaria a pages/srcs/conn/Req.cpp
+ * o que e um path invalido e levaria a um erro 403.
+*/
+
 void	Res::expand_file_path(void)
 {
 	Req *req = stream->req;
@@ -91,6 +100,7 @@ void	Res::expand_file_path(void)
 				req->path_type = _FILE;
 			}
 			std::cout << "new file_path: " << req->file_path << std::endl;
+			return ;
 			// expand file path (replace name for root: /gatos/Req.cpp -> srcs/conn/Req.cpp)
 		}
 	}
@@ -108,7 +118,7 @@ int Res::send(void)
 
 	std::cout << "File_path: " << req->file_path << "$" << std::endl;
 	if (req->file_path.find('.') == std::string::npos || (req->file_path.size() == 1 && req->file_path[0] == '.')) // TODO: Ememndar gambiarra usando URL_DATA (req->path_type == _DIRECTORY)
-	expand_file_path();
+		expand_file_path();
 	// else {
 	// 	std::cout <<  "ERRO FDD\n";
 	// 	this->content = FileManager::read_file("error/403.html"); // change for error page variable
