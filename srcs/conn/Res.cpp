@@ -108,14 +108,14 @@ int Res::send(void)
 
 	std::cout << "File_path: " << req->file_path << "$" << std::endl;
 	if (req->file_path.find('.') == std::string::npos || (req->file_path.size() == 1 && req->file_path[0] == '.')) // TODO: Ememndar gambiarra usando URL_DATA (req->path_type == _DIRECTORY)
-		expand_file_path();
-	else {
-		std::cout <<  "ERRO FDD\n";
-		this->content = FileManager::read_file("error/403.html"); // change for error page variable
-		this->add_ext = ".html";
-		this->status_code = "403";
-		return (build_http_response());
-	}
+	expand_file_path();
+	// else {
+	// 	std::cout <<  "ERRO FDD\n";
+	// 	this->content = FileManager::read_file("error/403.html"); // change for error page variable
+	// 	this->add_ext = ".html";
+	// 	this->status_code = "403";
+	// 	return (build_http_response());
+	// }
 	try
 	{
 		if (it != req->cgi_path.end())
