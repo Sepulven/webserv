@@ -93,7 +93,7 @@ void	Req::set_URL_data(std::string& URL)
 		filename = file_path.substr(pos + 1);
 
 	path_type = get_path_type(file_path);
-	set_file_ext();
+	set_file_ext();	
 }
 
 void Req::set_content_length(void)

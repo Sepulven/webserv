@@ -34,7 +34,15 @@ WebServer::WebServer(std::list<t_server> serverNodes)
 
 WebServer::~WebServer()
 {
-	
+	std::map<int, ConnStream*>::iterator it = streams.begin();
+	std::map<int, ServerContext*>::iterator _it = servers.begin();
+
+	for (; it != streams.end(); it++)
+		close_conn(this->epoll_fd, it->second->fd);
+	for (; _it != servers.end(); _it++)
+		delete _it->second;
+	std::cout << "*************************************" << std::endl;
+
 	std::cout << "\r" << "\033[31m" << std::endl
 		 << "                                                     " << std::endl
 		 << " ▒█████    █████▒ █████▒██▓     ██▓ ███▄    █ ▓█████ " << std::endl
@@ -46,10 +54,6 @@ WebServer::~WebServer()
 		 << "  ░ ▒ ▒░  ░      ░     ░ ░ ▒  ░ ▒ ░░ ░░   ░ ▒░ ░ ░  ░" << std::endl
 		 << "░ ░ ░ ▒   ░ ░    ░ ░     ░ ░    ▒ ░   ░   ░ ░    ░   " << std::endl
 		 << "    ░ ░                    ░  ░ ░           ░    ░  ░" << std::endl << "\033[0m";
-	for (std::map<int, ConnStream*>::iterator it = streams.begin(); it != streams.end(); it++)
-		close_conn(this->epoll_fd, it->second->fd);
-	for (std::map<int, ServerContext*>::iterator it = servers.begin(); it != servers.end(); it++)
-		delete it->second;
 }
 
 /*
@@ -90,6 +94,7 @@ void WebServer::init_servers(std::vector<ServerContext *>& vec)
 		memset(&event, 0, sizeof(struct epoll_event));
 		event.events = EPOLLIN;
 		event.data.ptr = new t_event_data(server_fd, SERVER);
+		// this->servers[server_fd].info = event.data.ptr; // * We need to free it later;
 
 		if (epoll_add_fd(this->epoll_fd, server_fd, event))
 			throw Error("epoll_ctl failed.");
@@ -210,7 +215,7 @@ void WebServer::listen(void)
 		for (int i = 0; i < num_events; i++)
 		{
 			conn = &this->events[i];
-			event_data = static_cast<t_event_data *>(conn->data.ptr);
+			event_data = static_cast<t_event_data *>(conn->data.ptr); // I need to free this
 			if ((event_data->type == SERVER) && (conn->events & EPOLLIN))
 				accept_connection(epoll_fd, event_data->fd);
 			else if (conn->events & EPOLLIN)
