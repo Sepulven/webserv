@@ -43,7 +43,7 @@ typedef struct s_location
 
 
 class ServerContext
-{
+{z
 	private:
 
 	public:

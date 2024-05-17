@@ -27,6 +27,11 @@ server:
     route /uploads_other:                  
         dir_listing: off       
         http_methods: GET POST
+    # route a.py:
+    #     root: /cgi-bin
+    # route /cgi:
+    #     root: /cgi-bin
+    #     index: a.py
 
 server:
     listen:

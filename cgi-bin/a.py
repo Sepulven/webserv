@@ -10,7 +10,7 @@ import sys
 def POST():
     raw_body = sys.stdin.buffer.read()
 
-    upload_dir = "server_uploaded_files/"
+    upload_dir = "uploads/"
     if not os.path.exists(upload_dir):
         os.mkdir(upload_dir)
     entries = os.listdir(upload_dir)
@@ -98,7 +98,7 @@ def GET():
     res += '<input class="submit-button" type="submit" value="Upload">\n'
     res += '</form>\n'
 
-    upload_dir = "server_uploaded_files/"
+    upload_dir = "uploads/"
     if os.path.exists(upload_dir) and os.listdir(upload_dir):
         entries = os.listdir(upload_dir)
         res += '<p>Uploaded Files:</p>'
