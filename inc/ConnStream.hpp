@@ -15,6 +15,7 @@
 
 /*Utils*/
 #include <__file_manager_utils.hpp>
+#include <__webserv_utils.hpp>
 
 class Req;
 class Res;
@@ -31,6 +32,8 @@ class ConnStream
 
 		Req *req;
 		Res *res;
+
+		t_event_data *epoll_event_info;
 
 		long long last_action_time;
 		long long close_conn_time;

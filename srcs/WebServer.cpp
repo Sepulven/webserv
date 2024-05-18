@@ -127,6 +127,7 @@ void WebServer::accept_connection(int epoll_fd, int fd)
 	if (epoll_add_fd(epoll_fd, client_fd, event) < 0)
 		throw Error("Epoll_ctl failed");
 	this->streams[client_fd] = new ConnStream(client_fd, servers[fd]);
+	this->streams[client_fd]->epoll_event_info = static_cast<t_event_data*>(event.data.ptr);
 }
 
 /*

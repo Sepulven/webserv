@@ -13,6 +13,7 @@ ConnStream::~ConnStream()
 {
 	delete this->req;
 	delete this->res;
+	delete this->epoll_event_info;
 }
 
 void ConnStream::clean_conn()
