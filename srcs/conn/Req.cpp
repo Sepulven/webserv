@@ -45,7 +45,7 @@ Req::get_path_type(std::string &file_path)
 	struct stat fileStat;
 
 	// * Sets the file_type - related to how the request is going to get treated
-	if (stat(file_path.c_str(), &fileStat) < -1)
+	if (stat(file_path.c_str(), &fileStat) == -1)
 		return (_NONE);
 	if (S_ISDIR(fileStat.st_mode))
 		return (_DIRECTORY);

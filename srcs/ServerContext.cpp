@@ -56,6 +56,9 @@ ServerContext::ServerContext(t_server serverNode)
 }
 
 /*
- * There is nothing to clean;
+ * Frees the t_event_data pointer allocated in the init server function;
 */
-ServerContext::~ServerContext() {}
+ServerContext::~ServerContext()
+{
+	delete epoll_event_info;
+}

@@ -94,7 +94,7 @@ void WebServer::init_servers(std::vector<ServerContext *>& vec)
 		memset(&event, 0, sizeof(struct epoll_event));
 		event.events = EPOLLIN;
 		event.data.ptr = new t_event_data(server_fd, SERVER);
-		// this->servers[server_fd].info = event.data.ptr; // * We need to free it later;
+		this->servers[server_fd]->epoll_event_info = static_cast<t_event_data*>(event.data.ptr);
 
 		if (epoll_add_fd(this->epoll_fd, server_fd, event))
 			throw Error("epoll_ctl failed.");

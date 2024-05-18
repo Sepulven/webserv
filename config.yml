@@ -21,7 +21,7 @@ server:
         dir_listing: on         # 'on' or 'off'
         redirect: ola
         http_methods: GET
-    route /uploads:                    
+    route /uploads:
         dir_listing: on         
         http_methods: GET POST DELETE
     route /uploads_other:                  
