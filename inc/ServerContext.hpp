@@ -6,12 +6,11 @@
 /*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 12:31:02 by asepulve          #+#    #+#             */
-/*   Updated: 2024/05/15 01:13:29 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/05/18 19:19:39 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
-
 /* C headers*/
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -23,6 +22,9 @@
 
 /* Classes */
 #include "Parser.hpp"
+
+/* Utils */
+#include <__webserv_utils.hpp>
 
 /*
 	Server contexts:
@@ -58,6 +60,8 @@ class ServerContext
 		std::map<int, std::string> error_pages;
 		std::vector<t_location> routes;
 
+		t_event_data *epoll_event_info;
+	
 		ServerContext(t_server serverNode);
 		virtual ~ServerContext();
 };

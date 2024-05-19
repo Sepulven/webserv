@@ -27,21 +27,6 @@
 /* Utils */
 #include <__webserv_utils.hpp>
 
-typedef struct s_event_data
-{
-	int fd;
-	char type;
-	s_event_data(int _fd, char _type) : fd(_fd), type(_type) {}
-} t_event_data;
-
-enum SOCKET_TYPE
-{
-	SERVER = 's',
-	CLIENT = 'c'
-};
-
-typedef struct epoll_event t_event;
-
 static volatile sig_atomic_t is_running = 1;
 
 using namespace ServerUtils;
