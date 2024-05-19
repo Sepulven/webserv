@@ -11,11 +11,11 @@ int main(void)
 	{
 		Lexer *lex = new Lexer;
 		lex->tokenize("config.yml");
-		Lexer::printTokens(lex->getTokens());   // Print tokens.
+		// Lexer::printTokens(lex->getTokens());   // * Print tokens.
 		Parser *par = new Parser;
 		par->parse(lex->getTokens());
 		delete lex;
-		par->printServerNodes(par->getServerNodesIt());  // Print server nodes.
+		// par->printServerNodes(par->getServerNodesIt());  // * Print server nodes.
 		WebServer server(par->getServerNodes());
 		server.listen();
 		delete par;

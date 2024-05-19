@@ -40,9 +40,7 @@ class Res
 		void exec_delete(void);
 
 		int build_http_response(void);
-
-		void expand_file_path(void);
-		bool validate_route_name(std::string name, std::string filePath);
+		
 	public:
 		std::string status_code;
 		std::string error_msg;

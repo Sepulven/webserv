@@ -81,11 +81,15 @@ class Req
 
 		enum PATH_TYPE path_type;
 
-		// * I think this will be useful;
+		// * Path expansion based on route name.
+		void expand_file_path(void);
+		bool validate_route_name(std::string name, std::string filePath);
+
+		// * I think this will be useful.
 		enum PATH_TYPE get_path_type(std::string&);
 
 		int read(int);
-		// * Parsing
+		// * Parsing.
 		void set_raw_body(size_t);
 		void set_URL_data(std::string &);
 		void set_header(std::vector<std::string> &);

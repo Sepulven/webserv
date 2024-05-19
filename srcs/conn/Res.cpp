@@ -19,6 +19,10 @@ Res::Res(ConnStream *_stream) : stream(_stream)
 	content_type[".hpp"] = "text/plain";
 	content_type[".html"] = "text/html";
 	content_type[".pdf"] = "application/pdf";
+	content_type[".ico"] = "image/x-icon";
+	content_type[".png"] = "image/png";
+	content_type[".jpeg"] = "image/jpeg";
+	content_type[".jpg"] = "image/jpeg";
 
 
 	// * In case there is no extension;
@@ -56,56 +60,6 @@ int Res::build_http_response(void)
  * In case of error during the execution, changes the state of the response;
  */
 
-bool Res::validate_route_name(std::string name, std::string filePath) {
-	if (name == filePath)
-		return true;
-	size_t i = filePath.find_first_of('/');
-	if (i != std::string::npos)
-		if (std::strncmp(name.c_str(), filePath.c_str(), name.size()) == 0)
-			return true;
-	return false;
-}
-
-/*
- * Reformular esta funcao, ela deve tentar igualar todos o campos do path
- * a uma route, ex:
- * srcs/conn/Req.cpp, deve tentar ver se srcs/conn ou apenas srcs/ faz
- * parte de alguma route. Se nao fizer automaticamente assume-se a Server_Route
- * fazendo com que neste caso o new_path passaria a pages/srcs/conn/Req.cpp
- * o que e um path invalido e levaria a um erro 403.
-*/
-
-void	Res::expand_file_path(void)
-{
-	Req *req = stream->req;
-
-	std::cout << "==========AFTER CHECK==========" << std::endl;
-	for (size_t i = 0; i < this->stream->server->routes.size(); i++)  // * For debug purposes
-		std::cout << "name: " << this->stream->server->routes[i].name << " | file_path: " << req->file_path << std::endl;
-
-	for (size_t i = 0; i < this->stream->server->routes.size(); i++) {
-		if (validate_route_name(this->stream->server->routes[i].name, req->file_path))
-		{
-			std::cout << "DEBUG" << std::endl;
-			size_t j = 0;
-			while (j <= req->file_path.size() && this->stream->server->routes[i].name[j] == req->file_path[j])
-				j++;
-			j--;
-			if (!req->file_path[j])
-				req->file_path = this->stream->server->routes[i].root.substr(1);
-			else
-				req->file_path = this->stream->server->routes[i].root.substr(1) + req->file_path.substr(j);
-			if (!this->stream->server->routes[i].index.empty()) {
-				req->file_path = req->file_path + "/" + this->stream->server->routes[i].index.back();
-				req->path_type = _FILE;
-			}
-			std::cout << "new file_path: " << req->file_path << std::endl;
-			return ;
-			// expand file path (replace name for root: /gatos/Req.cpp -> srcs/conn/Req.cpp)
-		}
-	}
-}
-
 int Res::send(void)
 {
 	Req *req = stream->req;
@@ -115,10 +69,8 @@ int Res::send(void)
 
 	if (!this->status_code.empty() && !this->error_msg.empty())
 		return (build_http_response());
-
-	std::cout << "File_path: " << req->file_path << "$" << std::endl;
-	if (req->file_path.find('.') == std::string::npos || (req->file_path.size() == 1 && req->file_path[0] == '.')) // TODO: Ememndar gambiarra usando URL_DATA (req->path_type == _DIRECTORY)
-		expand_file_path();
+	std::cout << "File ext: " << req->file_ext << std::endl;
+	// curr_expansion == this->stream->server->routes.back().root;
 	// else {
 	// 	std::cout <<  "ERRO FDD\n";
 	// 	this->content = FileManager::read_file("error/403.html"); // change for error page variable

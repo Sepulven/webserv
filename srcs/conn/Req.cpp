@@ -93,7 +93,7 @@ void	Req::set_URL_data(std::string& URL)
 		filename = file_path.substr(pos + 1);
 
 	path_type = get_path_type(file_path);
-	set_file_ext();	
+	set_file_ext();
 }
 
 void Req::set_content_length(void)
@@ -117,6 +117,53 @@ void Req::set_rest_raw_data(size_t end_header_pos)
 	RawData::append(raw_body, sub_vec);
 }
 
+bool Req::validate_route_name(std::string name, std::string filePath) {
+	if (name == filePath)
+		return true;
+	size_t i = filePath.find_first_of('/');
+	if (i != std::string::npos)
+		if (std::strncmp(name.c_str(), filePath.c_str(), name.size()) == 0)
+			return true;
+	return false;
+}
+
+std::string curr_expansion = std::string();
+
+/*
+ * Reformular esta funcao, ela deve tentar igualar todos o campos do path
+ * a uma route, ex:
+ * srcs/conn/Req.cpp, deve tentar ver se srcs/conn ou apenas srcs/ faz
+ * parte de alguma route. Se nao fizer automaticamente assume-se a Server_Route
+ * fazendo com que neste caso o new_path passaria a pages/srcs/conn/Req.cpp
+ * o que e um path invalido e levaria a um erro 403.
+*/
+
+void	Req::expand_file_path(void)
+{
+	std::cout << "Entered expand with file_path: " << this->file_path << "$" << std::endl;
+	for (size_t i = 0; i < this->stream->server->routes.size(); i++) {
+		if (validate_route_name(this->stream->server->routes[i].name, this->file_path))
+		{
+			curr_expansion = this->stream->server->routes[i].root.substr(1);
+			size_t j = 0;
+			while (j <= this->file_path.size() && this->stream->server->routes[i].name[j] == this->file_path[j])
+				j++;
+			j--;
+			if (!this->file_path[j])
+				this->file_path = this->stream->server->routes[i].root.substr(1);
+			else
+				this->file_path = this->stream->server->routes[i].root.substr(1) + this->file_path.substr(j);
+			if (!this->stream->server->routes[i].index.empty()) {
+				this->file_path = this->file_path + "/" + this->stream->server->routes[i].index.back();
+				this->path_type = _FILE;
+			}
+			std::cout << "new file_path: " << this->file_path << std::endl;
+			return ;
+		}
+	}
+}
+
+
 /*
  * Receives the end of the header
 */
@@ -134,6 +181,10 @@ void	Req::parser(size_t end_header_pos)
 	URL = request_line_tokens[1];
 	http = request_line_tokens[2];
 
+	// if (this->file_path.find('.') == std::string::npos || (this->file_path.size() == 1 && this->file_path[0] == '.')) // TODO: Ememndar gambiarra usando URL_DATA (req->path_type == _DIRECTORY)
+	// 	expand_file_path();
+	// else
+	// 	this->file_path = curr_expansion + "/" + this->file_path;
 	set_URL_data(URL);
 	set_header(message_header);
 	set_content_length();
@@ -169,7 +220,7 @@ int Req::read(int fd)
 			bytes_read = ::read(fd, buffer, 4096);
 		}
 		if (RawData::find(data, "\r\n\r\n") != out_of_bound 
-			&& raw_body.size() >= content_length)
+			&& raw_body.size() >= content_length) 
 			return (1); // * Request is finished;
 	}
 	catch (const HttpError &e)
