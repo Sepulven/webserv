@@ -6,6 +6,8 @@ Req::Req(ConnStream * _stream) : stream(_stream), out_of_bound(std::string::npos
 	this->cgi_path.push_back("a.php");
 
 	this->content_length = 0;
+	this->referer = std::string();
+	this->file_path = std::string();
 }
 
 Req::~Req() {}
@@ -72,6 +74,59 @@ void	Req::set_file_ext(void)
 		file_ext = "";
 }
 
+bool Req::validate_route_name(std::string name, std::string filePath) {
+	if (name == filePath)
+		return true;
+	size_t i = filePath.find_first_of('/');
+	if (i != std::string::npos)
+		if (std::strncmp(name.c_str(), filePath.c_str(), name.size()) == 0)
+			return true;
+	return false;
+}
+
+/*
+ * Reformular esta funcao, ela deve tentar igualar todos o campos do path
+ * a uma route, ex:
+ * srcs/conn/Req.cpp, deve tentar ver se srcs/conn ou apenas srcs/ faz
+ * parte de alguma route. Se nao fizer automaticamente assume-se a Server_Route
+ * fazendo com que neste caso o new_path passaria a pages/srcs/conn/Req.cpp
+ * o que e um path invalido e levaria a um erro 403.
+*/
+
+void	Req::expand_file_path()
+{
+	std::vector<t_location> routes = this->stream->server->routes;
+	std::cout << "Entered expand with file_path: " << this->file_path << "$" << std::endl;
+
+	if (!referer.empty() && referer.find('.') == std::string::npos)
+		this->file_path = referer + "/" + this->file_path;
+	if (!referer.empty() && file_path.find('/') == std::string::npos && file_path.find('.') != std::string::npos) {
+		file_path = routes.back().root.substr(1) + "/" + file_path;
+		std::cout << "new file_path3: " << this->file_path << "$" << std::endl;
+		return ;
+	}
+	for (size_t i = 0; i < routes.size(); i++) {
+		if (validate_route_name(routes[i].name, this->file_path))
+		{
+			size_t j = 0;
+			while (j <= this->file_path.size() && routes[i].name[j] == this->file_path[j])
+				j++;
+			if (j == file_path.size() + 1)
+				this->file_path = routes[i].root.substr(1);
+			else
+				this->file_path = routes[i].root.substr(1) + this->file_path.substr(j);
+			if (!routes[i].index.empty() && referer.empty() && file_path.find('.') == std::string::npos) {
+				this->file_path = this->file_path + "/" + routes[i].index.back();
+				// this->path_type = _FILE;
+			}
+			std::cout << "new file_path1: " << this->file_path << "$" << std::endl;
+			return ;
+		}
+	}
+	file_path = routes.back().root.substr(1) + "/" + file_path;
+	std::cout << "new file_path2: " << this->file_path << "$" << std::endl;
+}
+
 /*
  * Parsing on the URL;
 */
@@ -86,6 +141,7 @@ void	Req::set_URL_data(std::string& URL)
 	if (file_path.length() == 0)
 		file_path = ".";
 
+	expand_file_path();
 	pos = file_path.find_last_of('/');
 	if (pos != std::string::npos)
 		filename = file_path;
@@ -117,52 +173,20 @@ void Req::set_rest_raw_data(size_t end_header_pos)
 	RawData::append(raw_body, sub_vec);
 }
 
-bool Req::validate_route_name(std::string name, std::string filePath) {
-	if (name == filePath)
-		return true;
-	size_t i = filePath.find_first_of('/');
-	if (i != std::string::npos)
-		if (std::strncmp(name.c_str(), filePath.c_str(), name.size()) == 0)
-			return true;
-	return false;
+void Req::set_referer(std::vector<std::string> message_header) {
+	std::string tmp = std::string();
+	for (size_t i = 0; i < message_header.size(); i++) // * Assigning the referer var if it exists.
+		if (std::strncmp("Referer", message_header[i].c_str(), 7) == 0)
+			tmp = message_header[i].substr(message_header[i].find(' ') + 1);
+	size_t i = std::strlen(tmp.c_str());
+	if (!i)
+		return;
+	while (!std::isdigit(tmp[i]))
+		i--;
+	referer = tmp.substr(i + 2);
+	if (referer.empty())
+		referer = ".";
 }
-
-std::string curr_expansion = std::string();
-
-/*
- * Reformular esta funcao, ela deve tentar igualar todos o campos do path
- * a uma route, ex:
- * srcs/conn/Req.cpp, deve tentar ver se srcs/conn ou apenas srcs/ faz
- * parte de alguma route. Se nao fizer automaticamente assume-se a Server_Route
- * fazendo com que neste caso o new_path passaria a pages/srcs/conn/Req.cpp
- * o que e um path invalido e levaria a um erro 403.
-*/
-
-void	Req::expand_file_path(void)
-{
-	std::cout << "Entered expand with file_path: " << this->file_path << "$" << std::endl;
-	for (size_t i = 0; i < this->stream->server->routes.size(); i++) {
-		if (validate_route_name(this->stream->server->routes[i].name, this->file_path))
-		{
-			curr_expansion = this->stream->server->routes[i].root.substr(1);
-			size_t j = 0;
-			while (j <= this->file_path.size() && this->stream->server->routes[i].name[j] == this->file_path[j])
-				j++;
-			j--;
-			if (!this->file_path[j])
-				this->file_path = this->stream->server->routes[i].root.substr(1);
-			else
-				this->file_path = this->stream->server->routes[i].root.substr(1) + this->file_path.substr(j);
-			if (!this->stream->server->routes[i].index.empty()) {
-				this->file_path = this->file_path + "/" + this->stream->server->routes[i].index.back();
-				this->path_type = _FILE;
-			}
-			std::cout << "new file_path: " << this->file_path << std::endl;
-			return ;
-		}
-	}
-}
-
 
 /*
  * Receives the end of the header
@@ -180,11 +204,8 @@ void	Req::parser(size_t end_header_pos)
 	method = request_line_tokens[0];
 	URL = request_line_tokens[1];
 	http = request_line_tokens[2];
+	set_referer(message_header);
 
-	// if (this->file_path.find('.') == std::string::npos || (this->file_path.size() == 1 && this->file_path[0] == '.')) // TODO: Ememndar gambiarra usando URL_DATA (req->path_type == _DIRECTORY)
-	// 	expand_file_path();
-	// else
-	// 	this->file_path = curr_expansion + "/" + this->file_path;
 	set_URL_data(URL);
 	set_header(message_header);
 	set_content_length();

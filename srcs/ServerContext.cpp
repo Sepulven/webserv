@@ -47,7 +47,10 @@ ServerContext::ServerContext(t_server serverNode)
 	}
 	t_location server_location;
 	server_location.name = ".";
-	server_location.root = serverNode.root;
+	if (serverNode.root.size() == 1 && serverNode.root[0] == '/')
+		server_location.root = "/.";
+	else
+		server_location.root = serverNode.root;
 	server_location.redirect = std::string();
 	for (std::list<std::string>::iterator it = serverNode.index.begin(); it != serverNode.index.end(); it++)
 		server_location.index.push_back(*it);

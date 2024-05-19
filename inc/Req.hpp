@@ -64,6 +64,7 @@ class Req
 		std::string method;
 		std::string http;
 		std::string URL;
+		std::string referer;
 
 		std::map<std::string, std::string> header;
 
@@ -82,7 +83,7 @@ class Req
 		enum PATH_TYPE path_type;
 
 		// * Path expansion based on route name.
-		void expand_file_path(void);
+		void expand_file_path();
 		bool validate_route_name(std::string name, std::string filePath);
 
 		// * I think this will be useful.
@@ -96,5 +97,6 @@ class Req
 		void set_file_ext(void);
 		void set_content_length(void);
 		void set_rest_raw_data(size_t);
+		void set_referer(std::vector<std::string> message_header);
 		void parser(size_t);
 };

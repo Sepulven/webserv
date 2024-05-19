@@ -6,7 +6,7 @@ server:
         host: localhost   
         port: 8080
     server_name: example.com
-    root: /pages
+    root: /
     index: ind3x.html index.html
     http_methods: GET POST
     error_pages:
@@ -21,7 +21,8 @@ server:
         dir_listing: on         # 'on' or 'off'
         redirect: ola
         http_methods: GET
-    route /uploads:
+    route /ola:
+        root: /srcs/conn
         dir_listing: on         
         http_methods: GET POST DELETE
     route /uploads_other:                  
