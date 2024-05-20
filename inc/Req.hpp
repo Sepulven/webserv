@@ -89,7 +89,7 @@ class Req
 		bool validate_route_name(std::string name, std::string filePath);
 
 		// * I think this will be useful.
-		enum PATH_TYPE get_path_type(std::string&);
+		static enum PATH_TYPE get_path_type(std::string&);
 
 		int read(int);
 		// * Parsing.

@@ -19,7 +19,7 @@
 
 /* Classes */
 #include <HttpError.hpp>
-
+#include <Req.hpp>
 
 /*
 	* The only responsability of this class is to deal with the file system;

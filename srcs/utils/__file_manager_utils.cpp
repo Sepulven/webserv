@@ -81,9 +81,16 @@ std::string FileManager::directory_listing(const std::string path)
 	ss << "<ul>";
 	while (entry)
 	{
-		ss  << "<li>"
-			<< "<a href='./" << entry->d_name << "'>" << entry->d_name << "</a>"
-			<< "</li>" << std::endl;
+		std::string entry_name(entry->d_name); 
+		ss << "<li>";
+		if (Req::get_path_type(entry_name) == _DIRECTORY)
+		{
+			std::cout << "check DIR\n";
+			ss << "<a href='./" << entry->d_name << "/'>" << entry->d_name << "</a>";
+		}
+		else
+			ss << "<a href='./" << entry->d_name << "'>" << entry->d_name << "</a>";
+		ss << "</li>" << std::endl;
 		std::cout << "ss: " << entry->d_name << std::endl;
 		entry = readdir(dir);
 	}
