@@ -54,6 +54,33 @@ int Res::build_http_response(void)
 	return (write(stream->fd, this->data.c_str(), this->data.length()));
 }
 
+// int	Res::check_method(void)
+// {
+// 	std::cout << "path: " << stream->req->file_path << std::endl;
+// 	std::cout << "method: " << stream->req->method << std::endl;
+// 	std::cout << "is route: " << stream->req->is_route << std::endl;
+// 	int i = 0;
+
+// 	// check is route logic
+// 	// is_route is set when the path is expanded
+// 	// problem: should we check the root of every route or just the route? uploads example
+// 	if (stream->req->is_route != "")
+// 	{
+// 		while (stream->req->is_route != this->stream->server->routes[i].name)
+// 			i++;
+// 		std::cout << "route: " << stream->req->is_route << std::endl;
+// 		std::cout << "name: " << stream->server->routes[i].name << std::endl;
+// 		for (size_t f = 0; f < stream->server->routes[i].http_methods.size(); f++)
+// 		{
+// 			if (stream->req->method == stream->server->routes[i].http_methods[f])
+// 				return 1;
+// 		}
+// 		return -1;
+// 	}
+// 	// else // when path is not route, check http methods of root of the server
+// 	return 1;
+// }
+
 /*
  * Must check for the permissions before executing;
  * Execute the action of each individual method;
@@ -73,6 +100,15 @@ int Res::send(void)
 	// curr_expansion == this->stream->server->routes.back().root;
 	// else {
 	// 	std::cout <<  "ERRO FDD\n";
+	// 	this->content = FileManager::read_file("error/403.html"); // change for error page variable
+	// 	this->add_ext = ".html";
+	// 	this->status_code = "403";
+	// 	return (build_http_response());
+	// }
+	std::cout << "check 0 \n";
+	// if (this->check_method() == -1)
+	// {
+	// 	std::cout << "check error 403\n";
 	// 	this->content = FileManager::read_file("error/403.html"); // change for error page variable
 	// 	this->add_ext = ".html";
 	// 	this->status_code = "403";
