@@ -120,7 +120,7 @@ void	Req::expand_file_path()
 				// this->path_type = _FILE;
 			}
 			std::cout << "new file_path1: " << this->file_path << "$" << std::endl;
-			// this->is_route = routes[i].name;
+			this->is_route = routes[i].name;
 			return ;
 		}
 	}

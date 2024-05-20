@@ -41,7 +41,7 @@ void ConnStream::clean_conn()
 	req->file_ext = "";
 	req->query_string = "";
 
-	// req->is_route = "";
+	req->is_route = "";
 
 	res->status_code = "";
 	res->content = "";
