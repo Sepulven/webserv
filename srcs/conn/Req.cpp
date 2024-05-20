@@ -97,9 +97,10 @@ void	Req::expand_file_path()
 {
 	std::vector<t_location> routes = this->stream->server->routes;
 	std::cout << "Entered expand with file_path: " << this->file_path << "$" << std::endl;
+	std::cout << "referer: " << referer << "$" << std::endl;
 
-	if (!referer.empty() && referer.find('.') == std::string::npos)
-		this->file_path = referer + "/" + this->file_path;
+	// if (!referer.empty() && referer.find('.') == std::string::npos)
+	// 	this->file_path = referer + "/" + this->file_path;
 	if (!referer.empty() && file_path.find('/') == std::string::npos && file_path.find('.') != std::string::npos) {
 		file_path = routes.back().root.substr(1) + "/" + file_path;
 		std::cout << "new file_path3: " << this->file_path << "$" << std::endl;
@@ -115,7 +116,9 @@ void	Req::expand_file_path()
 				this->file_path = routes[i].root.substr(1);
 			else
 				this->file_path = routes[i].root.substr(1) + this->file_path.substr(j);
-			if (!routes[i].index.empty() && referer.empty() && file_path.find('.') == std::string::npos) {
+			if (routes[i].dir_listing == 1)
+				this->file_path = this->file_path + "/";
+			else if (!routes[i].index.empty() && referer.empty() && file_path.find('.') == std::string::npos) {
 				this->file_path = this->file_path + "/" + routes[i].index.back();
 				// this->path_type = _FILE;
 			}
@@ -124,8 +127,10 @@ void	Req::expand_file_path()
 			return ;
 		}
 	}
+	std::cout << "nold file_path2: " << this->file_path << "$" << std::endl;
 	file_path = routes.back().root.substr(1) + "/" + file_path;
-	std::cout << "new file_path2: " << this->file_path << "$" << std::endl;
+	std::cout << "new file_path2: " << this->file_path << "$" << std::endl << std::endl;
+
 }
 
 /*

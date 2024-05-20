@@ -8,7 +8,8 @@ server:
     server_name: example.com
     root: /
     index: ind3x.html index.html
-    http_methods: GET POST DELETE
+    dir_listing: on
+    http_methods: GET POST
     error_pages:
         404: error/404.html
         403: error/403.html
@@ -29,28 +30,28 @@ server:
         dir_listing: off       
         http_methods: GET POST
 
-server:
-    listen:
-        host: localhost
-        port: 2020
-    server_name: example2.com
-    root: /home
-    index: xedni.html
-    error_pages:
-        400: error/400.html
-    max_cbsize: 1m
-    max_conn: 5
-    route /srcs:
-        root: srcs/conn/
+# server:
+#     listen:
+#         host: localhost
+#         port: 2020
+#     server_name: example2.com
+#     root: /home
+#     index: xedni.html
+#     error_pages:
+#         400: error/400.html
+#     max_cbsize: 1m
+#     max_conn: 5
+#     route /srcs:
+#         root: srcs/conn/
 
-server:
-    listen:
-        host: localhost
-        port: 1234
-    server_name: example2.com
-    root: /home
-    index: xedni.html
-    error_pages:
-        400: error/400.html
-    max_cbsize: 1m
-    max_conn: 5
+# server:
+#     listen:
+#         host: localhost
+#         port: 1234
+#     server_name: example2.com
+#     root: /home
+#     index: xedni.html
+#     error_pages:
+#         400: error/400.html
+#     max_cbsize: 1m
+#     max_conn: 5

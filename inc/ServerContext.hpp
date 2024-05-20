@@ -40,9 +40,8 @@ typedef struct s_location
 	std::string	redirect;
 	std::vector<std::string>	http_methods;
 	std::vector<std::string>	index;
-	bool	dir_listing;
+	int	dir_listing;
 } t_location;
-
 
 class ServerContext
 {

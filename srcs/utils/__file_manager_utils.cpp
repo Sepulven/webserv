@@ -65,14 +65,17 @@ std::string FileManager::read_file(const std::string path)
 /*
 	* Creates an html file with the list of the files and directories;
 */
+
 std::string FileManager::directory_listing(const std::string path)
 {
+	std::cout << "path directory: " << path << std::endl;
+
 	DIR* dir = opendir(path.c_str());
+	if (!dir) {
+        throw HttpError("500", "Internal Server Error");
+    }
 	std::stringstream ss;
 	struct dirent* entry;
-
-	if (!dir)
-		throw HttpError("500", "Internal Server Error");
 	entry = readdir(dir);
 	ss << "<h1>Directory Listing</h1>";
 	ss << "<ul>";
@@ -81,6 +84,7 @@ std::string FileManager::directory_listing(const std::string path)
 		ss  << "<li>"
 			<< "<a href='./" << entry->d_name << "'>" << entry->d_name << "</a>"
 			<< "</li>" << std::endl;
+		std::cout << "ss: " << entry->d_name << std::endl;
 		entry = readdir(dir);
 	}
 	ss << "</ul>";

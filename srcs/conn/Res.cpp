@@ -59,11 +59,6 @@ int	Res::check_method(void)
 	std::cout << "path: " << stream->req->file_path << std::endl;
 	std::cout << "method: " << stream->req->method << std::endl;
 	std::cout << "is route: " << stream->req->is_route << std::endl;
-
-
-	std::cout << "main route name: " << stream->server->main_route[0].name << std::endl;
-	std::cout << "main route root: " << stream->server->main_route[0].root << std::endl;
-	
 	int i = 0;
 
 	// check is route logic
@@ -76,22 +71,16 @@ int	Res::check_method(void)
 		std::cout << "route: " << stream->req->is_route << std::endl;
 		std::cout << "name: " << stream->server->routes[i].name << std::endl;
 		for (size_t f = 0; f < stream->server->routes[i].http_methods.size(); f++)
-		{
 			if (stream->req->method == stream->server->routes[i].http_methods[f])
 				return 1;
-		}
-		return -1;
 	}
 	else // when path is not route, check http methods of root of the server
 	{
 		for (size_t g = 0; g < stream->server->main_route[0].http_methods.size(); g++)
-		{
 			if (stream->req->method == stream->server->main_route[0].http_methods[g])
 				return 1;
-		}
-		return -1;
 	}
-	return 1;
+	return -1;
 }
 
 /*
@@ -118,15 +107,14 @@ int Res::send(void)
 	// 	this->status_code = "403";
 	// 	return (build_http_response());
 	// }
-	std::cout << "check 0 \n";
 	if (this->check_method() == -1)
 	{
-		std::cout << "check error 403\n";
 		this->content = FileManager::read_file("error/403.html"); // change for error page variable
 		this->add_ext = ".html";
 		this->status_code = "403";
 		return (build_http_response());
 	}
+	std::cout << "check 0\n";
 	try
 	{
 		if (it != req->cgi_path.end())
@@ -240,6 +228,23 @@ void Res::exec_delete(void)
 	}
 }
 
+int	Res::check_dir_listing(void)
+{
+	int i = 0;
+	if (stream->req->is_route != "") { // check if dir listing is on for route
+		std::cout << "check 1.2\n";
+		while (stream->req->is_route != this->stream->server->routes[i].name)
+			i++;
+		if (stream->server->routes[i].dir_listing == 1)
+			return 1;
+	}
+	else // check if dir listing is on for root
+		if (stream->server->main_route[0].dir_listing == 1)
+			return 1;
+	std::cout << "check 4\n";
+	return -1;
+}
+
 /*
  * Builds the file as specified in the directory listing;
  * Read the speficied file;
@@ -247,16 +252,29 @@ void Res::exec_delete(void)
 */
 void Res::exec_get(void)
 {
-	if (stream->req->path_type == _FILE)
-	{
+	std::cout << "\n\nFile PATH: " << stream->req->file_path << std::endl;
+	
+	std::cout << "check 1\n";
+	if (stream->req->path_type == _FILE) {
 		this->content = FileManager::read_file(stream->req->file_path);
 		this->status_code = "200";
 	}
-	if (stream->req->path_type == _DIRECTORY)
-	{
-		this->content = FileManager::directory_listing(stream->req->file_path);
-		this->add_ext = ".html";
-		this->status_code = "200";
+	if (stream->req->path_type == _DIRECTORY) {
+		if (stream->req->file_path[stream->req->file_path.size() - 1] != '/') {
+			stream->req->file_path += "/";
+		}
+		std::cout << "check 2\n";
+		if (this->check_dir_listing() == 1)
+		{
+			std::cout << "\n\nDIR LIST:\n\n";
+			this->content = FileManager::directory_listing(stream->req->file_path);
+			this->add_ext = ".html";
+			this->status_code = "200";
+		}
+		else
+		{
+			throw HttpError("400", "Not Found");
+		}
 	}
 	if (stream->req->path_type == _NONE)
 		throw HttpError("404", "Not Found");
