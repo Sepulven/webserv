@@ -67,12 +67,12 @@ std::string FileManager::read_file(const std::string path)
 	* Creates an html file with the list of the files and directories;
 */
 
-std::string FileManager::directory_listing(std::string path)
+std::string FileManager::directory_listing(const std::string path)
 {
 	std::cout << "path directory: " << path << std::endl;
 
-	if (path.find_last_of('/') != path.size() - 1)
-		path = path + "/";
+	// if (path.find_last_of('/') != path.size() - 1)
+	// 	path = path + "/";
 	DIR* dir = opendir(path.c_str());
 	if (!dir) {
         throw HttpError("500", "Internal Server Error");
@@ -91,7 +91,9 @@ std::string FileManager::directory_listing(std::string path)
 		if (Req::get_path_type(full_entry_path) == _DIRECTORY)
 		{
 			std::cout << "check DIR\n";
-			ss << "<a href='" << entry_path << "/'>" << entry_path << "</a>";
+			if (entry_path.find_last_of('/') != entry_path.size() - 1)
+				entry_path = entry_path + "/";
+			ss << "<a href='" << entry_path << "'>" << entry_path << "</a>";
 		}
 		else
 			ss << "<a href='" << entry_path << "'>" << entry_path << "</a>";
