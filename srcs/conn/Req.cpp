@@ -99,7 +99,7 @@ void	Req::expand_file_path()
 	std::cout << "Entered expand with file_path: " << this->file_path << "$" << std::endl;
 	std::cout << "referer: " << referer << "$" << std::endl;
 
-	if (!referer.empty() && referer.find('.') == std::string::npos) {
+	if (!referer.empty() && referer.find('.') == std::string::npos && method == "GET") {
 		if (referer[referer.size() - 1] != '/')
 			referer = referer + "/";
 		std::cout << "REFERER APPENDED" << std::endl;
@@ -116,9 +116,9 @@ void	Req::expand_file_path()
 			size_t j = 0;
 			while (j <= this->file_path.size() && routes[i].name[j] == this->file_path[j])
 				j++;
-			if (j == file_path.size() + 1)
+			if (j == file_path.size() + 1 && !routes[i].root.empty())
 				this->file_path = routes[i].root.substr(1);
-			else
+			else if (!routes[i].root.empty())
 				this->file_path = routes[i].root.substr(1) + this->file_path.substr(j);
 			std::cout << "new file_path1: " << this->file_path << "$" << std::endl;
 			this->is_route = routes[i].name;

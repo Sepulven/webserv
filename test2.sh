@@ -71,7 +71,9 @@ echo -e "\033[1;35m----------------------------\033[0m"
 # echo -e "\033[1;34mPost: CGI 2 not allowed content\033[0m"
 # curl -X POST http://localhost:8080/a.php -H "Content-Type: appation/x-www-form-urlencoded" -d "key1=qetrerqwerq"
 
-curl -X DELETE http://localhost:8080/uploads/1716202470971_TMR.pptx
+# curl -X DELETE http://localhost:8080/uploads/1716202470971_TMR.pptx
 # curl -X DELETE http://localhost:8080/uploads_other/1715774088630_1
 
 # curl -X POST http://localhost:8080/uploads -F "file=test3.sh"
+
+curl -X GET http://localhost:8080/ola

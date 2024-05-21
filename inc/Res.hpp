@@ -34,8 +34,9 @@ class Res
 		std::map<std::string, std::string> status;
 		std::map<std::string, std::string> content_type;
 
-		int	check_method(void);
-		int	check_dir_listing(void);
+		int			check_method(void);
+		std::string	check_index(size_t i);
+		int			check_dir_listing(size_t i);
  
 		int  exec_CGI(void);
 		void exec_get(void);

@@ -43,8 +43,10 @@ int Res::build_http_response(void)
 	Req *req = stream->req;
 	std::stringstream ss;
 
+	std::cout << "check pages 0\n";
 	if (status_code[0] != '2') // * There is an error;
 		this->content = FileManager::build_error_pages(error_pages, status_code, error_msg);
+	std::cout << "check pages\n";
 	ss << "HTTP/1.1 " << status_code << " " << this->status[status_code] << "\r\n";
 	ss << "Content-Type: " << content_type[req->file_ext] << "\r\n";
 	ss << "Content-Length: " << content.length() << "\r\n\r\n";
@@ -129,7 +131,9 @@ int Res::send(void)
 	catch (const HttpError &e)
 	{
 		this->error_msg = e.get_msg();
+		std::cout << "check msg "<< this->error_msg << std::endl;
 		this->status_code = e.get_status();
+		std::cout << "check status " << this->status_code << std::endl;
 	}
 	return (build_http_response());
 }
@@ -231,21 +235,30 @@ void Res::exec_delete(void)
 /*
  * Check if dir listing in on for two possible claes: route or root
 */
-int	Res::check_dir_listing(void)
+int	Res::check_dir_listing(size_t i)
 {
-	size_t i = 0;
-
-	while (i < this->stream->server->routes.size() && stream->req->is_route != this->stream->server->routes[i].name)
-		i++;
-
 	if (i < this->stream->server->routes.size() && stream->server->routes[i].dir_listing == 1)
 		return 1;
 	else if (i == this->stream->server->routes.size() && stream->server->routes.back().dir_listing == 1)
 		return 1;
-	std::cout << "i: " << i << std::endl;
-
-	std::cout << "check 4\n";
 	return -1;
+}
+
+std::string	Res::check_index(size_t i)
+{
+	std::string	name_aux;
+	std::ifstream file;
+
+	for (size_t g = 0; g < this->stream->server->routes[i].index.size(); g++) {
+		name_aux = this->stream->req->file_path  + this->stream->server->routes[i].index[g];
+		file.open(&name_aux.c_str()[name_aux.c_str()[0] == '/']);
+		if (file.is_open())
+		{
+			file.close();
+			return name_aux;
+		}
+	}
+	return "";
 }
 
 /*
@@ -256,8 +269,10 @@ int	Res::check_dir_listing(void)
 void Res::exec_get(void)
 {
 	std::cout << "\n\nFile PATH: " << stream->req->file_path << std::endl;
+	size_t i = 0;
+	while (i < this->stream->server->routes.size() && stream->req->is_route != this->stream->server->routes[i].name)
+		i++;
 	
-	std::cout << "check 1\n";
 	if (stream->req->path_type == _FILE) {
 		this->content = FileManager::read_file(stream->req->file_path);
 		this->status_code = "200";
@@ -266,19 +281,20 @@ void Res::exec_get(void)
 		if (stream->req->file_path[stream->req->file_path.size() - 1] != '/') {
 			stream->req->file_path += "/";
 		}
-		std::cout << "check 2\n";
-		if (this->check_dir_listing() == 1)
+		if (this->check_dir_listing(i) == 1)
 		{
-			std::cout << "\n\nDIR LIST:\n\n";
 			this->content = FileManager::directory_listing(stream->req->file_path);
 			this->add_ext = ".html";
 			this->status_code = "200";
 		}
-		else
+		else if (this->check_index(i) != "")
 		{
-			// std::cout << 
-			throw HttpError("403", "Forbidden");
+			std::string name = this->check_index(i);
+			this->content = FileManager::read_file(name);
+			this->status_code = "200";
 		}
+		else
+			throw HttpError("403", "Forbidden");
 	}
 	if (stream->req->path_type == _NONE)
 		throw HttpError("404", "Not Found");
@@ -319,6 +335,14 @@ void Res::exec_post(void)
 	if (content_type.find("multipart/form-data;") != 1)
 		throw HttpError("406", "We can't execute this type of request");
 	boundary = get_boundary(content_type);
+	std::cout << "post files in: " << req->file_path << std::endl;
+
+	DIR* dir = opendir(req->file_path.c_str());
+	if (!dir) {
+		std::cout << "dir does not exist\n " ;
+        throw HttpError("500", "Internal Server Error");
+    }
+
 	this->status_code = FileManager::create_files(req->raw_body, boundary, req->file_path);
 	if (this->status_code == "201")
 		this->content = "What should be the content when we upload a file?";

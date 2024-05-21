@@ -26,10 +26,13 @@ std::string FileManager::build_error_pages(const std::map<int, std::string> &err
 {
 	std::ifstream file;
 	std::stringstream content;
-	std::string path;
+	std::string path = "";
 	int error_code = atoi(code.c_str());
 
-	path = error_pages.at(error_code);
+	try {
+		path = error_pages.at(error_code);
+	} catch (const std::out_of_range& e) {}
+
 	file.open(&path.c_str()[path.c_str()[0] == '/']);
 	// * If we can't open it, we build it;
 	if (!file.is_open())
@@ -66,7 +69,6 @@ std::string FileManager::read_file(const std::string path)
 /*
 	* Creates an html file with the list of the files and directories;
 */
-
 std::string FileManager::directory_listing(const std::string path)
 {
 	std::cout << "path directory: " << path << std::endl;
@@ -138,12 +140,16 @@ std::string FileManager::create_files(const std::vector<uint8_t>& body, const st
 	for (size_t i = 1; i < files.size() - 1; i++)
 	{
 		file = get_file(files[i]);
+		std::cout << "filename 0: " << filename << std::endl;
 		filename = dir + (dir.empty() || dir[dir.size() - 1] == '/' ? "" : "/") 
 					+ get_random_filename(files[i]);
+		std::cout << "filename: " << filename << std::endl;
 		out_file.open(filename.c_str(), std::ios::binary);
 		if (!out_file.is_open())
 			throw HttpError("500", "Internal Server error");
+		std::cout << "check post z4\n";
 		out_file.write((const char*)&file[0], file.size());
+		std::cout << "check post z4\n";
 		if (out_file.fail())
 			throw HttpError("500", "Internal Server error");
 		out_file.close();

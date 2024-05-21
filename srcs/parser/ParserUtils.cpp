@@ -60,7 +60,7 @@ void Parser::resetParam(int type, int identLevel) {
 		if (identLevel == 1)
 			serverNodes.back().index.clear();
 		if (identLevel == 2)
-			serverNodes.back().route.back().index.pop_back(); // ! Might need a clear instead of pop_back
+			serverNodes.back().route.back().index.clear(); // ! Might need a clear instead of pop_back
 	}
 	if (type == METHOD) {
 		if (identLevel == 1)

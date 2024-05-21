@@ -8,10 +8,9 @@ server:
     server_name: example.com
     root: /
     index: ind3x.html index.html
-    dir_listing: on
+    dir_listing: off
     http_methods: GET POST
     error_pages:
-        404: error/404.html
         403: error/403.html
         400: error/400.html
     max_cbsize: 2000m              # to do: conversion and mapping
@@ -19,16 +18,18 @@ server:
     route /main:               # to do: HTTP redirect.
         root: /pages
         index: index.html       # default file to open if the request is the dir
-        dir_listing: on        # 'on' or 'off'
+        dir_listing: off        # 'on' or 'off'
         redirect: ola
-        http_methods: GET
+        http_methods: GET POST
     route /ola:
         root: /srcs/conn
-        dir_listing: on         
+        dir_listing: off      
+        http_methods: GET
+        index: a.cpp Res.cpp Req.cpp
+    route /uploads:
+        root: /uploads                
+        dir_listing: on       
         http_methods: GET POST DELETE
-    route /uploads:                  
-        dir_listing: off       
-        http_methods: GET POST
 
 # server:
 #     listen:
