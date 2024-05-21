@@ -19,14 +19,14 @@ server:
     route /main:               # to do: HTTP redirect.
         root: /pages
         index: index.html       # default file to open if the request is the dir
-        dir_listing: on         # 'on' or 'off'
+        dir_listing: on        # 'on' or 'off'
         redirect: ola
         http_methods: GET
     route /ola:
         root: /srcs/conn
         dir_listing: on         
         http_methods: GET POST DELETE
-    route /uploads_other:                  
+    route /uploads:                  
         dir_listing: off       
         http_methods: GET POST
 

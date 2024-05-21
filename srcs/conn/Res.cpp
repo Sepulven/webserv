@@ -76,8 +76,8 @@ int	Res::check_method(void)
 	}
 	else // when path is not route, check http methods of root of the server
 	{
-		for (size_t g = 0; g < stream->server->main_route[0].http_methods.size(); g++)
-			if (stream->req->method == stream->server->main_route[0].http_methods[g])
+		for (size_t g = 0; g < stream->server->routes.back().http_methods.size(); g++)
+			if (stream->req->method == stream->server->routes.back().http_methods[g])
 				return 1;
 	}
 	return -1;
@@ -228,19 +228,22 @@ void Res::exec_delete(void)
 	}
 }
 
+/*
+ * Check if dir listing in on for two possible claes: route or root
+*/
 int	Res::check_dir_listing(void)
 {
-	int i = 0;
-	if (stream->req->is_route != "") { // check if dir listing is on for route
-		std::cout << "check 1.2\n";
-		while (stream->req->is_route != this->stream->server->routes[i].name)
-			i++;
-		if (stream->server->routes[i].dir_listing == 1)
-			return 1;
-	}
-	else // check if dir listing is on for root
-		if (stream->server->main_route[0].dir_listing == 1)
-			return 1;
+	size_t i = 0;
+
+	while (i < this->stream->server->routes.size() && stream->req->is_route != this->stream->server->routes[i].name)
+		i++;
+
+	if (i < this->stream->server->routes.size() && stream->server->routes[i].dir_listing == 1)
+		return 1;
+	else if (i == this->stream->server->routes.size() && stream->server->routes.back().dir_listing == 1)
+		return 1;
+	std::cout << "i: " << i << std::endl;
+
 	std::cout << "check 4\n";
 	return -1;
 }
@@ -273,7 +276,8 @@ void Res::exec_get(void)
 		}
 		else
 		{
-			throw HttpError("400", "Not Found");
+			// std::cout << 
+			throw HttpError("403", "Forbidden");
 		}
 	}
 	if (stream->req->path_type == _NONE)

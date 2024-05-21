@@ -59,8 +59,6 @@ class ServerContext
 		std::map<int, std::string> error_pages;
 		std::vector<t_location> routes;
 
-		std::vector<t_location> main_route;
-
 		t_event_data *epoll_event_info;
 	
 		ServerContext(t_server serverNode);

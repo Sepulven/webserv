@@ -1,4 +1,5 @@
 #include <__file_manager_utils.hpp>
+#include <string.h>
 
 
 /*
@@ -66,10 +67,12 @@ std::string FileManager::read_file(const std::string path)
 	* Creates an html file with the list of the files and directories;
 */
 
-std::string FileManager::directory_listing(const std::string path)
+std::string FileManager::directory_listing(std::string path)
 {
 	std::cout << "path directory: " << path << std::endl;
 
+	if (path.find_last_of('/') != path.size() - 1)
+		path = path + "/";
 	DIR* dir = opendir(path.c_str());
 	if (!dir) {
         throw HttpError("500", "Internal Server Error");
@@ -77,21 +80,23 @@ std::string FileManager::directory_listing(const std::string path)
 	std::stringstream ss;
 	struct dirent* entry;
 	entry = readdir(dir);
+	ss << "<meta name=\"referrer\" content=\"no-referrer\">";
 	ss << "<h1>Directory Listing</h1>";
 	ss << "<ul>";
 	while (entry)
 	{
-		std::string entry_name(entry->d_name); 
+		std::string entry_path(entry->d_name);
+		std::string full_entry_path(path + entry_path);
 		ss << "<li>";
-		if (Req::get_path_type(entry_name) == _DIRECTORY)
+		if (Req::get_path_type(full_entry_path) == _DIRECTORY)
 		{
 			std::cout << "check DIR\n";
-			ss << "<a href='./" << entry->d_name << "/'>" << entry->d_name << "</a>";
+			ss << "<a href='" << entry_path << "/'>" << entry_path << "</a>";
 		}
 		else
-			ss << "<a href='./" << entry->d_name << "'>" << entry->d_name << "</a>";
+			ss << "<a href='" << entry_path << "'>" << entry_path << "</a>";
 		ss << "</li>" << std::endl;
-		std::cout << "ss: " << entry->d_name << std::endl;
+		std::cout << "file name: " << entry_path << std::endl;
 		entry = readdir(dir);
 	}
 	ss << "</ul>";
