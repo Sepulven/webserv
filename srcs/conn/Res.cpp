@@ -24,10 +24,7 @@ Res::Res(ConnStream *_stream) : stream(_stream)
 	content_type[".jpeg"] = "image/jpeg";
 	content_type[".jpg"] = "image/jpeg";
 
-	// * In case there is no extension;
-	std::string &file_ext = stream->req->file_ext;
-	file_ext = file_ext == "" ? ".html" : file_ext;
-	c_type = content_type[file_ext];
+	this->c_type_response = "";
 }
 
 Res::~Res() {}
@@ -45,8 +42,14 @@ int Res::build_http_response(void)
 	if (status_code[0] != '2') // * There is an error;
 		this->content = FileManager::build_error_pages(error_pages, status_code, error_msg);
 
+
+	if (c_type_response == "")
+		c_type_response = "text/plain";
+
+	std::cout << "c_type_response: " << c_type_response << std::endl;
+
 	ss << "HTTP/1.1 " << status_code << " " << this->status[status_code] << "\r\n";
-	ss << "Content-Type: " << c_type << "\r\n";
+	ss << "Content-Type: " << c_type_response << "\r\n";
 	ss << "Content-Length: " << content.length() << "\r\n\r\n";
 	ss << content;
 
@@ -101,7 +104,7 @@ int Res::send(void)
 	if (this->check_method() == -1)
 	{
 		this->content = FileManager::read_file("error/403.html"); // change for error page variable
-		this->add_ext = ".html";
+		this->c_type_response = ".html";
 		this->status_code = "403";
 		return (build_http_response());
 	}
@@ -123,10 +126,10 @@ int Res::send(void)
 		std::cout << "check msg "<< this->error_msg << std::endl;
 		this->status_code = e.get_status();
 		std::cout << "check status " << this->status_code << std::endl;
+		stream->res->c_type_response = "text/html";
 	}
 	return (build_http_response());
 }
-
 
 /*
 TODO: Shrink the size of the function;
@@ -216,7 +219,7 @@ void Res::exec_delete(void)
 	else
 	{
 		this->content = "We've deleted the file succesfully!\n";
-		this->add_ext = ".txt";
+		this->c_type_response = "text/plain";
 		this->status_code = "200";
 	}
 }
@@ -251,6 +254,19 @@ std::string	Res::check_index(void)
 	return "";
 }
 
+std::string	Res::set_file_ext(std::string name)
+{
+	size_t pos;
+	std::string	file_ext_res = "";
+
+	pos = name.find_last_of('.');
+	if (pos == std::string::npos && pos >= name.length())
+		file_ext_res = ".txt";
+	else
+		file_ext_res = name.substr(pos);
+	return file_ext_res;
+}
+
 /*
  * Builds the file as specified in the directory listing;
  * Read the speficied file;
@@ -258,13 +274,13 @@ std::string	Res::check_index(void)
 */
 void Res::exec_get(void)
 {
-	std::cout << "\n\nFile PATH: " << stream->req->file_path << std::endl;
 	size_t i = 0;
 	while (i < this->stream->server->routes.size() && stream->req->is_route != this->stream->server->routes[i].name)
 		i++;
 	
 	if (stream->req->path_type == _FILE) {
 		this->content = FileManager::read_file(stream->req->file_path);
+		this->c_type_response = content_type[this->set_file_ext(stream->req->file_path)];
 		this->status_code = "200";
 	}
 	if (stream->req->path_type == _DIRECTORY) {
@@ -274,13 +290,14 @@ void Res::exec_get(void)
 		if (this->check_dir_listing() == 1)
 		{
 			this->content = FileManager::directory_listing(stream->req->file_path);
-			this->add_ext = ".html";
+			this->c_type_response = "text/html";
 			this->status_code = "200";
 		}
 		else if (this->check_index() != "")
 		{
 			std::string name = this->check_index();
 			this->content = FileManager::read_file(name);
+			this->c_type_response = content_type[this->set_file_ext(name)];
 			this->status_code = "200";
 		}
 		else
@@ -325,15 +342,18 @@ void Res::exec_post(void)
 	if (content_type.find("multipart/form-data;") != 1)
 		throw HttpError("406", "We can't execute this type of request");
 	boundary = get_boundary(content_type);
-	std::cout << "post files in: " << req->file_path << std::endl;
 
 	DIR* dir = opendir(req->file_path.c_str());
-	if (!dir) {
-		std::cout << "dir does not exist\n " ;
+	if (!dir)
         throw HttpError("500", "Internal Server Error");
-    }
+
+	if (closedir(dir) != 0)
+        throw HttpError("500", "Internal Server Error");
 
 	this->status_code = FileManager::create_files(req->raw_body, boundary, req->file_path);
 	if (this->status_code == "201")
+	{
 		this->content = "What should be the content when we upload a file?";
+		this->c_type_response = "text/html";
+	}
 }

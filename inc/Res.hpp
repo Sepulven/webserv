@@ -44,6 +44,8 @@ class Res
 		void exec_delete(void);
 
 		int build_http_response(void);
+
+		std::string	set_file_ext(std::string name);
 		
 	public:
 		std::string status_code;
@@ -52,7 +54,7 @@ class Res
 		std::string content; // * What is going to get rendered
 		std::string data; // * Final Result in case it is not the CGI
 		std::string add_ext;
-		std::string c_type;
+		std::string c_type_response;
 
 		Res(ConnStream *);
 		~Res();

@@ -16,7 +16,7 @@ server:
     max_conn: 10
     route /main:               # to do: HTTP redirect.
         root: /pages
-        index: index.html       # default file to open if the request is the dir
+        index: favicon.ico       # default file to open if the request is the dir
         dir_listing: off
         http_methods: GET POST
     route /ola:

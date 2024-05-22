@@ -72,6 +72,7 @@ void	Req::set_file_ext(void)
 		file_ext = filename.substr(pos);
 	else // * It is a directory or none;
 		file_ext = "";
+	std::cout << "\n\nFILE EXTENSION: " << file_ext << std::endl;
 }
 
 bool Req::validate_route_name(std::string name, std::string filePath) {
@@ -252,6 +253,7 @@ int Req::read(int fd)
 	{
 		stream->res->status_code = e.get_status();
 		stream->res->error_msg = e.get_msg();
+		stream->res->c_type_response = "text/html";
 		return (1); // * There was an http error;
 	}
 	if (bytes_read < 0) // * Read failed inside the loop;
