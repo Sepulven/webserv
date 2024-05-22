@@ -7,7 +7,7 @@ typedef struct s_route {
 	s_route();
 	std::string path;
 	std::string redir;
-	std::list<std::string> httpMethods;
+	std::list<std::string> httpMethods;     // TODO: HTTP REDIRECT
 	std::list<std::string> index;
 	std::string rroot;
 	int dirListing;
@@ -22,6 +22,7 @@ typedef struct s_server {
 	std::list<std::string> httpMethods;
 	std::list<std::string> index;
 	std::list<std::pair<int, std::string> > errorPages;
+	std::list<std::pair<std::string, std::string> > cgi;
 	long long maxCBSize;
 	int maxConn;
 	int dirListing;

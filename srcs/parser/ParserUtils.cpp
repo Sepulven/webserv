@@ -6,7 +6,7 @@ void Parser::printServerNodes(std::list<t_server>::iterator it) {
 	static int i;
 	if (i == 0)
 		std::cout << std::endl << "============Parser============" << std::endl;
-	std::cout << "Server: " << i++ << std::endl;
+	std::cout << "Server: " << i++ + 1 << std::endl;
 	std::cout << "    Host: " << it->host << std::endl;
 	std::cout << "    Port: " << it->port << std::endl;
 	std::cout << "    Server name: " << it->serverName << std::endl;
@@ -22,6 +22,9 @@ void Parser::printServerNodes(std::list<t_server>::iterator it) {
 		std::cout << *tmp << "$ ";
 	std::cout << std::endl << "    Error pages:" << std::endl;
 	for (std::list<std::pair<int, std::string> > ::iterator tmp = it->errorPages.begin(); tmp != it->errorPages.end(); tmp++)
+		std::cout << "        "<< tmp->first << " " << tmp->second << std::endl;
+	std::cout << "    CGI:" << std::endl;
+	for (std::list<std::pair<std::string, std::string> > ::iterator tmp = it->cgi.begin(); tmp != it->cgi.end(); tmp++)
 		std::cout << "        "<< tmp->first << " " << tmp->second << std::endl;
 	for (std::list<t_route>::iterator tmp = it->route.begin(); tmp != it->route.end(); tmp++) {
 		std::cout << "    Route: " << tmp->path << std::endl;
@@ -60,7 +63,7 @@ void Parser::resetParam(int type, int identLevel) {
 		if (identLevel == 1)
 			serverNodes.back().index.clear();
 		if (identLevel == 2)
-			serverNodes.back().route.back().index.clear(); // ! Might need a clear instead of pop_back
+			serverNodes.back().route.back().index.clear();
 	}
 	if (type == METHOD) {
 		if (identLevel == 1)
@@ -98,6 +101,8 @@ void Parser::resetParam(int type, int identLevel) {
 		serverNodes.back().maxConn = -1;
 	if (type == REDIRECT)
 		serverNodes.back().route.back().redir = std::string();
+	if (type == CGI_PARAM)
+		serverNodes.back().cgi.pop_back();
 }
 
 std::list<token>::iterator Parser::getLastTokenIt(std::list<token> tokens) {

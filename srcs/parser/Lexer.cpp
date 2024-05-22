@@ -3,8 +3,8 @@
 Lexer::Lexer() {
 	std::string tmp[] = {"server", "listen", "host", "port", "server_name",
 	"root", "index", "error_pages", "max_cbsize", "max_conn", "route", "http_methods",
-	"dir_listing", "redirect"};
-	for (int i = 0; i < 14; i++)
+	"dir_listing", "redirect", "cgi"};
+	for (int i = 0; i < 15; i++)
 		types.insert(std::make_pair(tmp[i], i));
 }
 
@@ -64,6 +64,8 @@ void Lexer::trimIdent(std::string& content) {
 int Lexer::identifyToken(token& token) {
 	if (!std::strncmp(token.content.c_str(), "route ", 6))
 		return 10;
+	if (token.content[0] == '.' && token.identLevel == 2)
+		return 15;
 	size_t i = token.content.find_first_of(":");
 	std::string tmp = token.content.substr(0, i);
 	for (std::map<std::string, int>::iterator it = types.begin();
