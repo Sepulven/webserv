@@ -287,7 +287,6 @@ std::string get_boundary(const std::string &content_type)
 	return boundary;	
 }
 
-
 /*
  * * Only deals with content-type multipart/form-data
  * If the request body are files, saves them;
