@@ -95,12 +95,10 @@ std::string FileManager::directory_listing(const std::string path)
 			std::cout << "check DIR\n";
 			if (entry_path.find_last_of('/') != entry_path.size() - 1)
 				entry_path = entry_path + "/";
-			ss << "<a href='" << entry_path << "'>" << entry_path << "</a>";
 		}
-		else
-			ss << "<a href='" << entry_path << "'>" << entry_path << "</a>";
+		ss << "<a href='http://localhost:" << "8080" << "/" << path << entry_path << "'>" << entry_path << "</a>";
 		ss << "</li>" << std::endl;
-		std::cout << "file name: " << entry_path << std::endl;
+		std::cout << "file name: " <<  path << entry_path << std::endl;
 		entry = readdir(dir);
 	}
 	ss << "</ul>";
