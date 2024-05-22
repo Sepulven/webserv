@@ -68,14 +68,19 @@ std::string FileManager::read_file(const std::string path)
 
 /*
 	* Creates an html file with the list of the files and directories;
-	 ! Get route not internal path of the server;
-
+	* @param path is the absolute path for the folder;
+	* @param route_path is the relative path, the path that came from the http req;
+	* @param port is the servers port of request;
 */
-std::string FileManager::directory_listing(const std::string path, const std::string route_path, int port)
+std::string FileManager::directory_listing(const std::string path, const std::string _route_path, int port)
 {
 	std::cout << "path directory: " << path << std::endl;
-
+	std::string route_path = _route_path;
 	DIR* dir = opendir(path.c_str());
+
+	std::cout << "_route_path" << _route_path << std::endl;
+	if (route_path[0] == '/') route_path.erase(0, 1);
+	if (route_path[0] == '/') route_path.erase(0, 1);
 	if (!dir)
 		throw HttpError("500", "Internal Server Error");
 	std::stringstream ss;
@@ -91,7 +96,6 @@ std::string FileManager::directory_listing(const std::string path, const std::st
 		ss << "<li>";
 		if (Req::get_path_type(full_entry_path) == _DIRECTORY)
 		{
-			std::cout << "check DIR\n";
 			if (entry_path.find_last_of('/') != entry_path.size() - 1)
 				entry_path = entry_path + "/";
 		}

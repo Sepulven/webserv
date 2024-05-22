@@ -153,7 +153,7 @@ void WebServer::send_response(int epoll_fd, int fd, t_event event)
 void WebServer::read_request(int epoll_fd, int fd, t_event event)
 {
 	int status = this->streams[fd]->req->read(fd);
-	std::cout << "check4\n";
+
 	this->streams[fd]->set_time();
 	if ((status == 1) && epoll_out_fd(epoll_fd, fd, event))
 		throw Error("Epoll_ctl failed");

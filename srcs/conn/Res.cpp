@@ -42,14 +42,15 @@ int Res::build_http_response(void)
 	if (status_code[0] != '2') // * There is an error;
 		this->content = FileManager::build_error_pages(error_pages, status_code, error_msg);
 
-	std::cout << "c_type_response: " << c_type_response << std::endl;
-
 	ss << "HTTP/1.1 " << status_code << " " << this->status[status_code] << "\r\n";
 	ss << "Content-Type: " << c_type_response << "\r\n";
 	ss << "Content-Length: " << content.length() << "\r\n\r\n";
 	ss << content;
 
 	this->data = ss.str();
+	std::cout << "********************************" << std::endl;
+	std::cout << data;
+	std::cout << "********************************" << std::endl;
 	return (write(stream->fd, this->data.c_str(), this->data.length()));
 }
 
@@ -302,6 +303,7 @@ void Res::exec_post(void)
 
 	if (content_type.find("multipart/form-data;") != 1)
 		throw HttpError("406", "We can't execute this type of request");
+	
 	boundary = get_boundary(content_type);
 
 	DIR* dir = opendir(req->file_path.c_str());

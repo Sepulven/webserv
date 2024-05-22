@@ -72,7 +72,6 @@ void	Req::set_file_ext(void)
 		file_ext = filename.substr(pos);
 	else // * It is a directory or none;
 		file_ext = "";
-	std::cout << "\n\nFILE EXTENSION: " << file_ext << std::endl;
 }
 
 bool Req::validate_route_name(std::string name, std::string filePath) {
@@ -97,8 +96,8 @@ bool Req::validate_route_name(std::string name, std::string filePath) {
 void	Req::expand_file_path()
 {
 	std::vector<t_location> routes = this->stream->server->routes;
-	std::cout << "Entered expand with file_path: " << this->file_path << "$" << std::endl;
-	std::cout << "referer: " << referer << "$" << std::endl;
+	// std::cout << "Entered expand with file_path: " << this->file_path << "$" << std::endl;
+	// std::cout << "referer: " << referer << "$" << std::endl;
 
 	if (!referer.empty() && referer.find('.') == std::string::npos && method == "GET") {
 		if (referer[referer.size() - 1] != '/')
@@ -122,15 +121,15 @@ void	Req::expand_file_path()
 				this->file_path = routes[i].root.substr(1);
 			else if (!routes[i].root.empty())
 				this->file_path = routes[i].root.substr(1) + this->file_path.substr(j);
-			std::cout << "new file_path1: " << this->file_path << "$" << std::endl;
+			// std::cout << "new file_path1: " << this->file_path << "$" << std::endl;
 			// this->is_route = routes[i].name;
 			this->route_id = i;
 			return ;
 		}
 	}
-	std::cout << "nold file_path2: " << this->file_path << "$" << std::endl;
+	// std::cout << "nold file_path2: " << this->file_path << "$" << std::endl;
 	file_path = routes.back().root.substr(1) + "/" + file_path;
-	std::cout << "new file_path2: " << this->file_path << "$" << std::endl << std::endl;
+	// std::cout << "new file_path2: " << this->file_path << "$" << std::endl << std::endl;
 	this->route_id = routes.size() - 1;
 
 }

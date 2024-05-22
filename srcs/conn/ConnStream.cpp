@@ -3,7 +3,6 @@
 ConnStream::ConnStream(int _fd, ServerContext *_server) : fd(_fd), server(_server)
 {
 	this->req = new Req(this);
-	std::cout << "file_ext req 10: " << this->req->file_ext << std::endl;
 	this->res = new Res(this);
 	this->set_time();
 
