@@ -68,6 +68,8 @@ std::string FileManager::read_file(const std::string path)
 
 /*
 	* Creates an html file with the list of the files and directories;
+	 ! Get route not internal path of the server;
+
 */
 std::string FileManager::directory_listing(const std::string path)
 {
@@ -76,9 +78,8 @@ std::string FileManager::directory_listing(const std::string path)
 	// if (path.find_last_of('/') != path.size() - 1)
 	// 	path = path + "/";
 	DIR* dir = opendir(path.c_str());
-	if (!dir) {
-        throw HttpError("500", "Internal Server Error");
-    }
+	if (!dir)
+		throw HttpError("500", "Internal Server Error");
 	std::stringstream ss;
 	struct dirent* entry;
 	entry = readdir(dir);

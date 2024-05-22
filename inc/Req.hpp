@@ -74,6 +74,7 @@ class Req
 
 		// * Parse URL data
 		std::string file_path;
+		std::string route_path;
 		std::string filename;
 		std::string file_ext;
 		std::string query_string;

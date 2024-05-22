@@ -101,7 +101,7 @@ int Res::send(void)
 }
 
 /*
-TODO: Shrink the size of the function;
+ TODO: Connect CGI with parser;
 */
 int Res::exec_CGI(void)
 {
@@ -110,6 +110,7 @@ int Res::exec_CGI(void)
 	std::string data(req->data.begin(), req->data.end());
 	int pipe_fd[2];
 	int pipe_fd_aux[2];
+	pid_t pid;
 
 	char *argv0 = const_cast<char *>("");
 
@@ -123,7 +124,7 @@ int Res::exec_CGI(void)
 
 	pipe(pipe_fd);
 	pipe(pipe_fd_aux);
-	pid_t pid = fork();
+	pid = fork();
 
 	if (pid == 0)
 	{
@@ -164,7 +165,7 @@ int Res::exec_CGI(void)
 
 	close(pipe_fd[1]); // Close write end
 	close(pipe_fd[0]); // Close read end
-	this->stream->cgi_pid = pid;
+	stream->cgi_pid = pid;
 	return 1;
 }
 
@@ -182,12 +183,8 @@ void Res::exec_delete(void)
 		throw HttpError("403", "We can't delete a directory.");
 	else if (std::remove(path.c_str()) != 0)
 		throw HttpError("404", "Couldn't delete the file");
-	else
-	{
-		this->content = "We've deleted the file succesfully!\n";
-		this->c_type_response = "text/plain";
-		this->status_code = "200";
-	}
+	this->content = "We've deleted the file succesfully!\n";
+	this->status_code = "200";
 }
 
 /*
@@ -240,30 +237,28 @@ std::string	Res::set_file_ext(std::string name)
 */
 void Res::exec_get(void)
 {
-	size_t i = 0;
-	while (i < this->stream->server->routes.size() && stream->req->is_route != this->stream->server->routes[i].name)
-		i++;
-	
-	if (stream->req->path_type == _FILE) {
-		this->content = FileManager::read_file(stream->req->file_path);
-		this->c_type_response = content_type[this->set_file_ext(stream->req->file_path)];
-		this->status_code = "200";
+	Req * req = stream->req;
+
+	if (req->path_type == _FILE) {
+		content = FileManager::read_file(req->file_path);
+		c_type_response = content_type[set_file_ext(req->file_path)];
+		status_code = "200";
 	}
-	if (stream->req->path_type == _DIRECTORY) {
-		if (stream->req->file_path[stream->req->file_path.size() - 1] != '/') {
-			stream->req->file_path += "/";
+	if (req->path_type == _DIRECTORY) {
+		if (req->file_path[req->file_path.size() - 1] != '/') {
+			req->file_path += "/";
 		}
-		if (this->check_dir_listing() == 1)
+		if (check_dir_listing() == 1)
 		{
-			this->content = FileManager::directory_listing(stream->req->file_path);
-			this->status_code = "200";
+			content = FileManager::directory_listing(req->file_path);
+			status_code = "200";
 		}
-		else if (this->check_index() != "")
+		else if (check_index() != "")
 		{
-			std::string name = this->check_index();
-			this->content = FileManager::read_file(name);
-			this->c_type_response = content_type[this->set_file_ext(name)];
-			this->status_code = "200";
+			std::string name = check_index();
+			content = FileManager::read_file(name);
+			c_type_response = content_type[set_file_ext(name)];
+			status_code = "200";
 		}
 		else
 			throw HttpError("403", "Forbidden");

@@ -80,7 +80,7 @@ bool Req::validate_route_name(std::string name, std::string filePath) {
 		return true;
 	size_t i = filePath.find_first_of('/');
 	if (i != std::string::npos)
-		if (std::strncmp(name.c_str(), filePath.c_str(), name.size()) == 0)
+		if (std::strncmp(name.c_str(), filePath.c_str(), file_path.substr(0, i).size()) == 0)
 			return true;
 	return false;
 }
@@ -144,6 +144,7 @@ void	Req::set_URL_data(std::string& URL)
 	size_t pos;
 
 	file_path = vec[0].substr(1); // * Removes the first slash
+	route_path = file_path;
 	query_string = URL.substr(file_path.length() + 1);
 
 	if (file_path.length() == 0)
@@ -212,6 +213,7 @@ void	Req::parser(size_t end_header_pos)
 	method = request_line_tokens[0];
 	URL = request_line_tokens[1];
 	http = request_line_tokens[2];
+
 	set_referer(message_header);
 
 	set_URL_data(URL);
@@ -250,7 +252,7 @@ int Req::read(int fd)
 		}
 		if (RawData::find(data, "\r\n\r\n") != out_of_bound 
 			&& raw_body.size() >= content_length) 
-			return (1); // * Request is finished;
+			return (1); // * Request's finished;
 	}
 	catch (const HttpError &e)
 	{
@@ -260,5 +262,5 @@ int Req::read(int fd)
 	}
 	if (bytes_read < 0) // * Read failed inside the loop;
 		return (-1);
-	return (0); // * Request is not finished;
+	return (0); // * Request's not finished;
 }
