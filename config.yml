@@ -21,9 +21,9 @@ server:
         http_methods: GET POST
     route /ola:
         root: /srcs/conn  
-        dir_listing: off      
+        dir_listing: on
         http_methods: GET
-        index: a.cpp Res.cpp Req1.cpp
+        #index: a.cpp Res.cpp Req1.cpp
     route /up:
         root: /uploads 
         dir_listing: on 

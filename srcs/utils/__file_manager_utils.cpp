@@ -71,12 +71,10 @@ std::string FileManager::read_file(const std::string path)
 	 ! Get route not internal path of the server;
 
 */
-std::string FileManager::directory_listing(const std::string path, int port)
+std::string FileManager::directory_listing(const std::string path, const std::string route_path, int port)
 {
 	std::cout << "path directory: " << path << std::endl;
 
-	// if (path.find_last_of('/') != path.size() - 1)
-	// 	path = path + "/";
 	DIR* dir = opendir(path.c_str());
 	if (!dir)
 		throw HttpError("500", "Internal Server Error");
@@ -97,7 +95,7 @@ std::string FileManager::directory_listing(const std::string path, int port)
 			if (entry_path.find_last_of('/') != entry_path.size() - 1)
 				entry_path = entry_path + "/";
 		}
-		ss << "<a href='http://localhost:" << port << "/" << path << entry_path << "'>" << entry_path << "</a>";
+		ss << "<a href='http://localhost:" << port << "/" << route_path << "/" << entry_path << "'>" << entry_path << "</a>";
 		ss << "</li>" << std::endl;
 		std::cout << "file name: " <<  path << entry_path << std::endl;
 		entry = readdir(dir);

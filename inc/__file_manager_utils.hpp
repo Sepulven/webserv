@@ -36,7 +36,7 @@ namespace FileManager
 
 	// * Get method
 	std::string read_file(const std::string);
-	std::string directory_listing(const std::string, int port);
+	std::string directory_listing(const std::string, const std::string, int);
 
 	// * Post method
 	std::string create_files(const std::vector<uint8_t> &, const std::string&, const std::string);

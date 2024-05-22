@@ -55,6 +55,8 @@ int Res::build_http_response(void)
 
 /*
  * Check method for route;
+ * Returns 1 in success;
+ * Returns -1 in failure;
  */
 int	Res::check_method(void)
 {
@@ -250,7 +252,7 @@ void Res::exec_get(void)
 		}
 		if (check_dir_listing() == 1)
 		{
-			content = FileManager::directory_listing(req->file_path, stream->server->port);
+			content = FileManager::directory_listing(req->file_path, req->route_path, stream->server->port);
 			status_code = "200";
 		}
 		else if (check_index() != "")
