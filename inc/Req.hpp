@@ -81,6 +81,7 @@ class Req
 		std::vector<std::string> cgi_path;
 
 		std::string is_route;
+		int			route_id;
 
 		enum PATH_TYPE path_type;
 

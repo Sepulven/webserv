@@ -56,32 +56,15 @@ int Res::build_http_response(void)
 	return (write(stream->fd, this->data.c_str(), this->data.length()));
 }
 
+/*
+ * Check method for route;
+ */
 int	Res::check_method(void)
 {
-	std::cout << "path: " << stream->req->file_path << std::endl;
-	std::cout << "method: " << stream->req->method << std::endl;
-	std::cout << "is route: " << stream->req->is_route << std::endl;
-	int i = 0;
-
-	// check is route logic
-	// is_route is set when the path is expanded
-	// problem: should we check the root of every route or just the route? uploads example
-	if (stream->req->is_route != "")
-	{
-		while (stream->req->is_route != this->stream->server->routes[i].name)
-			i++;
-		std::cout << "route: " << stream->req->is_route << std::endl;
-		std::cout << "name: " << stream->server->routes[i].name << std::endl;
-		for (size_t f = 0; f < stream->server->routes[i].http_methods.size(); f++)
-			if (stream->req->method == stream->server->routes[i].http_methods[f])
-				return 1;
-	}
-	else // when path is not route, check http methods of root of the server
-	{
-		for (size_t g = 0; g < stream->server->routes.back().http_methods.size(); g++)
-			if (stream->req->method == stream->server->routes.back().http_methods[g])
-				return 1;
-	}
+	int i = this->stream->req->route_id;
+	for (size_t f = 0; f < stream->server->routes[i].http_methods.size(); f++)
+		if (stream->req->method == stream->server->routes[i].http_methods[f])
+			return 1;
 	return -1;
 }
 
@@ -90,7 +73,6 @@ int	Res::check_method(void)
  * Execute the action of each individual method;
  * In case of error during the execution, changes the state of the response;
  */
-
 int Res::send(void)
 {
 	Req *req = stream->req;
@@ -109,6 +91,16 @@ int Res::send(void)
 	// 	this->status_code = "403";
 	// 	return (build_http_response());
 	// }
+
+	// get the route id to get access to location info
+	size_t i = 0;
+	while (i < this->stream->server->routes.size() && stream->req->is_route != this->stream->server->routes[i].name)
+		i++;
+	if (i == this->stream->server->routes.size())
+		this->stream->req->route_id = i - 1;
+	else
+		this->stream->req->route_id = i;
+
 	if (this->check_method() == -1)
 	{
 		this->content = FileManager::read_file("error/403.html"); // change for error page variable
@@ -235,19 +227,20 @@ void Res::exec_delete(void)
 /*
  * Check if dir listing in on for two possible claes: route or root
 */
-int	Res::check_dir_listing(size_t i)
+int	Res::check_dir_listing(void)
 {
-	if (i < this->stream->server->routes.size() && stream->server->routes[i].dir_listing == 1)
-		return 1;
-	else if (i == this->stream->server->routes.size() && stream->server->routes.back().dir_listing == 1)
+	size_t	i = this->stream->req->route_id;
+	if (stream->server->routes[i].dir_listing == 1)
 		return 1;
 	return -1;
 }
 
-std::string	Res::check_index(size_t i)
+std::string	Res::check_index(void)
 {
 	std::string	name_aux;
 	std::ifstream file;
+
+	int i = this->stream->req->route_id;
 
 	for (size_t g = 0; g < this->stream->server->routes[i].index.size(); g++) {
 		name_aux = this->stream->req->file_path  + this->stream->server->routes[i].index[g];
@@ -281,15 +274,15 @@ void Res::exec_get(void)
 		if (stream->req->file_path[stream->req->file_path.size() - 1] != '/') {
 			stream->req->file_path += "/";
 		}
-		if (this->check_dir_listing(i) == 1)
+		if (this->check_dir_listing() == 1)
 		{
 			this->content = FileManager::directory_listing(stream->req->file_path);
 			this->add_ext = ".html";
 			this->status_code = "200";
 		}
-		else if (this->check_index(i) != "")
+		else if (this->check_index() != "")
 		{
-			std::string name = this->check_index(i);
+			std::string name = this->check_index();
 			this->content = FileManager::read_file(name);
 			this->status_code = "200";
 		}

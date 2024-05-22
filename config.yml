@@ -7,9 +7,8 @@ server:
         port: 8080
     server_name: example.com
     root: /
-    index: ind3x.html index.html
-    dir_listing: off
-    http_methods: GET POST
+    dir_listing: on
+    http_methods: GET
     error_pages:
         403: error/403.html
         400: error/400.html
@@ -18,15 +17,14 @@ server:
     route /main:               # to do: HTTP redirect.
         root: /pages
         index: index.html       # default file to open if the request is the dir
-        dir_listing: off        # 'on' or 'off'
-        redirect: ola
+        dir_listing: off
         http_methods: GET POST
     route /ola:
         root: /srcs/conn
         dir_listing: off      
         http_methods: GET
-        index: a.cpp Res.cpp Req.cpp
-    route /uploads:
+        index: a.cpp Res.cpp Req1.cpp
+    route /up:
         root: /uploads                
         dir_listing: on       
         http_methods: GET POST DELETE
