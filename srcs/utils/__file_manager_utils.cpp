@@ -67,7 +67,7 @@ std::string FileManager::read_file(const std::string path)
 	* @param route_path is the relative path, the path that came from the http req;
 	* @param port is the servers port of request;
 */
-std::string FileManager::directory_listing(const std::string path, const std::string route_path, int port)
+std::string FileManager::directory_listing(const std::string path, std::string route_path, int port)
 {
 	std::cout << "path directory: " << path << std::endl;
 	DIR* dir = opendir(path.c_str());
@@ -79,15 +79,18 @@ std::string FileManager::directory_listing(const std::string path, const std::st
 	ss << "<meta name=\"referrer\" content=\"no-referrer\">";
 	ss << "<h1>Directory Listing</h1>";
 	ss << "<ul>";
+	if (route_path[route_path.size() - 1] != '/')
+			route_path += "/";
+	if (route_path[0] == '/')
+		route_path.erase(0, 1);
 	for (struct dirent* entry = readdir(dir); entry; entry = readdir(dir))
 	{
 		entry_path = std::string(entry->d_name);
-		ss << "<li>";
-		if (Req::get_path_type(path + entry_path) == _DIRECTORY && entry_path.find_last_of('/') != entry_path.size() - 1)
+		if (Req::get_path_type(path + entry_path) == _DIRECTORY && entry_path[entry_path.size() - 1] == '/')
 			entry_path = entry_path + "/";
-		ss << "<a href='http://localhost:" << port << "/" << route_path << "/" << entry_path << "'>" << entry_path << "</a>";
+		ss << "<li>";
+		ss << "<a href='http://localhost:" << port << "/" << route_path << entry_path << "'>" << entry_path << "</a>";
 		ss << "</li>" << std::endl;
-		std::cout << "file name: " <<  path << entry_path << std::endl;
 	}
 	ss << "</ul>";
 	closedir(dir);
