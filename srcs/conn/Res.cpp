@@ -250,7 +250,7 @@ void Res::exec_get(void)
 		}
 		if (check_dir_listing() == 1)
 		{
-			content = FileManager::directory_listing(req->file_path);
+			content = FileManager::directory_listing(req->file_path, stream->server->port);
 			status_code = "200";
 		}
 		else if (check_index() != "")
