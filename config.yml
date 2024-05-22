@@ -12,6 +12,9 @@ server:
     error_pages:
         403: error/403.html
         400: error/400.html
+    cgi:
+        .py: /usr/bin/python3
+        .php: /usr/bin/php
     max_cbsize: 2000m              # to do: conversion and mapping
     max_conn: 10
     route /main:               # to do: HTTP redirect.
@@ -28,6 +31,12 @@ server:
         root: /uploads 
         dir_listing: on 
         http_methods: GET POST DELETE
+    route /python:
+        root: /cgi-bin/py
+        index: index.py
+    route /php:
+        root: /cgi-bin/php
+        index: index.php
 
 server:
     listen:
@@ -47,14 +56,14 @@ server:
         dir_listing: on
         http_methods: GET
 
-# server:
-#     listen:
-#         host: localhost
-#         port: 1234
-#     server_name: example2.com
-#     root: /home
-#     index: xedni.html
-#     error_pages:
-#         400: error/400.html
-#     max_cbsize: 1m
-#     max_conn: 5
+server:
+    listen:
+        host: localhost
+        port: 1234
+    server_name: example2.com
+    root: /home
+    index: xedni.html
+    error_pages:
+        400: error/400.html
+    max_cbsize: 1m
+    max_conn: 5

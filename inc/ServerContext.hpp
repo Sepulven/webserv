@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerContext.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ratavare <ratavare@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 12:31:02 by asepulve          #+#    #+#             */
-/*   Updated: 2024/05/18 19:19:39 by asepulve         ###   ########.fr       */
+/*   Updated: 2024/05/22 17:11:52 by ratavare         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,7 @@ class ServerContext
 		int			socket;
 		long long	max_cb_size;
 
+		std::map<std::string, std::string> cgi_path;
 		std::map<int, std::string> error_pages;
 		std::vector<t_location> routes;
 

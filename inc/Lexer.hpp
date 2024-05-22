@@ -24,7 +24,9 @@ enum nodeType {
 	ROUTE,
 	METHOD,
 	DIR_LISTING,
-	REDIRECT
+	REDIRECT,
+	CGI,
+	CGI_PARAM
 };
 
 typedef struct token {

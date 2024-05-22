@@ -18,6 +18,8 @@ ServerContext::ServerContext(t_server serverNode)
 	this->port = serverNode.port;
 	this->name = serverNode.serverName;
 	this->ip = serverNode.host;
+	for (std::list<std::pair<std::string, std::string> > ::iterator tmp = serverNode.cgi.begin(); tmp != serverNode.cgi.end(); tmp++)
+		this->cgi_path.insert(std::make_pair(tmp->first, tmp->second));
 
 	// * Error pages
 	for (;_it != serverNode.errorPages.end(); _it++)
@@ -64,7 +66,7 @@ ServerContext::ServerContext(t_server serverNode)
 		server_location.http_methods.push_back(*it);
 
 	server_location.dir_listing = serverNode.dirListing; // ! NEEDS TO BE CHANGED LATER.
-	std::cout << "dir listing root: " << server_location.dir_listing << std::endl;
+	// std::cout << "dir listing root: " << server_location.dir_listing << std::endl;
 
 	this->routes.push_back(server_location);
 }

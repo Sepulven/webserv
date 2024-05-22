@@ -138,9 +138,15 @@ bool Parser::directivesCase2() {
 	if (it == end)
 		return false;
 	// std::cout << "Entered directivesCase2 with: " << it->content << " | type: " << it->type << std::endl;
-	if (it->type != LISTEN && it->type != ERROR_PAGE_BLOCK)
+	if (it->type != LISTEN && it->type != ERROR_PAGE_BLOCK && it->type != CGI)
 		return false;
-	int flag = it->type == LISTEN ? LISTEN : ERROR_PAGE_BLOCK;
+	int flag = -1;
+	if (it->type == LISTEN)
+		flag = LISTEN;
+	else if (it->type == ERROR_PAGE_BLOCK)
+		flag = ERROR_PAGE_BLOCK;
+	else if (it->type == CGI)
+		flag = CGI;
 	it++;
 	if (!blockDirs(flag)) {  // !!!!!!!!!
 		// std::cout << "DEBUG1" << std::endl;
@@ -203,9 +209,15 @@ bool Parser::directivesCase5() {
 	if (it == end)
 		return false;
 	// std::cout << "Entered directivesCase5 with: " << it->content << " | type: " << it->type << std::endl;
-	if (it->type != LISTEN && it->type != ERROR_PAGE_BLOCK)
+	if (it->type != LISTEN && it->type != ERROR_PAGE_BLOCK && it->type != CGI)
 		return false;
-	int flag = it->type == LISTEN ? LISTEN : ERROR_PAGE_BLOCK;
+	int flag = -1;
+	if (it->type == LISTEN)
+		flag = LISTEN;
+	else if (it->type == ERROR_PAGE_BLOCK)
+		flag = ERROR_PAGE_BLOCK;
+	else if (it->type == CGI)
+		flag = CGI;
 	it++;
 	if (!blockDirs(flag))
 		return false;
@@ -258,6 +270,9 @@ bool Parser::blockDirsCase1(int flag) {
 	if (flag == ERROR_PAGE_BLOCK)
 		if (!parameterLst(serverNodes.back().errorPages))
 			return false;
+	if (flag == CGI)
+		if (!parameterLst(serverNodes.back().cgi))
+			return false;
 	if (!blockDirs(flag)) {
 		std::list<token>::iterator tmp = it;
 		tmp = tmp == end ? getLastTokenIt(tokens) : --tmp;
@@ -282,6 +297,9 @@ bool Parser::blockDirsCase2(int flag) {
 			return false;
 	if (flag == ERROR_PAGE_BLOCK)
 		if (!parameterLst(serverNodes.back().errorPages))
+			return false;
+	if (flag == CGI)
+		if (!parameterLst(serverNodes.back().cgi))
 			return false;
 	return true;
 }
@@ -369,7 +387,6 @@ bool Parser::parameterLstCase1<std::list<t_route> >(std::list<t_route>& containe
 
 template <>
 bool Parser::parameterLstCase1<std::list<std::pair<int, std::string> > >(std::list<std::pair<int, std::string> >& container) {
-	(void)container;
 	if (it == end)
 		return false;
 	// std::cout << "\033[32m" <<  "Entered parameterLstCase1 ERROR_PAGE with: " << it->content << " | type: " << it->type << "\033[0m" << std::endl;
@@ -379,6 +396,24 @@ bool Parser::parameterLstCase1<std::list<std::pair<int, std::string> > >(std::li
 	if (container.back().first == code)
 		return false;	
 	container.push_back(std::make_pair(code, getParam(*it)));
+	it++;
+	return true;
+}
+
+// [parameters] CGI
+
+template <>
+bool Parser::parameterLstCase1<std::list<std::pair<std::string, std::string> > >(std::list<std::pair<std::string, std::string> >& container) {
+	if (it == end)
+		return false;
+	// std::cout << "\033[32m" <<  "Entered parameterLstCase1 CGI with: " << it->content << " | type: " << it->type << "\033[0m" << std::endl;
+	size_t i = it->content.find_first_of(':');
+	if (i == std::string::npos)
+		return false;
+	std::string extension = it->content.substr(0, i);
+	if (container.back().first == extension)
+		return false;
+	container.push_back(std::make_pair(extension, getParam(*it)));
 	it++;
 	return true;
 }
