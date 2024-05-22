@@ -16,8 +16,8 @@ int main(void)
 		par->parse(lex->getTokens());
 		delete lex;
 		par->printServerNodes(par->getServerNodesIt());  // * Print server nodes.
-		// WebServer server(par->getServerNodes());
-		// server.listen();
+		WebServer server(par->getServerNodes());
+		server.listen();
 		delete par;
 	}
 	catch (const std::exception& e)
