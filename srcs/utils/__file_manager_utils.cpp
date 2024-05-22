@@ -69,7 +69,7 @@ std::string FileManager::read_file(const std::string path)
 /*
 	* Creates an html file with the list of the files and directories;
 */
-std::string FileManager::directory_listing(const std::string path)
+std::string FileManager::directory_listing(const std::string path, int port)
 {
 	std::cout << "path directory: " << path << std::endl;
 
@@ -96,7 +96,7 @@ std::string FileManager::directory_listing(const std::string path)
 			if (entry_path.find_last_of('/') != entry_path.size() - 1)
 				entry_path = entry_path + "/";
 		}
-		ss << "<a href='http://localhost:" << "8080" << "/" << path << entry_path << "'>" << entry_path << "</a>";
+		ss << "<a href='http://localhost:" << port << "/" << path << entry_path << "'>" << entry_path << "</a>";
 		ss << "</li>" << std::endl;
 		std::cout << "file name: " <<  path << entry_path << std::endl;
 		entry = readdir(dir);

@@ -255,7 +255,7 @@ void Res::exec_get(void)
 		}
 		if (this->check_dir_listing() == 1)
 		{
-			this->content = FileManager::directory_listing(stream->req->file_path);
+			this->content = FileManager::directory_listing(stream->req->file_path, stream->server->port);
 			this->status_code = "200";
 		}
 		else if (this->check_index() != "")
@@ -291,7 +291,6 @@ std::string get_boundary(const std::string &content_type)
 	}
 	return boundary;	
 }
-
 
 /*
  * * Only deals with content-type multipart/form-data
