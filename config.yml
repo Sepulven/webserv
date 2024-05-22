@@ -1,22 +1,28 @@
 # The first server block will be the default server, it will answer all requests
 # that dont belong to another server.
 
+## * Main server block;
 server:
+    # * Webserver specifications;
     listen:                     # mandatory
         host: localhost   
         port: 8080
     server_name: example.com
+    max_cbsize: 2000m              # to do: conversion and mapping
+    max_conn: 10
+    # * Root definition
     root: /
     dir_listing: on
     http_methods: GET POST
+    # * Error pages map;
     error_pages:
         403: error/403.html
         400: error/400.html
+    # * CGI extension exec. path map;
     cgi:
         .py: /usr/bin/python3
         .php: /usr/bin/php
-    max_cbsize: 2000m              # to do: conversion and mapping
-    max_conn: 10
+    # * Server routing;
     route /main:               # to do: HTTP redirect.
         root: /pages
         index: index.html       # default file to open if the request is the dir
@@ -31,12 +37,16 @@ server:
         root: /uploads 
         dir_listing: on 
         http_methods: GET POST DELETE
+
+    # * CGI routing;
     route /python:
         root: /cgi-bin/py
         index: index.py
+        http_methods: GET POST DELETE
     route /php:
         root: /cgi-bin/php
         index: index.php
+        http_methods: GET POST DELETE
 
 server:
     listen:

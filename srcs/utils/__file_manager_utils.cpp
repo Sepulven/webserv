@@ -69,20 +69,19 @@ std::string FileManager::read_file(const std::string path)
 */
 std::string FileManager::directory_listing(const std::string path, std::string route_path, int port)
 {
-	std::cout << "path directory: " << path << std::endl;
 	DIR* dir = opendir(path.c_str());
 	std::stringstream ss;
 	std::string entry_path;
 
 	if (!dir)
 		throw HttpError("500", "Internal Server Error");
-	ss << "<meta name=\"referrer\" content=\"no-referrer\">";
-	ss << "<h1>Directory Listing</h1>";
-	ss << "<ul>";
 	if (route_path[route_path.size() - 1] != '/')
 			route_path += "/";
 	if (route_path[0] == '/')
 		route_path.erase(0, 1);
+	ss << "<meta name=\"referrer\" content=\"no-referrer\">";
+	ss << "<h1>Directory Listing</h1>";
+	ss << "<ul>";
 	for (struct dirent* entry = readdir(dir); entry; entry = readdir(dir))
 	{
 		entry_path = std::string(entry->d_name);

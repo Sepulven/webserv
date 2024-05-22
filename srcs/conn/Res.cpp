@@ -2,7 +2,6 @@
 
 /*
  * We must have this map globally;
- ! Performance issue with error handling issue;
 */
 Res::Res(ConnStream *_stream) : stream(_stream)
 {
@@ -48,9 +47,6 @@ int Res::build_http_response(void)
 	ss << content;
 
 	this->data = ss.str();
-	// std::cout << "********************************" << std::endl;
-	// std::cout << data;
-	// std::cout << "********************************" << std::endl;
 	return (write(stream->fd, this->data.c_str(), this->data.length()));
 }
 
@@ -132,6 +128,8 @@ int Res::exec_CGI(void)
 	if (pid == 0)
 	{
 		std::vector<std::string> request;
+		int dev_null;
+
 		request.push_back("request=" + data);
 		request.push_back("path=" + req->file_path);
 		request.push_back("method=" + req->method);
@@ -153,7 +151,7 @@ int Res::exec_CGI(void)
 		close(pipe_fd_aux[1]); // Close write end
 		dup2(pipe_fd_aux[0], STDIN_FILENO); // Redirect stdin to the read end
 
-		int dev_null = open("/dev/null", O_WRONLY);
+		dev_null = open("/dev/null", O_WRONLY);
 		dup2(dev_null, STDERR_FILENO); // redirecting stderr to /dev/null
 		close(dev_null);
 
