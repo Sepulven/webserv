@@ -1,26 +1,31 @@
 NAME		=	webserv
 CXX			=	c++
 CXXFLAGS 	=	-Wall -Werror -Wextra -std=c++98 -g # -fsanitize=address
+INCLUDES	=	-I ./inc
 
-SRCS		=	main.cpp ServerContext.cpp WebServer.cpp HttpError.cpp
 
+## * File folder defintion
 PARSER		=	Parser.cpp ParserUtils.cpp Lexer.cpp
 
 UTILS		=	__raw_data_utils.cpp __file_manager_utils.cpp __webserv_utils.cpp
 
-CONN		=	Req.cpp Res.cpp ConnStream.cpp
+CONN		=	Req.cpp Res.cpp ConnStream.cpp HttpError.cpp
 
-SRC			=	$(addprefix srcs/,$(SRCS)) \
-				$(addprefix srcs/utils/,$(UTILS)) \
+SERVER_ENG	=	ServerContext.cpp WebServer.cpp
+
+SRC			=	$(addprefix srcs/__utils/,$(UTILS)) \
+				$(addprefix srcs/server_engine/,$(SERVER_ENG)) \
 				$(addprefix srcs/parser/,$(PARSER)) \
-				$(addprefix srcs/conn/,$(CONN)) 
-
-INCLUDES	=	-I ./inc
+				$(addprefix srcs/conn/,$(CONN))  \
+				$(addprefix srcs/,main.cpp)  \
 
 OBJ			=	$(SRC:.cpp=.o)
+
+## * Compilation phase
 %.o: %.cpp
 	@${CXX} ${CXXFLAGS} ${INCLUDES} -c $< -o $@
 
+## * Makefile standart rules
 all: $(NAME)
 
 $(NAME): ${OBJ}
