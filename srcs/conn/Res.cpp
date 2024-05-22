@@ -24,10 +24,10 @@ Res::Res(ConnStream *_stream) : stream(_stream)
 	content_type[".jpeg"] = "image/jpeg";
 	content_type[".jpg"] = "image/jpeg";
 
-
 	// * In case there is no extension;
 	std::string &file_ext = stream->req->file_ext;
 	file_ext = file_ext == "" ? ".html" : file_ext;
+	c_type = content_type[file_ext];
 }
 
 Res::~Res() {}
@@ -40,15 +40,13 @@ Res::~Res() {}
 int Res::build_http_response(void)
 {
 	std::map<int, std::string> error_pages = stream->server->error_pages;
-	Req *req = stream->req;
 	std::stringstream ss;
 
-	std::cout << "check pages 0\n";
 	if (status_code[0] != '2') // * There is an error;
 		this->content = FileManager::build_error_pages(error_pages, status_code, error_msg);
-	std::cout << "check pages\n";
+
 	ss << "HTTP/1.1 " << status_code << " " << this->status[status_code] << "\r\n";
-	ss << "Content-Type: " << content_type[req->file_ext] << "\r\n";
+	ss << "Content-Type: " << c_type << "\r\n";
 	ss << "Content-Length: " << content.length() << "\r\n\r\n";
 	ss << content;
 
@@ -82,7 +80,6 @@ int Res::send(void)
 
 	if (!this->status_code.empty() && !this->error_msg.empty())
 		return (build_http_response());
-	std::cout << "File ext: " << req->file_ext << std::endl;
 	// curr_expansion == this->stream->server->routes.back().root;
 	// else {
 	// 	std::cout <<  "ERRO FDD\n";
@@ -108,7 +105,7 @@ int Res::send(void)
 		this->status_code = "403";
 		return (build_http_response());
 	}
-	std::cout << "check 0\n";
+
 	try
 	{
 		if (it != req->cgi_path.end())

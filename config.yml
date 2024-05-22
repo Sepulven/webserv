@@ -8,7 +8,7 @@ server:
     server_name: example.com
     root: /
     dir_listing: on
-    http_methods: GET
+    http_methods: GET POST
     error_pages:
         403: error/403.html
         400: error/400.html
