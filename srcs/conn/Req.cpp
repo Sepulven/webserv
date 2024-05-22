@@ -109,6 +109,7 @@ void	Req::expand_file_path()
 	if (!referer.empty() && file_path.find('/') == std::string::npos && file_path.find('.') != std::string::npos) {
 		file_path = routes.back().root.substr(1) + "/" + file_path;
 		std::cout << "new file_path3: " << this->file_path << "$" << std::endl;
+		this->route_id = routes.size() - 1;
 		return ;
 	}
 	for (size_t i = 0; i < routes.size(); i++) {
@@ -122,13 +123,15 @@ void	Req::expand_file_path()
 			else if (!routes[i].root.empty())
 				this->file_path = routes[i].root.substr(1) + this->file_path.substr(j);
 			std::cout << "new file_path1: " << this->file_path << "$" << std::endl;
-			this->is_route = routes[i].name;
+			// this->is_route = routes[i].name;
+			this->route_id = i;
 			return ;
 		}
 	}
 	std::cout << "nold file_path2: " << this->file_path << "$" << std::endl;
 	file_path = routes.back().root.substr(1) + "/" + file_path;
 	std::cout << "new file_path2: " << this->file_path << "$" << std::endl << std::endl;
+	this->route_id = routes.size() - 1;
 
 }
 
@@ -253,7 +256,6 @@ int Req::read(int fd)
 	{
 		stream->res->status_code = e.get_status();
 		stream->res->error_msg = e.get_msg();
-		stream->res->c_type_response = "text/html";
 		return (1); // * There was an http error;
 	}
 	if (bytes_read < 0) // * Read failed inside the loop;

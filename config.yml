@@ -6,9 +6,11 @@ server:
         host: localhost   
         port: 8080
     server_name: example.com
+
     root: /
     dir_listing: on
     http_methods: GET POST
+
     error_pages:
         403: error/403.html
         400: error/400.html
@@ -20,14 +22,15 @@ server:
         dir_listing: off
         http_methods: GET POST
     route /ola:
-        root: /srcs/conn
+        root: /srcs/conn  
         dir_listing: off      
         http_methods: GET
         index: a.cpp Res.cpp Req1.cpp
     route /up:
-        root: /uploads                
-        dir_listing: on       
+        root: /uploads 
+        dir_listing: on 
         http_methods: GET POST DELETE
+
 
 # server:
 #     listen:

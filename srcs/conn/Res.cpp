@@ -24,7 +24,7 @@ Res::Res(ConnStream *_stream) : stream(_stream)
 	content_type[".jpeg"] = "image/jpeg";
 	content_type[".jpg"] = "image/jpeg";
 
-	this->c_type_response = "";
+	this->c_type_response = "text/html";
 }
 
 Res::~Res() {}
@@ -41,10 +41,6 @@ int Res::build_http_response(void)
 
 	if (status_code[0] != '2') // * There is an error;
 		this->content = FileManager::build_error_pages(error_pages, status_code, error_msg);
-
-
-	if (c_type_response == "")
-		c_type_response = "text/plain";
 
 	std::cout << "c_type_response: " << c_type_response << std::endl;
 
@@ -83,34 +79,10 @@ int Res::send(void)
 
 	if (!this->status_code.empty() && !this->error_msg.empty())
 		return (build_http_response());
-	// curr_expansion == this->stream->server->routes.back().root;
-	// else {
-	// 	std::cout <<  "ERRO FDD\n";
-	// 	this->content = FileManager::read_file("error/403.html"); // change for error page variable
-	// 	this->add_ext = ".html";
-	// 	this->status_code = "403";
-	// 	return (build_http_response());
-	// }
-
-	// get the route id to get access to location info
-	size_t i = 0;
-	while (i < this->stream->server->routes.size() && stream->req->is_route != this->stream->server->routes[i].name)
-		i++;
-	if (i == this->stream->server->routes.size())
-		this->stream->req->route_id = i - 1;
-	else
-		this->stream->req->route_id = i;
-
-	if (this->check_method() == -1)
-	{
-		this->content = FileManager::read_file("error/403.html"); // change for error page variable
-		this->c_type_response = ".html";
-		this->status_code = "403";
-		return (build_http_response());
-	}
-
 	try
 	{
+		if (this->check_method() == -1)
+			throw HttpError("403" , "Forbidden");
 		if (it != req->cgi_path.end())
 			return (this->exec_CGI());
 		if (req->method == "GET")
@@ -123,10 +95,7 @@ int Res::send(void)
 	catch (const HttpError &e)
 	{
 		this->error_msg = e.get_msg();
-		std::cout << "check msg "<< this->error_msg << std::endl;
 		this->status_code = e.get_status();
-		std::cout << "check status " << this->status_code << std::endl;
-		stream->res->c_type_response = "text/html";
 	}
 	return (build_http_response());
 }
@@ -142,14 +111,12 @@ int Res::exec_CGI(void)
 	int pipe_fd[2];
 	int pipe_fd_aux[2];
 
-	char *argv0;
+	char *argv0 = const_cast<char *>("");
 
 	if (req->file_ext == ".py")
 		argv0 = const_cast<char *>("/usr/bin/python3");
 	else if (req->file_ext == ".php")
 		argv0 = const_cast<char *>("/usr/bin/php");
-	else
-		argv0 = const_cast<char *>("");
 
 	char *argv1 = const_cast<char *>(req->file_path.c_str());
 	char *const argv[] = {argv0, argv1, NULL};
@@ -166,7 +133,6 @@ int Res::exec_CGI(void)
 		request.push_back("method=" + req->method);
 		request.push_back("body=" + raw_body);
 		request.push_back("content-type=" + content_type[req->file_ext]);
-		// request.push_back("content-lenght=" + req->body.length());
 
 		char **envp = new char *[request.size() + 1];
 		size_t i = 0;
@@ -290,7 +256,6 @@ void Res::exec_get(void)
 		if (this->check_dir_listing() == 1)
 		{
 			this->content = FileManager::directory_listing(stream->req->file_path);
-			this->c_type_response = "text/html";
 			this->status_code = "200";
 		}
 		else if (this->check_index() != "")
@@ -345,15 +310,12 @@ void Res::exec_post(void)
 
 	DIR* dir = opendir(req->file_path.c_str());
 	if (!dir)
-        throw HttpError("500", "Internal Server Error");
+		throw HttpError("500", "Internal Server Error");
 
 	if (closedir(dir) != 0)
-        throw HttpError("500", "Internal Server Error");
+		throw HttpError("500", "Internal Server Error");
 
 	this->status_code = FileManager::create_files(req->raw_body, boundary, req->file_path);
 	if (this->status_code == "201")
-	{
 		this->content = "What should be the content when we upload a file?";
-		this->c_type_response = "text/html";
-	}
 }

@@ -138,16 +138,12 @@ std::string FileManager::create_files(const std::vector<uint8_t>& body, const st
 	for (size_t i = 1; i < files.size() - 1; i++)
 	{
 		file = get_file(files[i]);
-		std::cout << "filename 0: " << filename << std::endl;
 		filename = dir + (dir.empty() || dir[dir.size() - 1] == '/' ? "" : "/") 
 					+ get_random_filename(files[i]);
-		std::cout << "filename: " << filename << std::endl;
 		out_file.open(filename.c_str(), std::ios::binary);
 		if (!out_file.is_open())
 			throw HttpError("500", "Internal Server error");
-		std::cout << "check post z4\n";
 		out_file.write((const char*)&file[0], file.size());
-		std::cout << "check post z4\n";
 		if (out_file.fail())
 			throw HttpError("500", "Internal Server error");
 		out_file.close();
