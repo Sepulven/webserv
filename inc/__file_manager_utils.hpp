@@ -32,7 +32,7 @@
 namespace FileManager
 {
 	// * Error cases;
-	std::string build_error_pages(const std::map<int, std::string> &, const std::string &, const std::string &);
+	std::string build_error_pages(std::map<int, std::string> &, const std::string &, const std::string &);
 
 	// * Get method
 	std::string read_file(const std::string);

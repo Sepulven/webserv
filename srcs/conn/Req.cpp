@@ -42,7 +42,7 @@ void	Req::set_header(std::vector<std::string>& header)
  * Returns the path_type as a ENUM given a relative path;
 */
 enum PATH_TYPE 
-Req::get_path_type(std::string &file_path)
+Req::get_path_type(std::string file_path)
 {
 	struct stat fileStat;
 
@@ -102,12 +102,12 @@ void	Req::expand_file_path()
 	if (!referer.empty() && referer.find('.') == std::string::npos && method == "GET") {
 		if (referer[referer.size() - 1] != '/')
 			referer = referer + "/";
-		std::cout << "REFERER APPENDED" << std::endl;
+		// std::cout << "REFERER APPENDED" << std::endl;
 		this->file_path = referer + this->file_path;
 	}
 	if (!referer.empty() && file_path.find('/') == std::string::npos && file_path.find('.') != std::string::npos) {
 		file_path = routes.back().root.substr(1) + "/" + file_path;
-		std::cout << "new file_path3: " << this->file_path << "$" << std::endl;
+		// std::cout << "new file_path3: " << this->file_path << "$" << std::endl;
 		this->route_id = routes.size() - 1;
 		return ;
 	}

@@ -16,12 +16,8 @@
 #include <HttpError.hpp>
 #include <ConnStream.hpp>
 
-enum RES_STATUS {
-	OK = 200,
-	BAD_REQUEST = 400,
-	FORBIDDEN = 403,
-	NOT_FOUND = 404
-};
+/*Utils*/
+#include <__webserv_utils.hpp>
 
 class ConnStream;
 

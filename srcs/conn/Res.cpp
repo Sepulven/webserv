@@ -48,9 +48,9 @@ int Res::build_http_response(void)
 	ss << content;
 
 	this->data = ss.str();
-	std::cout << "********************************" << std::endl;
-	std::cout << data;
-	std::cout << "********************************" << std::endl;
+	// std::cout << "********************************" << std::endl;
+	// std::cout << data;
+	// std::cout << "********************************" << std::endl;
 	return (write(stream->fd, this->data.c_str(), this->data.length()));
 }
 

@@ -21,6 +21,21 @@ enum SOCKET_TYPE
 	CLIENT = 'c'
 };
 
+enum PATH_TYPE
+{
+	_DIRECTORY = 'd',
+	_FILE = 'f',
+	_NONE = 'n'
+};
+
+enum RES_STATUS {
+	OK = 200,
+	BAD_REQUEST = 400,
+	FORBIDDEN = 403,
+	NOT_FOUND = 404
+};
+
+
 typedef struct epoll_event t_event;
 
 namespace ServerUtils

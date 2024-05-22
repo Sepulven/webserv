@@ -35,13 +35,7 @@
 
 /* Utils */
 #include <__raw_data_utils.hpp>
-
-enum PATH_TYPE
-{
-	_DIRECTORY = 'd',
-	_FILE = 'f',
-	_NONE = 'n'
-};
+#include <__webserv_utils.hpp>
 
 class ConnStream;
 
@@ -88,10 +82,10 @@ class Req
 
 		// * Path expansion based on route name.
 		void expand_file_path();
-		bool validate_route_name(std::string name, std::string filePath);
+		bool validate_route_name(std::string, std::string);
 
 		// * I think this will be useful.
-		static enum PATH_TYPE get_path_type(std::string&);
+		static enum PATH_TYPE get_path_type(std::string);
 
 		int read(int);
 		// * Parsing.
@@ -101,6 +95,6 @@ class Req
 		void set_file_ext(void);
 		void set_content_length(void);
 		void set_rest_raw_data(size_t);
-		void set_referer(std::vector<std::string> message_header);
+		void set_referer(std::vector<std::string>);
 		void parser(size_t);
 };

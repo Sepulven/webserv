@@ -22,18 +22,13 @@ std::string html_template(const std::string &content, const std::string &title)
 	* Returns the content of the error pages in case of success;
 	* Builds an error page in case none exists;
 */
-std::string FileManager::build_error_pages(const std::map<int, std::string> &error_pages, const std::string &code, const std::string &error_msg)
+std::string FileManager::build_error_pages(std::map<int, std::string> &error_pages, const std::string &code, const std::string &error_msg)
 {
 	std::ifstream file;
 	std::stringstream content;
-	std::string path = "";
-	int error_code = atoi(code.c_str());
+	std::string path = error_pages[atoi(code.c_str())];;
 
-	try {
-		path = error_pages.at(error_code);
-	} catch (const std::out_of_range& e) {}
-
-	file.open(&path.c_str()[path.c_str()[0] == '/']);
+	file.open(&path.c_str()[path.c_str()[0] == '/']); // * Removes slash if it starts with it;
 	// * If we can't open it, we build it;
 	if (!file.is_open())
 	{
@@ -72,37 +67,27 @@ std::string FileManager::read_file(const std::string path)
 	* @param route_path is the relative path, the path that came from the http req;
 	* @param port is the servers port of request;
 */
-std::string FileManager::directory_listing(const std::string path, const std::string _route_path, int port)
+std::string FileManager::directory_listing(const std::string path, const std::string route_path, int port)
 {
 	std::cout << "path directory: " << path << std::endl;
-	std::string route_path = _route_path;
 	DIR* dir = opendir(path.c_str());
+	std::stringstream ss;
+	std::string entry_path;
 
-	std::cout << "_route_path" << _route_path << std::endl;
-	if (route_path[0] == '/') route_path.erase(0, 1);
-	if (route_path[0] == '/') route_path.erase(0, 1);
 	if (!dir)
 		throw HttpError("500", "Internal Server Error");
-	std::stringstream ss;
-	struct dirent* entry;
-	entry = readdir(dir);
 	ss << "<meta name=\"referrer\" content=\"no-referrer\">";
 	ss << "<h1>Directory Listing</h1>";
 	ss << "<ul>";
-	while (entry)
+	for (struct dirent* entry = readdir(dir); entry; entry = readdir(dir))
 	{
-		std::string entry_path(entry->d_name);
-		std::string full_entry_path(path + entry_path);
+		entry_path = std::string(entry->d_name);
 		ss << "<li>";
-		if (Req::get_path_type(full_entry_path) == _DIRECTORY)
-		{
-			if (entry_path.find_last_of('/') != entry_path.size() - 1)
-				entry_path = entry_path + "/";
-		}
+		if (Req::get_path_type(path + entry_path) == _DIRECTORY && entry_path.find_last_of('/') != entry_path.size() - 1)
+			entry_path = entry_path + "/";
 		ss << "<a href='http://localhost:" << port << "/" << route_path << "/" << entry_path << "'>" << entry_path << "</a>";
 		ss << "</li>" << std::endl;
 		std::cout << "file name: " <<  path << entry_path << std::endl;
-		entry = readdir(dir);
 	}
 	ss << "</ul>";
 	closedir(dir);
