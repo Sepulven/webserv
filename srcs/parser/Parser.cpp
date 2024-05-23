@@ -36,7 +36,7 @@ bool Parser::configuration() {
 bool Parser::configurationCase1() {
 	if (it == end)
 		return false;
-	// std::cout << "\033[31m" << "Entered configurationCase1 with: " << it->content << " | type: " << it->type << "\033[0m" << std::endl;
+	std::cout << "\033[31m" << "Entered configurationCase1 with: " << it->content << " | type: " << it->type << "\033[0m" << std::endl;
 	if (it->type != SERVERBLOCK || it->identLevel != 0)
 		return false;
 	it++;
@@ -54,7 +54,7 @@ bool Parser::configurationCase1() {
 bool Parser::configurationCase2() {
 	if (it == end)
 		return false;
-	// std::cout << "\033[31m" << "Entered configurationCase2 with: " << it->content << " | type: " << it->type << "\033[0m" << std::endl;
+	std::cout << "\033[31m" << "Entered configurationCase2 with: " << it->content << " | type: " << it->type << "\033[0m" << std::endl;
 	if (it->type != SERVERBLOCK || it->identLevel != 0)
 		return false;
 	it++;
@@ -78,7 +78,7 @@ bool Parser::serverBlock() {
 // <directives>
 
 bool Parser::serverBlockCase1() {
-	// std::cout << "Entered serverBlockCase1 with: " << it->content << " | type: " << it->type << std::endl;
+	std::cout << "Entered serverBlockCase1 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->identLevel != 1)
 		return false;
 	if (!directives())
@@ -115,7 +115,7 @@ bool Parser::directives() {
 bool Parser::directivesCase1() {
 	if (it == end)
 		return false;
-	// std::cout << "Entered directivesCase1 with: " << it->content << " | type: " << it->type << std::endl;
+	std::cout << "Entered directivesCase1 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->type != ROUTE)
 		return false;
 	std::string routePath = getRoute(*it);
@@ -137,7 +137,7 @@ bool Parser::directivesCase1() {
 bool Parser::directivesCase2() {
 	if (it == end)
 		return false;
-	// std::cout << "Entered directivesCase2 with: " << it->content << " | type: " << it->type << std::endl;
+	std::cout << "Entered directivesCase2 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->type != LISTEN && it->type != ERROR_PAGE_BLOCK && it->type != CGI)
 		return false;
 	int flag = -1;
@@ -149,11 +149,11 @@ bool Parser::directivesCase2() {
 		flag = CGI;
 	it++;
 	if (!blockDirs(flag)) {  // !!!!!!!!!
-		// std::cout << "DEBUG1" << std::endl;
+		std::cout << "DEBUG1" << std::endl;
 		return false;
 	} 
 	if (!directives()) {
-		// std::cout << "DEBUG2" << std::endl;
+		std::cout << "DEBUG2" << std::endl;
 		if (it != end && it->type == LISTEN) // !!!!!!!!!!!!!!
 			return resetParam(it->type, it->identLevel), false;
 	}
@@ -163,9 +163,10 @@ bool Parser::directivesCase2() {
 // <simple_dir> <directives>
 
 bool Parser::directivesCase3() {
-	if (it == end)
+	std::list<token>::iterator check = it;
+	if (it == end || ++check == end) // ! MIGHT NOT BE A FIX
 		return false;
-	// std::cout << "Entered directivesCase3 with: " << it->content << " | type: " << it->type << std::endl;
+	std::cout << "Entered directivesCase3 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->type != NAME && it->type != ROOT && it->type != INDEX && 
 	it->type != MAX_CBSIZE && it->type != MAX_CONN && it->type != DIR_LISTING && it->type != METHOD)
 		return false;
@@ -186,7 +187,7 @@ bool Parser::directivesCase3() {
 bool Parser::directivesCase4() {
 	if (it == end)
 		return false;
-	// std::cout << "Entered directivesCase4 with: " << it->content << " | type: " << it->type << std::endl;
+	std::cout << "Entered directivesCase4 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->type != ROUTE)
 		return false;
 	std::string routePath = getRoute(*it);
@@ -208,7 +209,7 @@ bool Parser::directivesCase4() {
 bool Parser::directivesCase5() {
 	if (it == end)
 		return false;
-	// std::cout << "Entered directivesCase5 with: " << it->content << " | type: " << it->type << std::endl;
+	std::cout << "Entered directivesCase5 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->type != LISTEN && it->type != ERROR_PAGE_BLOCK && it->type != CGI)
 		return false;
 	int flag = -1;
@@ -229,7 +230,7 @@ bool Parser::directivesCase5() {
 bool Parser::directivesCase6() {
 	if (it == end)
 		return false;
-	// std::cout << "Entered directivesCase6 with: " << it->content << " | type: " << it->type << std::endl;
+	std::cout << "Entered directivesCase6 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->type != NAME && it->type != ROOT && it->type != INDEX && 
 	it->type != MAX_CBSIZE && it->type != MAX_CONN && it->type != DIR_LISTING && it->type != METHOD)
 		return false;
@@ -258,7 +259,7 @@ bool Parser::blockDirsCase1(int flag) {
 	std::list<token>::iterator check = it;
 	if (it == end || ++check == end)
 		return false;
-	// std::cout << "Entered blockDirsCase1 with: " << it->content << " | type: " << it->type << std::endl;
+	std::cout << "Entered blockDirsCase1 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->identLevel != 2)
 		return false;
 	if (flag == ROUTE)
@@ -286,7 +287,7 @@ bool Parser::blockDirsCase1(int flag) {
 bool Parser::blockDirsCase2(int flag) {
 	if (it == end)
 		return false;
-	// std::cout << "Entered blockDirsCase2 with: " << it->content << " | type: " << it->type << std::endl;
+	std::cout << "Entered blockDirsCase2 with: " << it->content << " | type: " << it->type << std::endl;
 	if (it->identLevel != 2)
 		return false;
 	if (flag == ROUTE)
@@ -319,7 +320,7 @@ template<typename T>
 bool Parser::parameterLstCase1(T& container) {
 	if (it == end)
 		return false;
-	// std::cout << "\033[32m" << "Entered parameterLstCase1 with: " << it->content << " | type: " << it->type << "\033[0m" << std::endl;
+	std::cout << "\033[32m" << "Entered parameterLstCase1 with: " << it->content << " | type: " << it->type << "\033[0m" << std::endl;
 	if (getParam(*it).empty())         // Need to check with ppl if there are default values.
 		return false;
 	if (it->type == HOST && container.back().host.empty())
@@ -358,7 +359,7 @@ template <>
 bool Parser::parameterLstCase1<std::list<t_route> >(std::list<t_route>& container) {
 	if (it == end)
 		return false;
-	// std::cout << "\033[32m" <<  "Entered parameterLstCase1 ROUTE with: " << it->content << " | type: " << it->type << "\033[0m" << std::endl;
+	std::cout << "\033[32m" <<  "Entered parameterLstCase1 ROUTE with: " << it->content << " | type: " << it->type << "\033[0m" << std::endl;
 	if (getParam(*it).empty()) // Might not be necesary
 		return false;
 	if (it->type == INDEX && container.back().index.empty())
@@ -389,7 +390,7 @@ template <>
 bool Parser::parameterLstCase1<std::list<std::pair<int, std::string> > >(std::list<std::pair<int, std::string> >& container) {
 	if (it == end)
 		return false;
-	// std::cout << "\033[32m" <<  "Entered parameterLstCase1 ERROR_PAGE with: " << it->content << " | type: " << it->type << "\033[0m" << std::endl;
+	std::cout << "\033[32m" <<  "Entered parameterLstCase1 ERROR_PAGE with: " << it->content << " | type: " << it->type << "\033[0m" << std::endl;
 	int code = atoi(it->content.c_str());
 	if (code == 0)
 		return false;
@@ -406,7 +407,7 @@ template <>
 bool Parser::parameterLstCase1<std::list<std::pair<std::string, std::string> > >(std::list<std::pair<std::string, std::string> >& container) {
 	if (it == end)
 		return false;
-	// std::cout << "\033[32m" <<  "Entered parameterLstCase1 CGI with: " << it->content << " | type: " << it->type << "\033[0m" << std::endl;
+	std::cout << "\033[32m" <<  "Entered parameterLstCase1 CGI with: " << it->content << " | type: " << it->type << "\033[0m" << std::endl;
 	size_t i = it->content.find_first_of(':');
 	if (i == std::string::npos)
 		return false;

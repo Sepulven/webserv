@@ -55,10 +55,11 @@ s_route::s_route() {
 	this->rroot = std::string();
 	this->redir = std::string();
 	this->dirListing = -1;
+	this->path = std::string();
 }
 
 void Parser::resetParam(int type, int identLevel) {
-	// std::cout << "CLEARED VALUES ON TYPE: " << type << " IDENT LVL: " << identLevel << std::endl;
+	std::cout << "CLEARED VALUES ON TYPE: " << type << " IDENT LVL: " << identLevel << std::endl;
 	if (type == INDEX) {
 		if (identLevel == 1)
 			serverNodes.back().index.clear();

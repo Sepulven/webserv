@@ -77,5 +77,5 @@ server:
     index: xedni.html
     error_pages:
         400: error/400.html
-    max_cbsize: 1m
     max_conn: 5
+    max_cbsize: 1m
