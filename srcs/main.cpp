@@ -8,21 +8,21 @@ const char* RESET_COLOR = "\033[0m";
 
 int main(void)
 {
+	Lexer *lex = new Lexer;
+	Parser *par = new Parser;
 	try
 	{
-		Lexer *lex = new Lexer;
 		lex->tokenize("config.yml");
 		Lexer::printTokens(lex->getTokens());   // * Print tokens.
-		Parser *par = new Parser;
 		par->parse(lex->getTokens());
-		delete lex;
 		par->printServerNodes(par->getServerNodesIt());  // * Print server nodes.
 		WebServer server(par->getServerNodes());
 		server.listen();
-		delete par;
 	}
 	catch (const std::exception& e)
 	{
 		std::cout << RED_TEXT << "ERROR: " << e.what() << RESET_COLOR << std::endl;
 	}
+	delete lex;
+	delete par;
 }

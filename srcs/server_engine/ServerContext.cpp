@@ -22,8 +22,10 @@ ServerContext::ServerContext(t_server serverNode)
 
 	for (; cgi_it != serverNode.cgi.end(); cgi_it++)
 	{
-		if (!fopen(cgi_it->second.c_str(), "r"))
+		FILE* file = fopen(cgi_it->second.c_str(), "r");
+		if (!file)
 			throw ServerError("CGI path doesn't exist. Maybe the cgi is not installed");
+		fclose(file);
 		this->cgi_path.insert(std::make_pair(cgi_it->first, cgi_it->second));
 	}
 
@@ -36,6 +38,10 @@ ServerContext::ServerContext(t_server serverNode)
 	{
 		t_location new_location;
 		new_location.name = it->path;
+		// if (new_location.name.find('.') != std::string::npos)
+		// 	throw ServerError("Invalid route name.");
+		if (it->rroot.find('.') != std::string::npos)
+			throw ServerError("Invalid route root.");
 		if (it->rroot.size() == 1 && it->rroot[0] == '/')
 			new_location.root = "/.";
 		else
@@ -61,6 +67,8 @@ ServerContext::ServerContext(t_server serverNode)
 	// * main route
 	t_location server_location;
 	server_location.name = ".";
+	if (serverNode.root.find('.') != std::string::npos)
+			throw ServerError("Invalid server root.");
 	if (serverNode.root.size() == 1 && serverNode.root[0] == '/')
 		server_location.root = "/.";
 	else

@@ -18,28 +18,30 @@ server:
     error_pages:
         403: error/403.html
         400: error/400.html
+        # 404: error/404.asf    # works with every type of file
+        404: error/404.html
     # * CGI extension exec. path map;
     cgi:
         .py: /usr/bin/python3
-        .php: /usr/bin/php
+        # .php: /usr/bin/php
     # * Server routing;
-    route /main:               # to do: HTTP redirect.
+    route /main:                # to do: HTTP redirect.
         root: /pages
-        index: index.html       # default file to open if the request is the dir
+        index: favicon.ico       # default file to open if the request is the dir
         dir_listing: off
         http_methods: GET POST
     route /ola:
         root: /srcs/conn  
         dir_listing: on
         http_methods: GET
-        #index: a.cpp Res.cpp Req1.cpp
+        index: a.cpp Res.cpp Req1.cpp
     route /up:
-        root: /uploads 
-        dir_listing: on 
+        root: /uploads
+        dir_listing: on
         http_methods: GET POST DELETE
 
     # * CGI routing;
-    route /python:
+    route /py:
         root: /cgi-bin/py
         index: index.py
         http_methods: GET POST DELETE
@@ -61,7 +63,7 @@ server:
         400: error/400.html
     max_cbsize: 2000m
     max_conn: 5
-    route /su:
+    route /s:
         root: /srcs
         dir_listing: on
         http_methods: GET

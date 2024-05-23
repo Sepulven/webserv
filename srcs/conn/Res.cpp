@@ -23,7 +23,7 @@ Res::Res(ConnStream *_stream) : stream(_stream)
 	content_type[".jpeg"] = "image/jpeg";
 	content_type[".jpg"] = "image/jpeg";
 
-	this->c_type_response = "text/html";
+	this->c_type_response = "";
 }
 
 Res::~Res() {}
@@ -37,10 +37,15 @@ int Res::build_http_response(void)
 {
 	std::map<int, std::string> error_pages = stream->server->error_pages;
 	std::stringstream ss;
+	std::string extension = "";
 
 	if (status_code[0] != '2') // * There is an error;
-		this->content = FileManager::build_error_pages(error_pages, status_code, error_msg);
-
+	{
+		this->content = FileManager::build_error_pages(error_pages, status_code, error_msg, extension);
+		c_type_response = content_type[FileManager::set_file_ext(extension)];
+	}
+	if (c_type_response == "")
+		c_type_response = "text/plain";
 	ss << "HTTP/1.1 " << status_code << " " << this->status[status_code] << "\r\n";
 	ss << "Content-Type: " << c_type_response << "\r\n";
 	ss << "Content-Length: " << content.length() << "\r\n\r\n";
@@ -71,16 +76,22 @@ int	Res::check_method(void)
  */
 int Res::send(void)
 {
-	std::map<std::string, std::string> &cgi_path = stream->server->cgi_path;
+	for (const auto& pair : stream->server->cgi_path) {
+        std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
+    }
+	
 	Req *req = stream->req;
 
 	if (!this->status_code.empty() && !this->error_msg.empty())
 		return (build_http_response());
+	// std::cout << "route id: " << req->route_id << std::endl;
+	// std::cout << "req->file_ext: " << req->file_ext << std::endl;
+	// std::cout << "req->file_path: " << req->file_path << std::endl;
 	try
 	{
 		if (this->check_method() == -1)
 			throw HttpError("403" , "Forbidden");
-		if (cgi_path.find(req->file_ext) != cgi_path.end())
+		if (stream->server->cgi_path.find(req->file_ext) != stream->server->cgi_path.end())
 			return (this->exec_CGI());
 		if (req->method == "GET")
 			exec_get();
@@ -108,6 +119,7 @@ int Res::exec_CGI(void)
 	int pipe_fd[2];
 	int pipe_fd_aux[2];
 	pid_t pid;
+	std::cout << "DEBUG CGI" << std::endl;
 
 	ServerContext * server = stream->server;
 
@@ -122,13 +134,15 @@ int Res::exec_CGI(void)
 	if (pid == 0)
 	{
 		std::vector<std::string> request;
-		int dev_null;
+		// int dev_null;
 
 		request.push_back("request=" + data);
-		request.push_back("path=" + req->file_path);
 		request.push_back("method=" + req->method);
-		request.push_back("body=" + raw_body);
-		request.push_back("content-type=" + content_type[req->file_ext]);
+		// request.push_back("path=" + req->file_path);
+		// request.push_back("body=" + raw_body);
+
+		std::cout << "data: " << data << "\n";
+		std::cout << "method: " << req->method << "\n";
 
 		char **envp = new char *[request.size() + 1];
 		size_t i = 0;
@@ -138,17 +152,21 @@ int Res::exec_CGI(void)
 			std::strcpy((char *)envp[i], request[i].c_str());
 		}
 		envp[i] = NULL;
-
-		close(pipe_fd[0]); // Close read end
-		dup2(stream->fd, STDOUT_FILENO); // Redirect stdout to the write end
+		// close(pipe_fd[0]); // Close read end
+		dup2(stream->fd, STDOUT_FILENO); // Redirect stdout to the fd
 
 		close(pipe_fd_aux[1]); // Close write end
 		dup2(pipe_fd_aux[0], STDIN_FILENO); // Redirect stdin to the read end
 
-		dev_null = open("/dev/null", O_WRONLY);
-		dup2(dev_null, STDERR_FILENO); // redirecting stderr to /dev/null
-		close(dev_null);
+		// dev_null = open("/dev/null", O_WRONLY);
+		// dup2(dev_null, STDERR_FILENO); // redirecting stderr to /dev/null
+		// close(dev_null);
 
+		// std::cout << "check CGI\n";
+		// std::cout << "argv 0: " << argv[0] << "\n";
+		// std::cout << "argv 1: " << argv[1] << "\n";
+		// std::cout << "raw_body: " << raw_body << "\n";
+		// std::cout << "envp 0: " << envp[0] << "\n";
 		execve(argv[0], argv, envp);
 		delete[] envp;
 		exit(EXIT_FAILURE); // check this
@@ -158,8 +176,9 @@ int Res::exec_CGI(void)
 	write(pipe_fd_aux[1], req->raw_body.data(), req->raw_body.size()); // send request to cgi
 	close(pipe_fd_aux[1]);
 
-	close(pipe_fd[1]); // Close write end
-	close(pipe_fd[0]); // Close read end
+	// close(pipe_fd[1]); // Close write end
+	// close(pipe_fd[0]); // Close read end
+
 	stream->cgi_pid = pid;
 	return 1;
 }
@@ -212,18 +231,18 @@ std::string	Res::check_index(void)
 	return "";
 }
 
-std::string	Res::set_file_ext(std::string name)
-{
-	size_t pos;
-	std::string	file_ext_res = "";
+// std::string	Res::set_file_ext(std::string name)
+// {
+// 	size_t pos;
+// 	std::string	file_ext_res = "";
 
-	pos = name.find_last_of('.');
-	if (pos == std::string::npos && pos >= name.length())
-		file_ext_res = ".txt";
-	else
-		file_ext_res = name.substr(pos);
-	return file_ext_res;
-}
+// 	pos = name.find_last_of('.');
+// 	if (pos == std::string::npos && pos >= name.length())
+// 		file_ext_res = ".txt";
+// 	else
+// 		file_ext_res = name.substr(pos);
+// 	return file_ext_res;
+// }
 
 /*
  * Builds the file as specified in the directory listing;
@@ -233,27 +252,40 @@ std::string	Res::set_file_ext(std::string name)
 void Res::exec_get(void)
 {
 	Req * req = stream->req;
-
+	
 	if (req->path_type == _FILE) {
 		content = FileManager::read_file(req->file_path);
-		c_type_response = content_type[set_file_ext(req->file_path)];
+		c_type_response = content_type[FileManager::set_file_ext(req->file_path)];std::cout << "response type: " << this->c_type_response << std::endl;
 		status_code = "200";
 	}
 	if (req->path_type == _DIRECTORY) {
 		if (req->file_path[req->file_path.size() - 1] != '/') {
 			req->file_path += "/";
 		}
-		if (check_dir_listing() == 1)
-		{
+		if (check_dir_listing() == 1) {
 			content = FileManager::directory_listing(req->file_path, req->route_path, stream->server->port);
+			c_type_response = "text/html";
 			status_code = "200";
 		}
-		else if (check_index() != "")
-		{
+		else if (!check_index().empty()) {
 			std::string name = check_index();
-			content = FileManager::read_file(name);
-			c_type_response = content_type[set_file_ext(name)];
+			if (!name.empty()) {
+				if (stream->server->cgi_path.find(FileManager::set_file_ext(name)) != stream->server->cgi_path.end()) {
+					req->file_path = "./" + name;
+					req->file_ext = FileManager::set_file_ext(req->file_path);
+					std::cout << "new file p: " << req->file_path << std::endl;
+					std::cout << "new file ext: " << req->file_ext << std::endl;
+					exec_CGI();
+					return ;
+				}
+				else {
+					content = FileManager::read_file(name);
+					c_type_response = content_type[FileManager::set_file_ext(name)];
+				}
 			status_code = "200";
+			}
+			else
+				throw HttpError("404", "Not Found");
 		}
 		else
 			throw HttpError("403", "Forbidden");

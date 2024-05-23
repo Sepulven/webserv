@@ -1,6 +1,18 @@
 #include <__file_manager_utils.hpp>
 #include <string.h>
 
+std::string	FileManager::set_file_ext(std::string name)
+{
+	size_t pos;
+	std::string	file_ext_res = "";
+
+	pos = name.find_last_of('.');
+	if (pos == std::string::npos && pos >= name.length())
+		file_ext_res = ".txt";
+	else
+		file_ext_res = name.substr(pos);
+	return file_ext_res;
+}
 
 /*
  * Returns a html page given a content;
@@ -22,7 +34,7 @@ std::string html_template(const std::string &content, const std::string &title)
 	* Returns the content of the error pages in case of success;
 	* Builds an error page in case none exists;
 */
-std::string FileManager::build_error_pages(std::map<int, std::string> &error_pages, const std::string &code, const std::string &error_msg)
+std::string FileManager::build_error_pages(std::map<int, std::string> &error_pages, const std::string &code, const std::string &error_msg, std::string &extension)
 {
 	std::ifstream file;
 	std::stringstream content;
@@ -34,11 +46,13 @@ std::string FileManager::build_error_pages(std::map<int, std::string> &error_pag
 	{
 		content << "<h1>"<< code << " " << "</h1>"
 				<< "<p>" << error_msg << "</p>";
+		extension = ".html";
 	}
 	else
 	{
 		content << file.rdbuf();
 		file.close();
+		extension = set_file_ext(path);
 	}
 	return (html_template(content.str(), "Error " + code));
 }
@@ -72,11 +86,12 @@ std::string FileManager::directory_listing(const std::string path, std::string r
 	DIR* dir = opendir(path.c_str());
 	std::stringstream ss;
 	std::string entry_path;
-
 	if (!dir)
 		throw HttpError("500", "Internal Server Error");
+	if (route_path.size() == 0)
+		route_path = "/";
 	if (route_path[route_path.size() - 1] != '/')
-			route_path += "/";
+		route_path += "/";
 	if (route_path[0] == '/')
 		route_path.erase(0, 1);
 	ss << "<meta name=\"referrer\" content=\"no-referrer\">";
