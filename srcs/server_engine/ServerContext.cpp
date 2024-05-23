@@ -38,6 +38,10 @@ ServerContext::ServerContext(t_server serverNode)
 	{
 		t_location new_location;
 		new_location.name = it->path;
+		// if (new_location.name.find('.') != std::string::npos)
+		// 	throw ServerError("Invalid route name.");
+		if (it->rroot.find('.') != std::string::npos)
+			throw ServerError("Invalid route root.");
 		if (it->rroot.size() == 1 && it->rroot[0] == '/')
 			new_location.root = "/.";
 		else
@@ -63,6 +67,8 @@ ServerContext::ServerContext(t_server serverNode)
 	// * main route
 	t_location server_location;
 	server_location.name = ".";
+	if (serverNode.root.find('.') != std::string::npos)
+			throw ServerError("Invalid server root.");
 	if (serverNode.root.size() == 1 && serverNode.root[0] == '/')
 		server_location.root = "/.";
 	else
