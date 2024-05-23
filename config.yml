@@ -41,7 +41,7 @@ server:
         http_methods: GET POST DELETE
 
     # * CGI routing;
-    route /python:
+    route /py:
         root: /cgi-bin/py
         index: index.py
         http_methods: GET POST DELETE
