@@ -72,11 +72,12 @@ std::string FileManager::directory_listing(const std::string path, std::string r
 	DIR* dir = opendir(path.c_str());
 	std::stringstream ss;
 	std::string entry_path;
-
 	if (!dir)
 		throw HttpError("500", "Internal Server Error");
+	if (route_path.size() == 0)
+		route_path = "/";
 	if (route_path[route_path.size() - 1] != '/')
-			route_path += "/";
+		route_path += "/";
 	if (route_path[0] == '/')
 		route_path.erase(0, 1);
 	ss << "<meta name=\"referrer\" content=\"no-referrer\">";

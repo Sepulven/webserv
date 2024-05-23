@@ -22,8 +22,10 @@ ServerContext::ServerContext(t_server serverNode)
 
 	for (; cgi_it != serverNode.cgi.end(); cgi_it++)
 	{
-		if (!fopen(cgi_it->second.c_str(), "r"))
+		FILE* file = fopen(cgi_it->second.c_str(), "r");
+		if (!file)
 			throw ServerError("CGI path doesn't exist. Maybe the cgi is not installed");
+		fclose(file);
 		this->cgi_path.insert(std::make_pair(cgi_it->first, cgi_it->second));
 	}
 
