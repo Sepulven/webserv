@@ -230,7 +230,7 @@ void	Req::parser(size_t end_header_pos)
 */
 int Req::read(int fd)
 {
-	uint8_t buffer[4096 + 1];
+	uint8_t buffer[BUFSIZ];
 	int bytes_read = ::read(fd, buffer, 4096);
 	size_t end_header_pos;
 
@@ -246,12 +246,12 @@ int Req::read(int fd)
 				this->parser(end_header_pos);
 			else if (!method.empty())
 				RawData::append(raw_body, buffer, bytes_read);
-			bytes_read = ::read(fd, buffer, 4096);
+			bytes_read = ::read(fd, buffer, BUFSIZ);
 		}
 		if (RawData::find(data, "\r\n\r\n") != out_of_bound 
 			&& raw_body.size() >= content_length) 
 			return (1); // * Request's finished;
-	}
+	}	
 	catch (const HttpError &e)
 	{
 		stream->res->status_code = e.get_status();
