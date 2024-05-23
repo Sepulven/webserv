@@ -1,7 +1,5 @@
 #pragma once
 
-#include <ServerContext.hpp>
-
 /* C headers*/
 #include <string.h>
 #include <sys/epoll.h>
@@ -23,6 +21,9 @@
 
 /* Classes */
 #include <ConnStream.hpp>
+#include <ServerError.hpp>
+#include <ServerContext.hpp>
+
 
 /* Utils */
 #include <__webserv_utils.hpp>
@@ -54,16 +55,6 @@ class WebServer
 		void send_response(int, int, t_event);
 		void close_conn(int, int);
 		void time_out(int);
-
-		class Error : public std::exception
-		{
-			private:
-				const char *msg;
-				virtual const char *what() const throw();
-
-			public:
-				Error(const char *_msg);
-		};
 
 		static void	sig_handler(int sig); // * Handles Ctrl + c
 };

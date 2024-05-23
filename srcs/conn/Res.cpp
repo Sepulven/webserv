@@ -71,10 +71,8 @@ int	Res::check_method(void)
  */
 int Res::send(void)
 {
+	std::map<std::string, std::string> &cgi_path = stream->server->cgi_path;
 	Req *req = stream->req;
-
-	std::vector<std::string> &cgi_path = req->cgi_path;
-	std::vector<std::string>::iterator it = std::find(cgi_path.begin(), cgi_path.end(), req->file_path);
 
 	if (!this->status_code.empty() && !this->error_msg.empty())
 		return (build_http_response());
@@ -82,7 +80,7 @@ int Res::send(void)
 	{
 		if (this->check_method() == -1)
 			throw HttpError("403" , "Forbidden");
-		if (it != req->cgi_path.end())
+		if (cgi_path.find(req->file_ext) != cgi_path.end())
 			return (this->exec_CGI());
 		if (req->method == "GET")
 			exec_get();
@@ -111,13 +109,9 @@ int Res::exec_CGI(void)
 	int pipe_fd_aux[2];
 	pid_t pid;
 
-	char *argv0 = const_cast<char *>("");
+	ServerContext * server = stream->server;
 
-	if (req->file_ext == ".py")
-		argv0 = const_cast<char *>("/usr/bin/python3");
-	else if (req->file_ext == ".php")
-		argv0 = const_cast<char *>("/usr/bin/php");
-
+	char *argv0 = const_cast<char *>(server->cgi_path[req->file_ext].c_str());
 	char *argv1 = const_cast<char *>(req->file_path.c_str());
 	char *const argv[] = {argv0, argv1, NULL};
 

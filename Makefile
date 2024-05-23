@@ -11,13 +11,13 @@ UTILS		=	__raw_data_utils.cpp __file_manager_utils.cpp __webserv_utils.cpp
 
 CONN		=	Req.cpp Res.cpp ConnStream.cpp HttpError.cpp
 
-SERVER_ENG	=	ServerContext.cpp WebServer.cpp
+SERVER_ENG	=	ServerContext.cpp WebServer.cpp ServerError.cpp
 
 SRC			=	$(addprefix srcs/__utils/,$(UTILS)) \
 				$(addprefix srcs/server_engine/,$(SERVER_ENG)) \
 				$(addprefix srcs/parser/,$(PARSER)) \
-				$(addprefix srcs/conn/,$(CONN))  \
-				$(addprefix srcs/,main.cpp)  \
+				$(addprefix srcs/conn/,$(CONN)) \
+				$(addprefix srcs/,main.cpp) \
 
 OBJ			=	$(SRC:.cpp=.o)
 

@@ -73,8 +73,6 @@ class Req
 		std::string file_ext;
 		std::string query_string;
 
-		std::vector<std::string> cgi_path;
-
 		std::string is_route;
 		int			route_id;
 

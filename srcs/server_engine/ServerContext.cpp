@@ -5,6 +5,7 @@
 */
 ServerContext::ServerContext(t_server serverNode) 
 {
+	std::list<std::pair<std::string, std::string> >::iterator cgi_it = serverNode.cgi.begin();
 	std::list<t_route>::iterator it = serverNode.route.begin();
 	std::list<std::pair<int, std::string> >::iterator _it = serverNode.errorPages.begin();
 	std::list<std::string>::iterator tmp;
@@ -18,8 +19,13 @@ ServerContext::ServerContext(t_server serverNode)
 	this->port = serverNode.port;
 	this->name = serverNode.serverName;
 	this->ip = serverNode.host;
-	for (std::list<std::pair<std::string, std::string> > ::iterator tmp = serverNode.cgi.begin(); tmp != serverNode.cgi.end(); tmp++)
-		this->cgi_path.insert(std::make_pair(tmp->first, tmp->second));
+
+	for (; cgi_it != serverNode.cgi.end(); cgi_it++)
+	{
+		if (!fopen(cgi_it->second.c_str(), "r"))
+			throw ServerError("CGI path doesn't exist. Maybe the cgi is not installed");
+		this->cgi_path.insert(std::make_pair(cgi_it->first, cgi_it->second));
+	}
 
 	// * Error pages
 	for (;_it != serverNode.errorPages.end(); _it++)

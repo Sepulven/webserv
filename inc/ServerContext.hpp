@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerContext.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ratavare <ratavare@student.42.fr>          +#+  +:+       +#+        */
+/*   By: asepulve <asepulve@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 12:31:02 by asepulve          #+#    #+#             */
-/*   Updated: 2024/05/22 17:11:52 by ratavare         ###   ########.fr       */
+/*   Updated: 2024/05/23 01:13:07 by asepulve         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 
 /* Classes */
 #include "Parser.hpp"
+#include <ServerError.hpp>
 
 /* Utils */
 #include <__webserv_utils.hpp>

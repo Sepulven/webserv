@@ -2,6 +2,7 @@
 #include <Lexer.hpp>
 #include <Parser.hpp>
 
+
 const char* RED_TEXT = "\033[31m";
 const char* RESET_COLOR = "\033[0m";
 

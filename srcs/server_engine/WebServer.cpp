@@ -67,7 +67,7 @@ void WebServer::init_servers(std::vector<ServerContext *>& vec)
 
 	this->epoll_fd = epoll_create1(0);
 	if (this->epoll_fd < 0)
-		throw Error("Epoll_create1 failed.");
+		throw ServerError("Epoll_create1 failed.");
 	for (size_t i = 0; i < vec.size(); i++)
 	{
 		memset(&server_addr, 0, sizeof(struct sockaddr_in));
@@ -81,15 +81,15 @@ void WebServer::init_servers(std::vector<ServerContext *>& vec)
 		this->servers[server_fd] = vec[i];
 	
 		if (server_fd < 0)
-			throw Error("Socket failed.");
+			throw ServerError("Socket failed.");
 		if (sfd_non_blocking(server_fd) < 0)
-			throw Error("Couldn't make the server socket non-blocking.");
+			throw ServerError("Couldn't make the server socket non-blocking.");
 		if (set_reuseaddr(server_fd) < 0)
-			throw Error("Setsockopt failed");
+			throw ServerError("Setsockopt failed");
 		if (bind(server_fd, &server_addr) < 0)
-			throw Error("Bind failed.");
+			throw ServerError("Bind failed.");
 		if (::listen(server_fd, vec[i]->max_events) < 0)
-			throw Error("Listen failed.");
+			throw ServerError("Listen failed.");
 
 		memset(&event, 0, sizeof(struct epoll_event));
 		event.events = EPOLLIN;
@@ -97,7 +97,7 @@ void WebServer::init_servers(std::vector<ServerContext *>& vec)
 		this->servers[server_fd]->epoll_event_info = static_cast<t_event_data*>(event.data.ptr);
 
 		if (epoll_add_fd(this->epoll_fd, server_fd, event))
-			throw Error("epoll_ctl failed.");
+			throw ServerError("epoll_ctl failed.");
 
 		this->max_events += vec[i]->max_events;
 		std::cout << "[" << vec[i]->max_events << "] Listening on port: " << vec[i]->port << std::endl;
@@ -117,15 +117,15 @@ void WebServer::accept_connection(int epoll_fd, int fd)
 	int client_fd = accept(fd, (struct sockaddr *)&client_addr, &client_addr_len);
 
 	if (client_fd < 0)
-		throw Error("accept failed.");
+		throw ServerError("accept failed.");
 	if (sfd_non_blocking(client_fd) < 0)
-		throw Error("Couln't make socket fd non-blocking.");
+		throw ServerError("Couln't make socket fd non-blocking.");
 
 	event.events = EPOLLIN | EPOLLET;
 	event.data.ptr = new t_event_data(client_fd, CLIENT);
 
 	if (epoll_add_fd(epoll_fd, client_fd, event) < 0)
-		throw Error("Epoll_ctl failed");
+		throw ServerError("Epoll_ctl failed");
 	this->streams[client_fd] = new ConnStream(client_fd, servers[fd]);
 	this->streams[client_fd]->epoll_event_info = static_cast<t_event_data*>(event.data.ptr);
 }
@@ -139,7 +139,7 @@ void WebServer::send_response(int epoll_fd, int fd, t_event event)
 	int status = this->streams[fd]->res->send();
 	this->streams[fd]->set_time(); // * Update last action;
 	if ((status > 0) && epoll_in_fd(epoll_fd, fd, event) < 0)
-		throw Error("Epoll_ctl failed");
+		throw ServerError("Epoll_ctl failed");
 	this->streams[fd]->clean_conn();
 	if (status == -1)
 		close_conn(epoll_fd, fd);
@@ -156,7 +156,7 @@ void WebServer::read_request(int epoll_fd, int fd, t_event event)
 
 	this->streams[fd]->set_time();
 	if ((status == 1) && epoll_out_fd(epoll_fd, fd, event))
-		throw Error("Epoll_ctl failed");
+		throw ServerError("Epoll_ctl failed");
 	if (status == -1)
 		this->close_conn(epoll_fd, fd);
 }
@@ -230,7 +230,7 @@ void WebServer::listen(void)
 		time_out(epoll_fd);
 	}
 	if (num_events < 0 && is_running)
-		throw Error("Epoll_wait failed.");
+		throw ServerError("Epoll_wait failed.");
 }
 
 /*Signal Handler*/
@@ -248,18 +248,10 @@ void WebServer::sig_handler(int sig)
 void WebServer::close_conn(int epoll_fd, int sfd)
 {
 	if (epoll_del_fd(epoll_fd, sfd) < 0)
-		throw Error("Epoll_ctl failed");
+		throw ServerError("Epoll_ctl failed");
 	close(sfd);
 	if (waitpid(streams[sfd]->cgi_pid, NULL, WNOHANG) == 0)
 		kill(this->streams[sfd]->cgi_pid, SIGKILL);
 	delete this->streams[sfd];
 	this->streams.erase(sfd);
-}
-
-/*Exception class*/
-WebServer::Error::Error(const char *_msg) : msg(_msg) {}
-
-const char *WebServer::Error::what() const throw()
-{
-	return (msg);
 }
