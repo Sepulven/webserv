@@ -28,7 +28,7 @@ server:
     route /main:                # to do: HTTP redirect.
         root: /pages
         index: favicon.ico       # default file to open if the request is the dir
-        dir_listing: off
+        dir_listing: on
         http_methods: GET POST
     route /ola:
         root: /srcs/conn  
@@ -36,7 +36,7 @@ server:
         http_methods: GET
         index: a.cpp Res.cpp Req1.cpp
     route /up:
-        root: /uploads
+        root: /uploads_other
         dir_listing: on
         http_methods: GET POST DELETE
 
@@ -73,7 +73,7 @@ server:
         host: localhost
         port: 1234
     server_name: example2.com
-    root: /home
+    root: /
     index: xedni.html
     error_pages:
         400: error/400.html

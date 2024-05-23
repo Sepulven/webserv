@@ -23,4 +23,3 @@ The grammar below is written in Backus-Naur Form (BNF) - https://en.wikipedia.or
 					;
 
 * for 'ROUTE' type only.
-** if type matches 'METHOD' or 'INDEX'.
