@@ -1,6 +1,6 @@
 NAME		=	webserv
 CXX			=	c++
-CXXFLAGS 	=	-Wall -Werror -Wextra -std=c++98 -g # -fsanitize=address
+CXXFLAGS 	=	-Wall -Werror -Wextra #-std=c++98 -g # -fsanitize=address
 INCLUDES	=	-I ./inc
 
 
