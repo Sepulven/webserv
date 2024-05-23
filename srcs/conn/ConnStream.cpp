@@ -46,7 +46,6 @@ void ConnStream::clean_conn()
 	res->status_code = "";
 	res->content = "";
 	res->data = ""; 
-	res->add_ext= ""; 
 }
 
 void ConnStream::set_time(void)

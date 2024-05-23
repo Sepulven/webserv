@@ -49,7 +49,6 @@ class Res
 	
 		std::string content; // * What is going to get rendered
 		std::string data; // * Final Result in case it is not the CGI
-		std::string add_ext;
 		std::string c_type_response;
 
 		Res(ConnStream *);

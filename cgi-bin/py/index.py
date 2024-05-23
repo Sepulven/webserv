@@ -121,12 +121,12 @@ if __name__ == "__main__" :
 
     path = os.environ.get('path')
     method = os.environ.get('method')
-    cont_type = os.environ.get('content-type')
 
     response = ""
     header = ""
 
     if method == "GET":
+        print("check get\n")
         response = GET()
         header = 'HTTP/1.1 200 OK\nContent-Type: text/html' + f'\nContent-Length: {len(response)}' + '\r\n\r\n'
     elif method == "POST":
