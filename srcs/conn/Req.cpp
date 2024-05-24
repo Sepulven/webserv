@@ -77,7 +77,7 @@ bool Req::validate_route_name(std::string name, std::string filePath) {
 	if (name == filePath)
 		return true;
 	size_t i = filePath.find_first_of('/');
-	if (i != std::string::npos)
+	if (i != std::string::npos && i != 0)
 		if (std::strncmp(name.c_str(), filePath.c_str(), file_path.substr(0, i).size()) == 0)
 			return true;
 	return false;
@@ -95,18 +95,18 @@ bool Req::validate_route_name(std::string name, std::string filePath) {
 void	Req::expand_file_path()
 {
 	std::vector<t_location> routes = this->stream->server->routes;
-	// std::cout << "Entered expand with file_path: " << this->file_path << "$" << std::endl;
+	std::cout << "Entered expand with file_path: " << this->file_path << "$" << std::endl;
 	// std::cout << "referer: " << referer << "$" << std::endl;
 
 	if (!referer.empty() && referer.find('.') == std::string::npos && method == "GET") {
 		if (referer[referer.size() - 1] != '/')
 			referer = referer + "/";
-		// std::cout << "REFERER APPENDED" << std::endl;
+		std::cout << "REFERER APPENDED" << std::endl;
 		this->file_path = referer + this->file_path;
 	}
 	if (!referer.empty() && file_path.find('/') == std::string::npos && file_path.find('.') != std::string::npos) {
 		file_path = routes.back().root.substr(1) + "/" + file_path;
-		// std::cout << "new file_path3: " << this->file_path << "$" << std::endl;
+		std::cout << "new file_path3: " << this->file_path << "$" << std::endl;
 		this->route_id = routes.size() - 1;
 		return ;
 	}
@@ -120,15 +120,15 @@ void	Req::expand_file_path()
 				this->file_path = routes[i].root.substr(1);
 			else if (!routes[i].root.empty())
 				this->file_path = routes[i].root.substr(1) + this->file_path.substr(j);
-			// std::cout << "new file_path1: " << this->file_path << "$" << std::endl;
+			std::cout << "new file_path1: " << this->file_path << "$" << std::endl;
 			// this->is_route = routes[i].name;
 			this->route_id = i;
 			return ;
 		}
 	}
-	// std::cout << "nold file_path2: " << this->file_path << "$" << std::endl;
+	std::cout << "nold file_path2: " << this->file_path << "$" << std::endl;
 	file_path = routes.back().root.substr(1) + "/" + file_path;
-	// std::cout << "new file_path2: " << this->file_path << "$" << std::endl << std::endl;
+	std::cout << "new file_path2: " << this->file_path << "$" << std::endl << std::endl;
 	this->route_id = routes.size() - 1;
 
 }

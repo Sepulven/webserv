@@ -259,9 +259,8 @@ void Res::exec_get(void)
 		status_code = "200";
 	}
 	if (req->path_type == _DIRECTORY) {
-		if (req->file_path[req->file_path.size() - 1] != '/') {
+		if (req->file_path[req->file_path.size() - 1] != '/')
 			req->file_path += "/";
-		}
 		if (check_dir_listing() == 1) {
 			content = FileManager::directory_listing(req->file_path, req->route_path, stream->server->port);
 			c_type_response = "text/html";

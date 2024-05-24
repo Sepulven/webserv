@@ -28,8 +28,8 @@ server:
     route /main:                # to do: HTTP redirect.
         root: /pages
         index: favicon.ico       # default file to open if the request is the dir
-        dir_listing: on
-        http_methods: GET POST
+        dir_listing: off
+        http_methods: POST
     route /ola:
         root: /srcs/conn  
         dir_listing: on
