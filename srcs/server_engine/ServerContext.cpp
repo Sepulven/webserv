@@ -1,4 +1,5 @@
 #include <ServerContext.hpp>
+#include <Req.hpp>
 
 /*
  * Builds the ServerContext from a node from the parser;
@@ -38,16 +39,15 @@ ServerContext::ServerContext(t_server serverNode)
 	{
 		t_location new_location;
 		new_location.name = it->path;
-		// if (new_location.name.find('.') != std::string::npos)
-		// 	throw ServerError("Invalid route name.");
-		if (it->rroot.find('.') != std::string::npos)
+		std::cout << "route root: " << it->rroot << std::endl;
+		if (Req::get_path_type("." + it->rroot) != _DIRECTORY)
 			throw ServerError("Invalid route root.");
 		if (it->rroot.size() == 1 && it->rroot[0] == '/')
 			new_location.root = "/.";
 		else
 			new_location.root = it->rroot;
 		new_location.redirect = it->redir;
-		std::cout << "dir listing 0: " << it->dirListing << std::endl;
+		// std::cout << "dir listing 0: " << it->dirListing << std::endl;
 		new_location.dir_listing = it->dirListing;
 
 		// * Http Allowed methods
@@ -67,12 +67,12 @@ ServerContext::ServerContext(t_server serverNode)
 	// * main route
 	t_location server_location;
 	server_location.name = ".";
-	if (serverNode.root.find('.') != std::string::npos)
-			throw ServerError("Invalid server root.");
 	if (serverNode.root.size() == 1 && serverNode.root[0] == '/')
 		server_location.root = "/.";
 	else
 		server_location.root = serverNode.root;
+	if (Req::get_path_type("." + server_location.root) != _DIRECTORY)
+			throw ServerError("Invalid server root.");
 	server_location.redirect = std::string();
 	for (std::list<std::string>::iterator it = serverNode.index.begin(); it != serverNode.index.end(); it++)
 		server_location.index.push_back(*it);

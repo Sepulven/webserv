@@ -77,7 +77,7 @@ bool Req::validate_route_name(std::string name, std::string filePath) {
 	if (name == filePath)
 		return true;
 	size_t i = filePath.find_first_of('/');
-	if (i != std::string::npos)
+	if (i != std::string::npos && i != 0)
 		if (std::strncmp(name.c_str(), filePath.c_str(), file_path.substr(0, i).size()) == 0)
 			return true;
 	return false;

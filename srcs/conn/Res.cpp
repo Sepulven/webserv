@@ -77,7 +77,7 @@ int	Res::check_method(void)
 int Res::send(void)
 {
 	for (const auto& pair : stream->server->cgi_path) {
-        std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
+        std::cout << "\n\n\nKey: " << pair.first << ", Value: " << pair.second << std::endl;
     }
 	
 	Req *req = stream->req;
@@ -119,10 +119,12 @@ int Res::exec_CGI(void)
 	int pipe_fd[2];
 	int pipe_fd_aux[2];
 	pid_t pid;
-	std::cout << "DEBUG CGI" << std::endl;
-
+	std::cout << "Entered CGI with: " << req->file_path << "$" << std::endl;
+	std::cout << "file ext: " << req->file_ext << "$" << std::endl;
+	
 	ServerContext * server = stream->server;
 
+	std::cout << "CGI path: " << server->cgi_path[req->file_ext] << "$" << std::endl;
 	char *argv0 = const_cast<char *>(server->cgi_path[req->file_ext].c_str());
 	char *argv1 = const_cast<char *>(req->file_path.c_str());
 	char *const argv[] = {argv0, argv1, NULL};
@@ -138,11 +140,11 @@ int Res::exec_CGI(void)
 
 		request.push_back("request=" + data);
 		request.push_back("method=" + req->method);
-		// request.push_back("path=" + req->file_path);
-		// request.push_back("body=" + raw_body);
+		request.push_back("path=" + req->file_path);
+		request.push_back("body=" + raw_body);
 
-		std::cout << "data: " << data << "\n";
-		std::cout << "method: " << req->method << "\n";
+		// std::cout << "data: " << data << "\n";
+		// std::cout << "method: " << req->method << "\n";
 
 		char **envp = new char *[request.size() + 1];
 		size_t i = 0;
@@ -162,11 +164,11 @@ int Res::exec_CGI(void)
 		// dup2(dev_null, STDERR_FILENO); // redirecting stderr to /dev/null
 		// close(dev_null);
 
-		// std::cout << "check CGI\n";
-		// std::cout << "argv 0: " << argv[0] << "\n";
-		// std::cout << "argv 1: " << argv[1] << "\n";
-		// std::cout << "raw_body: " << raw_body << "\n";
-		// std::cout << "envp 0: " << envp[0] << "\n";
+		std::cerr << "check CGI\n";
+		std::cerr << "argv 0: " << argv[0] << "\n";
+		std::cerr << "argv 1: " << argv[1] << "\n";
+		std::cerr << "raw_body: " << raw_body << "\n";
+		std::cerr << "envp 0: " << envp[0] << "\n";
 		execve(argv[0], argv, envp);
 		delete[] envp;
 		exit(EXIT_FAILURE); // check this
@@ -259,9 +261,8 @@ void Res::exec_get(void)
 		status_code = "200";
 	}
 	if (req->path_type == _DIRECTORY) {
-		if (req->file_path[req->file_path.size() - 1] != '/') {
+		if (req->file_path[req->file_path.size() - 1] != '/')
 			req->file_path += "/";
-		}
 		if (check_dir_listing() == 1) {
 			content = FileManager::directory_listing(req->file_path, req->route_path, stream->server->port);
 			c_type_response = "text/html";
@@ -273,8 +274,8 @@ void Res::exec_get(void)
 				if (stream->server->cgi_path.find(FileManager::set_file_ext(name)) != stream->server->cgi_path.end()) {
 					req->file_path = "./" + name;
 					req->file_ext = FileManager::set_file_ext(req->file_path);
-					std::cout << "new file p: " << req->file_path << std::endl;
-					std::cout << "new file ext: " << req->file_ext << std::endl;
+					// std::cout << "new file p: " << req->file_path << std::endl;
+					// std::cout << "new file ext: " << req->file_ext << std::endl;
 					exec_CGI();
 					return ;
 				}

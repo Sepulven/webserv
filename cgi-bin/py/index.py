@@ -128,15 +128,15 @@ if __name__ == "__main__" :
 
     if method == "GET":
         response = GET()
-        header = 'HTTP/1.1 200 OK\nContent-Type: text/html' + f'\nContent-Length: {len(response)}' + '\r\n\r\n'
+        header = 'HTTP/1.1 200 OK\nContent-Type: text/html' + f'\nContent-Length: {len(response) + 1}' + '\r\n\r\n'
     elif method == "POST":
         status = POST()
         if status == 200:
             response = "Data uploaded successfully!"
-            header = f'HTTP/1.1 200 OK\nContent-Type: text/plain\n' + f'Content-Length: {len(response)}' + '\r\n'
+            header = f'HTTP/1.1 200 OK\nContent-Type: text/plain\n' + f'Content-Length: {len(response) + 1}' + '\r\n'
         elif status == 400:
             response = errorPage(status)
-            header = 'HTTP/1.1 400 Bad Request\nContent-Type: text/html' + f'\nContent-Length: {len(response)}' + '\r\n\r\n'
+            header = 'HTTP/1.1 400 Bad Request\nContent-Type: text/html' + f'\nContent-Length: {len(response) + 1}' + '\r\n\r\n'
 
     print(header)
     if response:
