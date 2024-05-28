@@ -85,16 +85,20 @@ int Res::send(void)
 	if (!this->status_code.empty() && !this->error_msg.empty())
 		return (build_http_response());
 	// std::cout << "route id: " << req->route_id << std::endl;
-	// std::cout << "req->file_ext: " << req->file_ext << std::endl;
-	// std::cout << "req->file_path: " << req->file_path << std::endl;
+	std::cout << "req->file_ext: " << req->file_ext << std::endl;
+	std::cout << "req->file_path: " << req->file_path << std::endl;
 	try
 	{
 		if (this->check_method() == -1)
 			throw HttpError("403" , "Forbidden");
-		if (stream->server->cgi_path.find(req->file_ext) != stream->server->cgi_path.end())
+		if (stream->server->cgi_path.find(req->file_ext) != stream->server->cgi_path.end()) {
+			std::cout << "AAAAAAAAAAAAAAA" << std::endl;
 			return (this->exec_CGI());
-		if (req->method == "GET")
-			exec_get();
+		}
+		if (req->method == "GET") {
+			if (exec_get() == 1)
+				return 1;
+		}
 		else if (req->method == "POST")
 			exec_post();
 		else if (req->method == "DELETE")
@@ -251,7 +255,7 @@ std::string	Res::check_index(void)
  * Read the speficied file;
  * Throws a Not Found when there no type of file;
 */
-void Res::exec_get(void)
+int Res::exec_get(void)
 {
 	Req * req = stream->req;
 	
@@ -276,8 +280,8 @@ void Res::exec_get(void)
 					req->file_ext = FileManager::set_file_ext(req->file_path);
 					// std::cout << "new file p: " << req->file_path << std::endl;
 					// std::cout << "new file ext: " << req->file_ext << std::endl;
-					exec_CGI();
-					return ;
+					std::cout << "BBBBBBBBBBBBBBBBBBB" << std::endl;
+					return (exec_CGI());
 				}
 				else {
 					content = FileManager::read_file(name);
@@ -293,6 +297,7 @@ void Res::exec_get(void)
 	}
 	if (stream->req->path_type == _NONE)
 		throw HttpError("404", "Not Found");
+	return 0;
 }
 
 /*

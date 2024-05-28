@@ -35,7 +35,7 @@ class Res
 		int			check_dir_listing(void);
  
 		int  exec_CGI(void);
-		void exec_get(void);
+		int exec_get(void);
 		void exec_post(void);
 		void exec_delete(void);
 
