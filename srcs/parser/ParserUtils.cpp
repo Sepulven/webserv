@@ -11,6 +11,7 @@ void Parser::printServerNodes(std::list<t_server>::iterator it) {
 	std::cout << "    Port: " << it->port << std::endl;
 	std::cout << "    Server name: " << it->serverName << std::endl;
 	std::cout << "    Root: " << it->root << std::endl;
+	std::cout << "    Redirection: " << it->redir << std::endl;
 	std::cout << "    Max client body size: " << it->maxCBSize << std::endl;
 	std::cout << "    Max connections: " << it->maxConn << std::endl;
 	std::cout << "    Directory listing: " << (it->dirListing == 1 ? "true" : "false") << std::endl;
@@ -43,6 +44,7 @@ void Parser::printServerNodes(std::list<t_server>::iterator it) {
 
 s_server::s_server() {
 	this->host = std::string();
+	this->redir = std::string();
 	this->port = -1;
 	this->maxCBSize = -1;
 	this->maxConn = -1;
@@ -100,8 +102,12 @@ void Parser::resetParam(int type, int identLevel) {
 		serverNodes.back().maxCBSize = -1;
 	if (type == MAX_CONN)
 		serverNodes.back().maxConn = -1;
-	if (type == REDIRECT)
-		serverNodes.back().route.back().redir = std::string();
+	if (type == REDIRECT) {
+		if (identLevel == 2)
+			serverNodes.back().route.back().redir = std::string();
+		else if (identLevel == 1)
+			serverNodes.back().redir = std::string();
+	}
 	if (type == CGI_PARAM)
 		serverNodes.back().cgi.pop_back();
 }

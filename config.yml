@@ -10,6 +10,7 @@ server:
     server_name: example.com
     max_cbsize: 2000m              # to do: conversion and mapping
     max_conn: 10
+    redirect: /ola
     # * Root definition
     root: /
     dir_listing: on
@@ -27,6 +28,7 @@ server:
     # * Server routing;
     route /main:                # to do: HTTP redirect.
         root: /pages
+        redirect: adeus
         index: favicon.ico       # default file to open if the request is the dir
         dir_listing: off
         http_methods: GET POST

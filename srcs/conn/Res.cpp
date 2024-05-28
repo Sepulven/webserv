@@ -76,8 +76,7 @@ int	Res::is_redirection(void)
 	{
 		std::stringstream ss;
 		ss << "HTTP/1.1 302 Found\r\n";
-		ss << "Location: " << stream->server->routes[i].redirect << "\r\n";
-		// ss << "Content-Length: " << content.length() << "\r\n\r\n";
+		ss << "Location: " << stream->server->routes[i].redirect << "\r\n\r\n";
 		ss << content;
 
 		this->data = ss.str();
@@ -98,8 +97,6 @@ int Res::send(void)
 
 	if (!this->status_code.empty() && !this->error_msg.empty())
 		return (build_http_response());
-
-	stream->server->routes[0].redirect = "srcs/main.cpp";
 	try
 	{
 		if (this->is_redirection() == 1)

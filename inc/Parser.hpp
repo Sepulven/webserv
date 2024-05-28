@@ -19,6 +19,7 @@ typedef struct s_server {
 	int port;
 	std::string serverName;
 	std::string root;
+	std::string redir;
 	std::list<std::string> httpMethods;
 	std::list<std::string> index;
 	std::list<std::pair<int, std::string> > errorPages;

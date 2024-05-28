@@ -46,7 +46,6 @@ ServerContext::ServerContext(t_server serverNode)
 		else
 			new_location.root = it->rroot;
 		new_location.redirect = it->redir;
-		std::cout << "dir redirect: " << it->redir << std::endl;
 		new_location.dir_listing = it->dirListing;
 
 		// * Http Allowed methods
@@ -77,7 +76,7 @@ ServerContext::ServerContext(t_server serverNode)
 		server_location.index.push_back(*it);
 	for (std::list<std::string>::iterator it = serverNode.httpMethods.begin(); it != serverNode.httpMethods.end(); it++)
 		server_location.http_methods.push_back(*it);
-
+	server_location.redirect = serverNode.redir;
 	server_location.dir_listing = serverNode.dirListing; // ! NEEDS TO BE CHANGED LATER.
 	// std::cout << "dir listing root: " << server_location.dir_listing << std::endl;
 
