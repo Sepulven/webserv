@@ -8,12 +8,11 @@ server:
         host: localhost   
         port: 8080
     server_name: example.com
-    max_cbsize: 2000m              # to do: conversion and mapping
+    max_cbsize: 2000m
     max_conn: 10
-    redirect: /ola
     # * Root definition
-    root: /
-    dir_listing: on
+    root: /pages
+    index: index.html
     http_methods: GET POST
     # * Error pages map;
     error_pages:
@@ -32,11 +31,10 @@ server:
         index: favicon.ico       # default file to open if the request is the dir
         dir_listing: off
         http_methods: GET POST
-    route /ola:
-        root: /srcs/conn  
+    route /up:
+        root: /pages/uploads
         dir_listing: on
         http_methods: GET
-        index: a.cpp Res.cpp Req1.cpp
 
     # * CGI routing;
     route /py:

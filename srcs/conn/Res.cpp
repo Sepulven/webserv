@@ -328,17 +328,17 @@ int Res::exec_post(void)
 			if (stream->server->cgi_path.find(FileManager::set_file_ext(name)) != stream->server->cgi_path.end()) {
 				req->file_path = "./" + name;
 				req->file_ext = FileManager::set_file_ext(req->file_path);
+				std::cout << "AAAAAAAAAA" << std::endl;
 				return (exec_CGI());
 			}
 		}
-		else
-			throw HttpError("404", "Not Found");
 	}
 
 	if (content_type.find("multipart/form-data;") != 1)
 		throw HttpError("406", "We can't execute this type of request");
 	
 	boundary = get_boundary(content_type);
+	std::cout << "file_path: " << req->file_path << std::endl;
 	DIR* dir = opendir(req->file_path.c_str());
 	if (!dir)
 		throw HttpError("500", "Internal Server Error");
