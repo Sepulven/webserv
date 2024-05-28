@@ -23,13 +23,13 @@ server:
     # * CGI extension exec. path map;
     cgi:
         .py: /usr/bin/python3
-        .php: /usr/bin/php
+        # .php: /usr/bin/php
     # * Server routing;
     route /main:                # to do: HTTP redirect.
         root: /pages
         index: favicon.ico       # default file to open if the request is the dir
         dir_listing: off
-        http_methods: POST
+        http_methods: GET POST
     route /ola:
         root: /srcs/conn  
         dir_listing: on

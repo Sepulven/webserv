@@ -69,6 +69,24 @@ int	Res::check_method(void)
 	return -1;
 }
 
+int	Res::is_redirection(void)
+{
+	int i = this->stream->req->route_id;
+	if (stream->server->routes[i].redirect != "")
+	{
+		std::stringstream ss;
+		ss << "HTTP/1.1 302 Found\r\n";
+		ss << "Location: " << stream->server->routes[i].redirect << "\r\n";
+		// ss << "Content-Length: " << content.length() << "\r\n\r\n";
+		ss << content;
+
+		this->data = ss.str();
+		write(stream->fd, this->data.c_str(), this->data.length());
+		return 1;
+	}
+	return 0;
+}
+
 /*
  * Must check for the permissions before executing;
  * Execute the action of each individual method;
@@ -81,8 +99,11 @@ int Res::send(void)
 	if (!this->status_code.empty() && !this->error_msg.empty())
 		return (build_http_response());
 
+	stream->server->routes[0].redirect = "srcs/main.cpp";
 	try
 	{
+		if (this->is_redirection() == 1)
+			return 1;
 		if (this->check_method() == -1)
 			throw HttpError("403" , "Forbidden");
 		if (stream->server->cgi_path.find(req->file_ext) != stream->server->cgi_path.end())
@@ -106,9 +127,6 @@ int Res::send(void)
 	return (build_http_response());
 }
 
-/*
- TODO: Connect CGI with parser;
-*/
 int Res::exec_CGI(void)
 {
 	Req *req = stream->req;
@@ -238,7 +256,7 @@ int Res::exec_get(void)
 	
 	if (req->path_type == _FILE) {
 		content = FileManager::read_file(req->file_path);
-		c_type_response = content_type[FileManager::set_file_ext(req->file_path)];std::cout << "response type: " << this->c_type_response << std::endl;
+		c_type_response = content_type[FileManager::set_file_ext(req->file_path)];
 		status_code = "200";
 	}
 	if (req->path_type == _DIRECTORY) {

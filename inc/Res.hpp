@@ -30,14 +30,15 @@ class Res
 		std::map<std::string, std::string> status;
 		std::map<std::string, std::string> content_type;
 
+		int			is_redirection(void);
 		int			check_method(void);
 		std::string	check_index(void);
 		int			check_dir_listing(void);
  
-		int  exec_CGI(void);
-		int exec_get(void);
-		int exec_post(void);
-		void exec_delete(void);
+		int		exec_CGI(void);
+		int 	exec_get(void);
+		int 	exec_post(void);
+		void 	exec_delete(void);
 
 		int build_http_response(void);
 

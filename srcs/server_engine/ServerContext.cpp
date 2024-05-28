@@ -39,7 +39,6 @@ ServerContext::ServerContext(t_server serverNode)
 	{
 		t_location new_location;
 		new_location.name = it->path;
-		std::cout << "route root: " << it->rroot << std::endl;
 		if (Req::get_path_type("." + it->rroot) != _DIRECTORY)
 			throw ServerError("Invalid route root.");
 		if (it->rroot.size() == 1 && it->rroot[0] == '/')
@@ -47,7 +46,7 @@ ServerContext::ServerContext(t_server serverNode)
 		else
 			new_location.root = it->rroot;
 		new_location.redirect = it->redir;
-		// std::cout << "dir listing 0: " << it->dirListing << std::endl;
+		std::cout << "dir redirect: " << it->redir << std::endl;
 		new_location.dir_listing = it->dirListing;
 
 		// * Http Allowed methods
