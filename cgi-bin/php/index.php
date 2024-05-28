@@ -2,15 +2,18 @@
 
 $response = "";
 $type = "";
+$upload_dir = "uploads/";
+
 
 if ($_SERVER['method'] === 'GET') {
     $items = "";
     $entries = "";
-    if (count(scandir("server_uploaded_files/")) === 2)
+    if (!is_dir($upload_dir))
+        mkdir($upload_dir, 0755, true);
+    if (count(scandir($upload_dir)) === 2)
         $items .= '<p>No files uploaded yet</p>';
-    else
-    {
-        $entries = scandir("server_uploaded_files/");
+    else {
+        $entries = scandir($upload_dir);
         $items = '<p>Uploaded Files:</p><ul>';
         foreach ($entries as $file_name)
             if ($file_name !== "." && $file_name !== "..")
@@ -45,8 +48,6 @@ if ($_SERVER['method'] === 'GET') {
     $body = $_SERVER['body'];
     $request = $_SERVER['request'];
 
-    // $ctype = $_SERVER['Content-Type'];
-
     $post_type = "";
     $post_type = strpos($request, "Content-Type: ");
     if ($post_type == "")
@@ -69,13 +70,13 @@ if ($_SERVER['method'] === 'GET') {
         $parts = explode("$boundary", $raw_body);
         array_pop($parts); // erases last element "--"
     
-        if (!is_dir("server_uploaded_files/"))
-            mkdir("server_uploaded_files/", 0777, true); // Creates the directory recursively
+        if (!is_dir($upload_dir))
+            mkdir($upload_dir, 0777, true); // Creates the directory
     
         // loop to create each file
         $count = 0;
         foreach ($parts as $part) {
-            $entries = scandir("server_uploaded_files/"); // get files present int the 'server_uploaded_files' directory
+            $entries = scandir($upload_dir); // get files present int the uploads directory
             if (empty($part))
                 continue;
             $filename = '';
@@ -92,7 +93,6 @@ if ($_SERVER['method'] === 'GET') {
                     $ext = explode(".", $filename)[1];
     
                     list($microseconds, $seconds) = explode(' ', microtime());
-                    // $milliseconds = intval($seconds * 1000) + intval($microseconds * 1000);
                     $seconds = intval($seconds) + intval($microseconds);
                     
                     if ($count != 0)
@@ -104,7 +104,7 @@ if ($_SERVER['method'] === 'GET') {
                 }
             }
             
-            $file_to_create = fopen("server_uploaded_files/" . $filename, "w"); // create file
+            $file_to_create = fopen($upload_dir . $filename, "w"); // create file
             $start = strpos($part, "\r\n\r\n") + 4;
             $content = substr($part, $start); // get content from uploaded file
     
@@ -119,10 +119,7 @@ if ($_SERVER['method'] === 'GET') {
 
 if ($status == 400)
 {
-    // print("check 400\n");
-    // $file_to_create = fopen("error/" . $status . ".html", "r"); // read file
     $response = file_get_contents("error/" . $status . ".html");
-    // $response = "Bad Request\n";
     $type = "html";
 }
 

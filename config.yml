@@ -23,7 +23,7 @@ server:
     # * CGI extension exec. path map;
     cgi:
         .py: /usr/bin/python3
-        # .php: /usr/bin/php
+        .php: /usr/bin/php
     # * Server routing;
     route /main:                # to do: HTTP redirect.
         root: /pages
@@ -35,10 +35,6 @@ server:
         dir_listing: on
         http_methods: GET
         index: a.cpp Res.cpp Req1.cpp
-    route /up:
-        root: /uploads_other
-        dir_listing: on
-        http_methods: GET POST DELETE
 
     # * CGI routing;
     route /py:

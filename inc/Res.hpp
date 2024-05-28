@@ -36,7 +36,7 @@ class Res
  
 		int  exec_CGI(void);
 		int exec_get(void);
-		void exec_post(void);
+		int exec_post(void);
 		void exec_delete(void);
 
 		int build_http_response(void);

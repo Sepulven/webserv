@@ -76,31 +76,25 @@ int	Res::check_method(void)
  */
 int Res::send(void)
 {
-	for (const auto& pair : stream->server->cgi_path) {
-        std::cout << "\n\n\nKey: " << pair.first << ", Value: " << pair.second << std::endl;
-    }
-	
 	Req *req = stream->req;
 
 	if (!this->status_code.empty() && !this->error_msg.empty())
 		return (build_http_response());
-	// std::cout << "route id: " << req->route_id << std::endl;
-	std::cout << "req->file_ext: " << req->file_ext << std::endl;
-	std::cout << "req->file_path: " << req->file_path << std::endl;
+
 	try
 	{
 		if (this->check_method() == -1)
 			throw HttpError("403" , "Forbidden");
-		if (stream->server->cgi_path.find(req->file_ext) != stream->server->cgi_path.end()) {
-			std::cout << "AAAAAAAAAAAAAAA" << std::endl;
+		if (stream->server->cgi_path.find(req->file_ext) != stream->server->cgi_path.end())
 			return (this->exec_CGI());
-		}
 		if (req->method == "GET") {
 			if (exec_get() == 1)
 				return 1;
 		}
-		else if (req->method == "POST")
-			exec_post();
+		else if (req->method == "POST") {
+			if (exec_post() == 1)
+				return 1;
+		}
 		else if (req->method == "DELETE")
 			exec_delete();
 	}
@@ -120,35 +114,27 @@ int Res::exec_CGI(void)
 	Req *req = stream->req;
 	std::string raw_body(req->raw_body.begin(), req->raw_body.end());
 	std::string data(req->data.begin(), req->data.end());
+
 	int pipe_fd[2];
-	int pipe_fd_aux[2];
 	pid_t pid;
-	std::cout << "Entered CGI with: " << req->file_path << "$" << std::endl;
-	std::cout << "file ext: " << req->file_ext << "$" << std::endl;
 	
 	ServerContext * server = stream->server;
-
-	std::cout << "CGI path: " << server->cgi_path[req->file_ext] << "$" << std::endl;
 	char *argv0 = const_cast<char *>(server->cgi_path[req->file_ext].c_str());
 	char *argv1 = const_cast<char *>(req->file_path.c_str());
 	char *const argv[] = {argv0, argv1, NULL};
 
 	pipe(pipe_fd);
-	pipe(pipe_fd_aux);
 	pid = fork();
 
 	if (pid == 0)
 	{
 		std::vector<std::string> request;
-		// int dev_null;
+		int dev_null;
 
 		request.push_back("request=" + data);
 		request.push_back("method=" + req->method);
 		request.push_back("path=" + req->file_path);
 		request.push_back("body=" + raw_body);
-
-		// std::cout << "data: " << data << "\n";
-		// std::cout << "method: " << req->method << "\n";
 
 		char **envp = new char *[request.size() + 1];
 		size_t i = 0;
@@ -158,32 +144,23 @@ int Res::exec_CGI(void)
 			std::strcpy((char *)envp[i], request[i].c_str());
 		}
 		envp[i] = NULL;
-		// close(pipe_fd[0]); // Close read end
 		dup2(stream->fd, STDOUT_FILENO); // Redirect stdout to the fd
 
-		close(pipe_fd_aux[1]); // Close write end
-		dup2(pipe_fd_aux[0], STDIN_FILENO); // Redirect stdin to the read end
+		close(pipe_fd[1]); // Close write end
+		dup2(pipe_fd[0], STDIN_FILENO); // Redirect stdin to the read end
 
-		// dev_null = open("/dev/null", O_WRONLY);
-		// dup2(dev_null, STDERR_FILENO); // redirecting stderr to /dev/null
-		// close(dev_null);
+		dev_null = open("/dev/null", O_WRONLY);
+		dup2(dev_null, STDERR_FILENO); // redirecting stderr to /dev/null
+		close(dev_null);
 
-		std::cerr << "check CGI\n";
-		std::cerr << "argv 0: " << argv[0] << "\n";
-		std::cerr << "argv 1: " << argv[1] << "\n";
-		std::cerr << "raw_body: " << raw_body << "\n";
-		std::cerr << "envp 0: " << envp[0] << "\n";
 		execve(argv[0], argv, envp);
 		delete[] envp;
 		exit(EXIT_FAILURE); // check this
 	}
 	// * Parent Process
-	close(pipe_fd_aux[0]);
-	write(pipe_fd_aux[1], req->raw_body.data(), req->raw_body.size()); // send request to cgi
-	close(pipe_fd_aux[1]);
-
-	// close(pipe_fd[1]); // Close write end
-	// close(pipe_fd[0]); // Close read end
+	close(pipe_fd[0]);
+	write(pipe_fd[1], req->raw_body.data(), req->raw_body.size()); // send request to cgi
+	close(pipe_fd[1]);
 
 	stream->cgi_pid = pid;
 	return 1;
@@ -220,18 +197,18 @@ int	Res::check_dir_listing(void)
 
 std::string	Res::check_index(void)
 {
-	std::string	name_aux;
+	std::string	name;
 	std::ifstream file;
 
 	int i = this->stream->req->route_id;
 
 	for (size_t g = 0; g < this->stream->server->routes[i].index.size(); g++) {
-		name_aux = this->stream->req->file_path  + this->stream->server->routes[i].index[g];
-		file.open(&name_aux.c_str()[name_aux.c_str()[0] == '/']);
+		name = this->stream->req->file_path + this->stream->server->routes[i].index[g];
+		file.open(&name.c_str()[name.c_str()[0] == '/']);
 		if (file.is_open())
 		{
 			file.close();
-			return name_aux;
+			return name;
 		}
 	}
 	return "";
@@ -278,9 +255,6 @@ int Res::exec_get(void)
 				if (stream->server->cgi_path.find(FileManager::set_file_ext(name)) != stream->server->cgi_path.end()) {
 					req->file_path = "./" + name;
 					req->file_ext = FileManager::set_file_ext(req->file_path);
-					// std::cout << "new file p: " << req->file_path << std::endl;
-					// std::cout << "new file ext: " << req->file_ext << std::endl;
-					std::cout << "BBBBBBBBBBBBBBBBBBB" << std::endl;
 					return (exec_CGI());
 				}
 				else {
@@ -325,25 +299,39 @@ std::string get_boundary(const std::string &content_type)
  * If the request body are files, saves them;
  * If the request body are regular form data, does nothing;
  */
-void Res::exec_post(void)
+int Res::exec_post(void)
 {
 	const std::string &content_type = stream->req->header["Content-Type"];
 	Req *req = stream->req;
 	std::string boundary;
 
+	if (req->path_type == _DIRECTORY) {
+		if (req->file_path[req->file_path.size() - 1] != '/')
+			req->file_path += "/";
+		if (!check_index().empty()) {
+			std::string name = check_index();
+			if (stream->server->cgi_path.find(FileManager::set_file_ext(name)) != stream->server->cgi_path.end()) {
+				req->file_path = "./" + name;
+				req->file_ext = FileManager::set_file_ext(req->file_path);
+				return (exec_CGI());
+			}
+		}
+		else
+			throw HttpError("404", "Not Found");
+	}
+
 	if (content_type.find("multipart/form-data;") != 1)
 		throw HttpError("406", "We can't execute this type of request");
 	
 	boundary = get_boundary(content_type);
-
 	DIR* dir = opendir(req->file_path.c_str());
 	if (!dir)
 		throw HttpError("500", "Internal Server Error");
-
 	if (closedir(dir) != 0)
 		throw HttpError("500", "Internal Server Error");
 
 	this->status_code = FileManager::create_files(req->raw_body, boundary, req->file_path);
 	if (this->status_code == "201")
 		this->content = "What should be the content when we upload a file?";
+	return 0;
 }
