@@ -229,19 +229,6 @@ std::string	Res::check_index(void)
 	return "";
 }
 
-// std::string	Res::set_file_ext(std::string name)
-// {
-// 	size_t pos;
-// 	std::string	file_ext_res = "";
-
-// 	pos = name.find_last_of('.');
-// 	if (pos == std::string::npos && pos >= name.length())
-// 		file_ext_res = ".txt";
-// 	else
-// 		file_ext_res = name.substr(pos);
-// 	return file_ext_res;
-// }
-
 /*
  * Builds the file as specified in the directory listing;
  * Read the speficied file;
@@ -251,6 +238,7 @@ int Res::exec_get(void)
 {
 	Req * req = stream->req;
 	
+	// std::cout << "GET file_path: " << req->file_path << std::endl;
 	if (req->path_type == _FILE) {
 		content = FileManager::read_file(req->file_path);
 		c_type_response = content_type[FileManager::set_file_ext(req->file_path)];
@@ -328,7 +316,6 @@ int Res::exec_post(void)
 			if (stream->server->cgi_path.find(FileManager::set_file_ext(name)) != stream->server->cgi_path.end()) {
 				req->file_path = "./" + name;
 				req->file_ext = FileManager::set_file_ext(req->file_path);
-				std::cout << "AAAAAAAAAA" << std::endl;
 				return (exec_CGI());
 			}
 		}
@@ -338,7 +325,7 @@ int Res::exec_post(void)
 		throw HttpError("406", "We can't execute this type of request");
 	
 	boundary = get_boundary(content_type);
-	std::cout << "file_path: " << req->file_path << std::endl;
+	// std::cout << "file_path: " << req->file_path << std::endl;
 	DIR* dir = opendir(req->file_path.c_str());
 	if (!dir)
 		throw HttpError("500", "Internal Server Error");
@@ -347,6 +334,6 @@ int Res::exec_post(void)
 
 	this->status_code = FileManager::create_files(req->raw_body, boundary, req->file_path);
 	if (this->status_code == "201")
-		this->content = "What should be the content when we upload a file?";
+		this->content = "What should be the content when we upload a file? i dunno arthur but change this message plz :(";
 	return 0;
 }

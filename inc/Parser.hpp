@@ -7,7 +7,7 @@ typedef struct s_route {
 	s_route();
 	std::string path;
 	std::string redir;
-	std::list<std::string> httpMethods;     // TODO: HTTP REDIRECT
+	std::list<std::string> httpMethods;
 	std::list<std::string> index;
 	std::string rroot;
 	int dirListing;

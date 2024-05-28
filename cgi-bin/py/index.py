@@ -10,7 +10,7 @@ import sys
 def POST():
     raw_body = sys.stdin.buffer.read()
 
-    upload_dir = "uploads/"
+    upload_dir = "www/uploads/"
     if not os.path.exists(upload_dir):
         os.mkdir(upload_dir)
     entries = os.listdir(upload_dir)
@@ -115,12 +115,6 @@ def GET():
     return res
 
 if __name__ == "__main__" :
-
-    # while True:
-    #     print("This is an infinite loop with a delay")
-
-    # print("check main\n")
-    # path = os.environ.get('path')
     method = os.environ.get('method')
 
     response = ""

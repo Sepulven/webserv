@@ -83,20 +83,9 @@ bool Req::validate_route_name(std::string name, std::string filePath) {
 	return false;
 }
 
-/*
- * Reformular esta funcao, ela deve tentar igualar todos o campos do path
- * a uma route, ex:
- * srcs/conn/Req.cpp, deve tentar ver se srcs/conn ou apenas srcs/ faz
- * parte de alguma route. Se nao fizer automaticamente assume-se a Server_Route
- * fazendo com que neste caso o new_path passaria a pages/srcs/conn/Req.cpp
- * o que e um path invalido e levaria a um erro 403.
-*/
-
 void	Req::expand_file_path()
 {
 	std::vector<t_location> routes = this->stream->server->routes;
-	// std::cout << "Entered expand with file_path: " << this->file_path << "$" << std::endl;
-	// std::cout << "referer: " << referer << "$" << std::endl;
 
 	if (!referer.empty() && referer.find('.') == std::string::npos && method == "GET") {
 		if (referer[referer.size() - 1] != '/')
@@ -211,7 +200,7 @@ void	Req::parser(size_t end_header_pos)
 	method = request_line_tokens[0];
 	URL = request_line_tokens[1];
 	http = request_line_tokens[2];
-
+	std::cout << method << " " << URL << " " << http << std::endl;
 	set_referer(message_header);
 
 	set_URL_data(URL);

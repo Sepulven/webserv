@@ -39,6 +39,7 @@ ServerContext::ServerContext(t_server serverNode)
 	{
 		t_location new_location;
 		new_location.name = it->path;
+		// std::cout << "root: " << it->rroot << std::endl;
 		if (Req::get_path_type("." + it->rroot) != _DIRECTORY)
 			throw ServerError("Invalid route root.");
 		if (it->rroot.size() == 1 && it->rroot[0] == '/')

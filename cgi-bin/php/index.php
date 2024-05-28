@@ -2,7 +2,7 @@
 
 $response = "";
 $type = "";
-$upload_dir = "uploads/";
+$upload_dir = "www/uploads/";
 
 
 if ($_SERVER['method'] === 'GET') {

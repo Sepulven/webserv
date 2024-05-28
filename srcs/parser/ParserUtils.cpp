@@ -61,7 +61,7 @@ s_route::s_route() {
 }
 
 void Parser::resetParam(int type, int identLevel) {
-	std::cout << "CLEARED VALUES ON TYPE: " << type << " IDENT LVL: " << identLevel << std::endl;
+	// std::cout << "CLEARED VALUES ON TYPE: " << type << " IDENT LVL: " << identLevel << std::endl;
 	if (type == INDEX) {
 		if (identLevel == 1)
 			serverNodes.back().index.clear();

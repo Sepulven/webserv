@@ -10,32 +10,29 @@ server:
     server_name: example.com
     max_cbsize: 2000m
     max_conn: 10
-    # * Root definition
-    root: /pages
-    index: index.html
+    root: /www   # * Root definition
+    index: pages/index.html
     http_methods: GET POST
-    # * Error pages map;
-    error_pages:
+    error_pages:   # * Error pages map;
         403: error/403.html
         400: error/400.html
         # 404: error/404.asf    # works with every type of file
         404: error/404.html
-    # * CGI extension exec. path map;
-    cgi:
+    cgi:   # * CGI extension exec. path map;
         .py: /usr/bin/python3
         # .php: /usr/bin/php
     # * Server routing;
-    route /main:                # to do: HTTP redirect.
-        root: /pages
+    route /main:
+        root: /www/pages
         redirect: adeus
-        index: favicon.ico       # default file to open if the request is the dir
+        index: favicon.ico
         dir_listing: off
         http_methods: GET POST
     route /up:
-        root: /pages/uploads
+        root: /www/uploads
         dir_listing: on
-        http_methods: GET
-
+        http_methods: GET POST
+        
     # * CGI routing;
     route /py:
         root: /cgi-bin/py
