@@ -150,6 +150,7 @@ int Res::exec_CGI(void)
 		request.push_back("method=" + req->method);
 		request.push_back("path=" + req->file_path);
 		request.push_back("body=" + raw_body);
+		request.push_back("cookie=" + req->cookie);
 
 		char **envp = new char *[request.size() + 1];
 		size_t i = 0;

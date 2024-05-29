@@ -59,6 +59,7 @@ class Req
 		std::string http;
 		std::string URL;
 		std::string referer;
+		std::string cookie;
 
 		std::map<std::string, std::string> header;
 
@@ -94,5 +95,6 @@ class Req
 		void set_content_length(void);
 		void set_rest_raw_data(size_t);
 		void set_referer(std::vector<std::string>);
+		void set_cookie(std::vector<std::string> message_header);
 		void parser(size_t);
 };

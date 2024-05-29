@@ -42,6 +42,14 @@ server:
         root: /cgi-bin/php
         index: index.php
         http_methods: GET POST DELETE
+    route /login:
+        root: /cgi-bin/py/auth
+        index: login.py
+        http_methods: GET POST
+    route /register:
+        root: /cgi-bin/py/auth
+        index: register.py
+        http_methods: GET POST
 
 server:
     listen:

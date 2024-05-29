@@ -1,11 +1,10 @@
 #include <Req.hpp>
 
-/*
-*/
 Req::Req(ConnStream * _stream) : stream(_stream), out_of_bound(std::string::npos)
 {
 	this->content_length = 0;
 	this->referer = std::string();
+	this->cookie = std::string();
 	this->file_path = std::string();
 }
 
@@ -184,6 +183,12 @@ void Req::set_referer(std::vector<std::string> message_header) {
 		referer = ".";
 }
 
+void	Req::set_cookie(std::vector<std::string> message_header) {
+	for (size_t i = 0; i < message_header.size(); i++) // * Assigning the cookie var if it exists.
+		if (std::strncmp("Cookie", message_header[i].c_str(), 8) == 0)
+			this->cookie = message_header[i].substr(message_header[i].find(' ') + 1);
+}
+
 /*
  * Receives the end of the header
 */
@@ -205,6 +210,7 @@ void	Req::parser(size_t end_header_pos)
 
 	set_URL_data(URL);
 	set_header(message_header);
+	set_cookie(message_header);
 	set_content_length();
 	set_rest_raw_data(end_header_pos);
 }
