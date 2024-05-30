@@ -94,7 +94,7 @@ def GET():
 
     res += '<form method="post" enctype="multipart/form-data">\n'
     res += '<label for="file-content">Choose a file:</label><br>\n'
-    res += '<input type="file" name="file-content" required multiple>\n'
+    res += '<input type="file" name="file-content" multiple>\n'
     res += '<input class="submit-button" type="submit" value="Upload">\n'
     res += '</form>\n'
 

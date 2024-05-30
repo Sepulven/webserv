@@ -239,7 +239,6 @@ int Res::exec_get(void)
 {
 	Req * req = stream->req;
 	
-	// std::cout << "GET file_path: " << req->file_path << std::endl;
 	if (req->path_type == _FILE) {
 		content = FileManager::read_file(req->file_path);
 		c_type_response = content_type[FileManager::set_file_ext(req->file_path)];
@@ -265,7 +264,7 @@ int Res::exec_get(void)
 					content = FileManager::read_file(name);
 					c_type_response = content_type[FileManager::set_file_ext(name)];
 				}
-			status_code = "200";
+				status_code = "200";
 			}
 			else
 				throw HttpError("404", "Not Found");
@@ -329,7 +328,7 @@ int Res::exec_post(void)
 	// std::cout << "file_path: " << req->file_path << std::endl;
 	DIR* dir = opendir(req->file_path.c_str());
 	if (!dir)
-		throw HttpError("500", "Internal Server Error");
+		throw HttpError("404", "Not Found");
 	if (closedir(dir) != 0)
 		throw HttpError("500", "Internal Server Error");
 

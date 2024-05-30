@@ -228,6 +228,7 @@ int Req::read(int fd)
 	uint8_t buffer[BUFSIZ];
 	int bytes_read = ::read(fd, buffer, 4096);
 	size_t end_header_pos;
+	int i = 0;
 
 	if (bytes_read <= 0)
 		return (-1);
@@ -242,6 +243,7 @@ int Req::read(int fd)
 			else if (!method.empty())
 				RawData::append(raw_body, buffer, bytes_read);
 			bytes_read = ::read(fd, buffer, BUFSIZ);
+			i++;
 		}
 		if (RawData::find(data, "\r\n\r\n") != out_of_bound 
 			&& raw_body.size() >= content_length) 
