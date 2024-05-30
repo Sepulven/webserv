@@ -192,6 +192,7 @@ void Res::exec_delete(void)
 	std::string path = stream->req->file_path;
 
 	path = path[0] == '/' ? path.substr(1) : path;
+	std::cout << "path del: " << path << std::endl;
 	if (stream->req->path_type == _DIRECTORY)
 		throw HttpError("403", "We can't delete a directory.");
 	else if (std::remove(path.c_str()) != 0)

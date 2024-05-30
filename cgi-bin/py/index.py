@@ -98,7 +98,7 @@ def GET():
     res += '<input class="submit-button" type="submit" value="Upload">\n'
     res += '</form>\n'
 
-    upload_dir = "uploads/"
+    upload_dir = "www/uploads/"
     if os.path.exists(upload_dir) and os.listdir(upload_dir):
         entries = os.listdir(upload_dir)
         res += '<p>Uploaded Files:</p>'
