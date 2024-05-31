@@ -6,6 +6,15 @@ import re
 import time
 import uuid
 import sys
+import csv
+
+def session_exists(file_path, session_id):
+    with open(file_path, 'r', newline='') as csvfile:
+        reader = csv.reader(csvfile)
+        for row in reader:
+            if row[0] == session_id:
+                return True
+    return False
 
 def POST():
     raw_body = sys.stdin.buffer.read()
@@ -116,13 +125,17 @@ def GET():
 
 if __name__ == "__main__" :
     method = os.environ.get('method')
-
+    cookie = os.environ.get('cookie')
     response = ""
     header = ""
 
     if method == "GET":
         response = GET()
-        header = 'HTTP/1.1 200 OK\nContent-Type: text/html' + f'\nContent-Length: {len(response) + 1}' + '\r\n\r\n'
+        if session_exists('cgi-bin/py/auth/db/ids.csv', cookie):
+            header = 'HTTP/1.1 200 OK\nContent-Type: text/html' + f'\nContent-Length: {len(response) + 1}' + '\r\n\r\n'
+        else:
+            header = f'HTTP/1.1 302 Found\r\nLocation: /login\r\n\r\n'
+            response = ""
     elif method == "POST":
         status = POST()
         if status == 200:
