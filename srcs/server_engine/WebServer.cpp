@@ -1,6 +1,5 @@
 #include <WebServer.hpp>
 
-
 /*
  * Inits the webserver;
  * Receives serverNodes from parser t start everything;
@@ -36,9 +35,12 @@ WebServer::~WebServer()
 {
 	std::map<int, ConnStream*>::iterator it = streams.begin();
 	std::map<int, ServerContext*>::iterator _it = servers.begin();
+	std::vector<int> keys_to_del;
 
 	for (; it != streams.end(); it++)
-		close_conn(this->epoll_fd, it->second->fd);
+		keys_to_del.push_back(it->second->fd);
+	for (size_t i = 0; i < keys_to_del.size(); i++)
+		close_conn(epoll_fd, keys_to_del[i]);
 	for (; _it != servers.end(); _it++)
 		delete _it->second;
 	std::cout << "*************************************" << std::endl;

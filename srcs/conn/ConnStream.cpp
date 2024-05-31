@@ -54,6 +54,6 @@ void ConnStream::set_time(void)
 
 	gettimeofday(&t, NULL);
 	this->last_action_time = (t.tv_sec * 1000) + (t.tv_usec / 1000);
-	this->close_conn_time = this->last_action_time + 5 * 100; // * The connection can last 20 seconds without events;
-	this->kill_cgi_time = this->last_action_time + 2 * 100; // * The connection can take 5 seconds to run the CGI
+	this->close_conn_time = this->last_action_time + 50 * 100; // * The connection can last 20 seconds without events;
+	this->kill_cgi_time = this->last_action_time + 20 * 100; // * The connection can take 5 seconds to run the CGI
 }
