@@ -24,7 +24,7 @@ server:
     # * Server routing;
     route /main:
         root: /www/pages
-        redirect: adeus
+        redirect: /up
         index: favicon.ico
         dir_listing: off
         http_methods: GET POST 

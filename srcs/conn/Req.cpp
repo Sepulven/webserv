@@ -185,7 +185,7 @@ void Req::set_referer(std::vector<std::string> message_header) {
 
 void	Req::set_cookie(std::vector<std::string> message_header) {
 	for (size_t i = 0; i < message_header.size(); i++) // * Assigning the cookie var if it exists.
-		if (std::strncmp("Cookie", message_header[i].c_str(), 8) == 0)
+		if (std::strncmp("Cookie", message_header[i].c_str(), 6) == 0)
 			this->cookie = message_header[i].substr(message_header[i].find(' ') + 1);
 }
 

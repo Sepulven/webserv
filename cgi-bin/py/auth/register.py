@@ -22,6 +22,8 @@ def append_credentials_to_csv(file_path, credentials):
 
 def GET():
     file_path = 'cgi-bin/py/auth/register.html'
+    if not os.path.exists(file_path):
+        return file_path + " does not exist."
     with open(file_path, 'r') as file:
         res = file.read()
     return res
@@ -49,13 +51,8 @@ if __name__ == "__main__" :
         header = 'HTTP/1.1 200 OK\nContent-Type: text/html' + f'\nContent-Length: {len(response) + 1}' + '\r\n\r\n'
     elif method == "POST":
         status = POST()
-        if status == 200:
-            response = "User created sucessfully!"
-            header = f'HTTP/1.1 200 OK\nContent-Type: text/plain\n' + f'Content-Length: {len(response) + 1}' + '\r\n'
-        elif status == 400:
-            response = errorPage(status)
-            header = 'HTTP/1.1 400 Bad Request\nContent-Type: text/html' + f'\nContent-Length: {len(response) + 1}' + '\r\n\r\n'
-
+        response = "User created sucessfully!"
+        header = f'HTTP/1.1 200 OK\nContent-Type: text/plain\n' + f'Content-Length: {len(response) + 1}' + '\r\n'
     print(header)
     if response:
         print(response)
