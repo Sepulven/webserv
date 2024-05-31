@@ -16,7 +16,11 @@ ServerContext::ServerContext(t_server serverNode)
 
 	// * Server info
 	this->max_events = serverNode.maxConn;
+	if (serverNode.maxConn <= 0)
+		throw ServerError("Invalid max connections number.");
 	this->max_cb_size = serverNode.maxCBSize;
+	if (serverNode.maxCBSize <= 0)
+		throw ServerError("Client body size overflow.");
 	this->port = serverNode.port;
 	this->name = serverNode.serverName;
 	this->ip = serverNode.host;
@@ -78,7 +82,7 @@ ServerContext::ServerContext(t_server serverNode)
 	for (std::list<std::string>::iterator it = serverNode.httpMethods.begin(); it != serverNode.httpMethods.end(); it++)
 		server_location.http_methods.push_back(*it);
 	server_location.redirect = serverNode.redir;
-	server_location.dir_listing = serverNode.dirListing; // ! NEEDS TO BE CHANGED LATER.
+	server_location.dir_listing = serverNode.dirListing;
 	// std::cout << "dir listing root: " << server_location.dir_listing << std::endl;
 
 	this->routes.push_back(server_location);
