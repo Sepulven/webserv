@@ -215,6 +215,8 @@ void	Req::parser(size_t end_header_pos)
 	set_rest_raw_data(end_header_pos);
 }
 
+#include <errno.h>
+
 /*
  * Returns 0 in case the read hasn't been finished;
  * Returns 1 when the whole request has been read or there was an error;
@@ -228,7 +230,6 @@ int Req::read(int fd)
 	uint8_t buffer[BUFSIZ];
 	int bytes_read = ::read(fd, buffer, 4096);
 	size_t end_header_pos;
-	int i = 0;
 
 	if (bytes_read <= 0)
 		return (-1);
@@ -243,19 +244,16 @@ int Req::read(int fd)
 			else if (!method.empty())
 				RawData::append(raw_body, buffer, bytes_read);
 			bytes_read = ::read(fd, buffer, BUFSIZ);
-			i++;
 		}
 		if (RawData::find(data, "\r\n\r\n") != out_of_bound 
 			&& raw_body.size() >= content_length) 
 			return (1); // * Request's finished;
-	}	
+	}
 	catch (const HttpError &e)
 	{
 		stream->res->status_code = e.get_status();
 		stream->res->error_msg = e.get_msg();
 		return (1); // * There was an http error;
 	}
-	if (bytes_read < 0) // * Read failed inside the loop;
-		return (-1);
 	return (0); // * Request's not finished;
 }
