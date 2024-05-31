@@ -132,7 +132,6 @@ int Res::exec_CGI(void)
 
 	int pipe_fd[2];
 	pid_t pid;
-	
 	ServerContext * server = stream->server;
 	char *argv0 = const_cast<char *>(server->cgi_path[req->file_ext].c_str());
 	char *argv1 = const_cast<char *>(req->file_path.c_str());

@@ -85,6 +85,7 @@ bool Req::validate_route_name(std::string name, std::string filePath) {
 void	Req::expand_file_path()
 {
 	std::vector<t_location> routes = this->stream->server->routes;
+	// std::cout << "Entered exapand with: " << this->file_path << std::endl;
 
 	if (!referer.empty() && referer.find('.') == std::string::npos && method == "GET") {
 		if (referer[referer.size() - 1] != '/')
@@ -118,7 +119,6 @@ void	Req::expand_file_path()
 	file_path = routes.back().root.substr(1) + "/" + file_path;
 	// std::cout << "new file_path2: " << this->file_path << "$" << std::endl << std::endl;
 	this->route_id = routes.size() - 1;
-
 }
 
 /*
@@ -174,8 +174,10 @@ void Req::set_referer(std::vector<std::string> message_header) {
 		if (std::strncmp("Referer", message_header[i].c_str(), 7) == 0)
 			tmp = message_header[i].substr(message_header[i].find(' ') + 1);
 	size_t i = std::strlen(tmp.c_str());
-	if (!i)
+	if (!i) {
+		referer = std::string();
 		return;
+	}
 	while (!std::isdigit(tmp[i]))
 		i--;
 	referer = tmp.substr(i + 2);
