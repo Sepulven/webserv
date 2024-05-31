@@ -11,6 +11,7 @@ ServerContext::ServerContext(t_server serverNode)
 	std::list<std::pair<int, std::string> >::iterator _it = serverNode.errorPages.begin();
 	std::list<std::string>::iterator tmp;
 
+	epoll_event_info = NULL;
 	if (this->ip == "localhost" || this->ip != "localhost")
 		this->domain = INADDR_ANY;
 
@@ -83,7 +84,6 @@ ServerContext::ServerContext(t_server serverNode)
 		server_location.http_methods.push_back(*it);
 	server_location.redirect = serverNode.redir;
 	server_location.dir_listing = serverNode.dirListing;
-	// std::cout << "dir listing root: " << server_location.dir_listing << std::endl;
 
 	this->routes.push_back(server_location);
 }
@@ -93,5 +93,6 @@ ServerContext::ServerContext(t_server serverNode)
 */
 ServerContext::~ServerContext()
 {
-	delete epoll_event_info;
+	if (epoll_event_info)
+		delete epoll_event_info;
 }

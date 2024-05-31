@@ -270,7 +270,7 @@ int Res::exec_get(void)
 				throw HttpError("404", "Not Found");
 		}
 		else
-			throw HttpError("403", "Forbidden");
+			throw HttpError("404", "Not Found");
 	}
 	if (stream->req->path_type == _NONE)
 		throw HttpError("404", "Not Found");

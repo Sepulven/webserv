@@ -42,6 +42,7 @@ class WebServer
 	
 		std::vector<t_event> events; // epoll_events
 
+		int failed;
 		// * Connections
 		std::map<int, ConnStream *> streams;
 	public:

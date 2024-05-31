@@ -10,12 +10,12 @@ WebServer::WebServer(std::list<t_server> serverNodes)
 	std::vector<ServerContext *> vec;
 
 	this->max_events = 0;
+	this->failed = 0;
 
 	signal(SIGINT, &WebServer::sig_handler);
 	for (; it != serverNodes.end(); it++)
 		vec.push_back(new ServerContext(*it));
 	this->init_servers(vec);
-
 	// * Logs the online logo;
 	std::cout << "\r" << "\033[32m" << std::endl
 		<<  "                                                  " << std::endl
@@ -41,8 +41,9 @@ WebServer::~WebServer()
 		keys_to_del.push_back(it->second->fd);
 	for (size_t i = 0; i < keys_to_del.size(); i++)
 		close_conn(epoll_fd, keys_to_del[i]);
-	for (; _it != servers.end(); _it++)
-		delete _it->second;
+	if (failed == 0)
+		for (; _it != servers.end(); _it++)
+			delete _it->second;
 	std::cout << "*************************************" << std::endl;
 
 	std::cout << "\r" << "\033[31m" << std::endl
@@ -81,18 +82,29 @@ void WebServer::init_servers(std::vector<ServerContext *>& vec)
 		server_fd = socket(AF_INET, SOCK_STREAM, 0);
 		vec[i]->socket = server_fd;
 		this->servers[server_fd] = vec[i];
-	
-		if (server_fd < 0)
-			throw ServerError("Socket failed.");
-		if (sfd_non_blocking(server_fd) < 0)
-			throw ServerError("Couldn't make the server socket non-blocking.");
-		if (set_reuseaddr(server_fd) < 0)
-			throw ServerError("Setsockopt failed");
-		if (bind(server_fd, &server_addr) < 0)
-			throw ServerError("Bind failed.");
-		if (::listen(server_fd, vec[i]->max_events) < 0)
-			throw ServerError("Listen failed.");
+		try
+		{
+			if (server_fd < 0)
+				throw ServerError("Socket failed.");
+			if (sfd_non_blocking(server_fd) < 0)
+				throw ServerError("Couldn't make the server socket non-blocking.");
+			if (set_reuseaddr(server_fd) < 0)
+				throw ServerError("Setsockopt failed");
+			if (bind(server_fd, &server_addr) < 0)
+				throw ServerError("Bind failed.");
+			if (::listen(server_fd, vec[i]->max_events) < 0)
+				throw ServerError("Listen failed.");
+		}
+		catch (const std::exception& e)
+		{
+			failed = 1;
+			std::cout << "ERROR: " << e.what() << std::endl;
 
+			for (size_t i = 0; i < vec.size(); i++)
+				delete vec[i];
+			vec.clear();
+			return ;
+		}
 		memset(&event, 0, sizeof(struct epoll_event));
 		event.events = EPOLLIN;
 		event.data.ptr = new t_event_data(server_fd, SERVER);
@@ -209,6 +221,9 @@ void WebServer::listen(void)
 	int epoll_fd = this->epoll_fd;
 	t_event *conn;
 	t_event_data *event_data;
+
+	if (failed)
+		return;
 
 	while (is_running)
 	{
