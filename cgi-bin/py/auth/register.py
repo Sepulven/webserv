@@ -1,8 +1,5 @@
 #!/usr/bin python3
 import os
-import re
-import time
-import uuid
 import sys
 import csv
 
@@ -33,9 +30,7 @@ def POST():
 
     if not os.path.exists(file_path):
        # If the file doesn't exist, create it with a header row
-       with open(file_path, 'w', newline='') as csvfile:
-           writer = csv.writer(csvfile)
-           writer.writerow(['Username', 'Password'])
+       open(file_path, 'w', newline='')
     raw = sys.stdin.buffer.read()
     credentials = raw.decode('utf-8')
     append_credentials_to_csv(file_path, credentials)

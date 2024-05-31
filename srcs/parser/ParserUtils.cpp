@@ -172,8 +172,10 @@ long long Parser::convertToByte(std::string str) {
 		return number * 1024 * 1024;
 	else if (count == 0)
 		return number;
-	else
+	else {
+		throw Lexer::Error("Invalid client body size unit.");
 		return -1;
+	}
 }
 
 void Parser::pushBackMultipleParams(std::list<std::string>& list, std::string str) {

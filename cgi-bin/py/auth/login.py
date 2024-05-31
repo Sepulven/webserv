@@ -1,8 +1,5 @@
 #!/usr/bin python3
 import os
-import re
-import time
-import uuid
 import sys
 import csv
 import secrets

@@ -1,10 +1,8 @@
 #!/usr/bin python3
 
 import os
-import cgi
 import re
 import time
-import uuid
 import sys
 import csv
 
