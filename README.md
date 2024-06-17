@@ -1,29 +1,69 @@
-# webserv
+# 	WEBSERV
 
-## Installation process
-### Requisition
+## What is a Web Server?
 
-
-### Notes:
-- It is only compitible with Firefox
-- The webserv must run on bash. VSCode's terminal create zombie processes that takes the port.</br>
-    **Kill the process:**</br>
-    ~~~bash
-    lsof -i :[PORT]
-    kill -9 [PID]
-    ~~~
+A web server is software that understands URLs and the HTTP protocol. It stores content and 
+delivers it depending on the user's request as an HTTP response. For example, the content could be anything from images and videos to HTML pages and JSON files.
 
 
-## What is a webserv?
+## Why did we build a Web Server?
 
-A webserv is a software that understands URLs and the http protocol. It stores content and 
-delivers it depending on the user request as a http response. For example, the content could be anything from image and videos to html pages and json files.
+Building a Web Server is the foundation for understanding web technologies.
+It's a great tool to dive deeper into how networking in browsers works and see what is happening behind the scenes. It broadens our perspectives and skills and enhances our educational values through a demystifying complex system process.
+In the end, we achieve a better knowledge of HTTP protocol, sockets, request and response cycles architecture, software architecture and so on.
 
-## Why we builted a webserv?
+ 
 
-Building an webserv is the foundation for a good understanding of the whole web.
-It's a great tool to
+## Installation Process
 
+In your terminal run:
+~~~bash
+cd ~/Desktop
+git clone https://github.com/Sepulven/webserv.git
+cd webserv
+make
+./webserv config.yml
+~~~
+We do not advise you to run it in any virtual terminal, for example, VS Code's terminal, it may create zombie child processes when you finish the execution which will block the port.
+
+In case that happens, you need to find the process that uses the PORT and kills it through its PID.
+
+In your terminal run:
+~~~bash
+lsof -i :[PORT]
+kill -9 [PID]
+~~~
+
+When testing it use Firefox as a browser. Where else you will run into unexpected behaviors.
+
+In your terminal run:
+
+~~~bash
+firefox 127.0.0.1:8080/
+~~~
+
+## Development Environment
+
+Operating System:
+
+	**Unix/Linux**
+	Distributor ID:	Ubuntu
+	Description:	Ubuntu 22.04.4 LTS
+	Release:	22.04
+	Codename:	jammy
+
+Compiler:
+	
+	c++ (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0
+
+Browser:
+
+	firefox --version
+
+
+## How to use it
+### Understanding the config file
+## File structure
 
 ## What challenges were faced?
 
@@ -51,36 +91,3 @@ single threaded
     Parsing
     Event handling with epoll
 [... here comes the whole explanation]
-
-
-
-----
-
-
-
-# webserv
-You will be able to test it with a real browser. HTTP is one of the most used protocol on internet. Knowing its arcane will be useful, even if you won't be working on a website. 
-
-
-## Note (bind failed):
-	`lsof -i :8080
-	 kill [PID]`
-
-
-## Note (leaks and errors):
-	`valgrind --leak-check=yes --show-leak-kinds=all --undef-value-errors=yes ./webserv`
-
-## Note (epoll performance compared to other polling APIs)
-	`https://suchprogramming.com/epoll-in-3-easy-steps/`
-
-# ps -p 1234 > /dev/null && echo true || echo false
-
-
-	// get the route id to get access to 
-	size_t i = 0;
-	while (i < this->stream->server->routes.size() && stream->req->is_route != this->stream->server->routes[i].name)
-		i++;
-	if (i == this->stream->server->routes.size())
-		this->stream->req->route_id = i - 1;
-	else
-		this->stream->req->route_id = i;
