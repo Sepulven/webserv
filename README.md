@@ -63,6 +63,9 @@ Browser:
 
 ## How to use it
 
+Create the executable file as explained before and create a config file following the rules of the config file.
+It will server locally all of the files requested and execute all of the defined scripts (nodejs, bash, php, python, ..., etc.).
+
 ### Understanding the config file
 
 ## File structure
@@ -75,9 +78,26 @@ Every utils file starts with ```___``` and ends with ```utils``` followed by its
 ## What challenges were faced?
 
 
-## If I want to build an webserv how should I begin?
+## If I want to build an webserv in C++98 how should I begin?
+
+First understanding the basis of a client and a server is a good start.
+Next how the HTTP request and response cycle works.
+After that how file descriptors can be used as web sockets.
+Then how to syncronize fd's events with epoll or any of its variants.
+Finally, use all of the tools C++98 has to give to manage the requests and responses, you're going to see 
+that it is pretty much managing I/O operation with file descriptors.
+
+
 
 ## Performance
+
+Siege is an http load tester and benchmarking utility.
+
+Install siege with:
+```bash
+sudo apt install siege
+```
+
 siege
 single threaded
 
