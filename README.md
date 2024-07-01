@@ -62,8 +62,15 @@ Browser:
 
 
 ## How to use it
+
 ### Understanding the config file
+
 ## File structure
+
+The whole project is structured into pieces for each piece you have the declaration and the implementation, namely a .h and .cpp respectively.
+Each feature is a folder defined, and all of its extra dependencies go into the ```__utils``` folder.
+
+Every utils file starts with ```___``` and ends with ```utils``` followed by its extension for better identification.
 
 ## What challenges were faced?
 
