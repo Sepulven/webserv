@@ -67,7 +67,8 @@ It will server locally all of the files requested and execute all of the defined
 
 ### Understanding the config file
 
-The config file is defined in a YAML like file. Its structure is very similar except for that fact we can have multiple definition of the safe variable they are going to be stored as array.
+The config file is defined in a YAML-like file. Its structure is very similar except for the fact we can have multiple
+definitions of the same variable, the variables are going to be stored as an array. 
 For example:
 ```YAML
 server:
@@ -75,6 +76,9 @@ server:
 server:
 	[...]
 ```
+
+Thus we can have multiple definitions of servers listining to different ports and multiple definitions of routes.
+We must have at least the ```/``` route definition.
 ### Definitions
 - listen:
 	- host : string | number ``` The host can only be either localhost or 127.0.0.1 ```
@@ -96,8 +100,6 @@ server:
 	- dir_listing: on | off ``` Directory listing. ```
 	- http_methods: list of strings ``` Defines the allowed methods. ```
 
-
-Multiple routes can be defined within a server block
 ## File structure
 
 The whole project is structured into pieces for each piece you have the declaration and the implementation, namely a .h and .cpp respectively.
