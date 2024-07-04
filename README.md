@@ -77,25 +77,27 @@ server:
 ```
 ### Definitions
 - listen:
-	- host : string | number
- 	- port: number
-- server_name: string
-- maxcbsize: string (megabe bytes)
-- max_conn: number
-- root: path
-- index: path
-- http_methods: list of strings
-- error_pages:
-	- number : path
-- cgi:
-  - string : path
-- route path:
-	-  root: path
-  	- redirect: path
-  	- index: path
-	-  dir_listing: on | off
- 	-  http_methods: list of strings
-  
+	- host : string | number ``` The host can only be either localhost or 127.0.0.1 ```
+ 	- port: number ``` Any avaible port, the server with throw an error in case the port is busy. ```
+- server_name: string ``` Names the server block. ```
+- maxcbsize: string ``` Megabyte or bytes. Sets the max. size of the content-body(http protocol). ```
+- max_conn: number ``` 1 is enough as the max. connections. C++ is fast to deal with incoming requests thousands of incoming request flawlessly. ```
+- error_pages: ``` Sets up the path to the http error pages. ```
+	- number : path ``` Error code followed by the path of the file that is going to be served. ```
+- cgi: ``` Defines all of the cgis. ```
+  - string : path ``` Extension followed by the path to the interpreter. ```
+- root: path ``` The root to the / route.```
+- index: path ``` The index for the / route. ```
+- http_methods: list of strings ``` Allowed methods for the / route. ```
+- route path: ``` Defines a route except the / route. ```
+	- root: path ``` Defines root.```
+  	- redirect: path ``` Defines  the redirect route for when the http method completes. ```
+  	- index: path  ``` Defines the index file. ```
+	- dir_listing: on | off ``` Directory listing. ```
+	- http_methods: list of strings ``` Defines the allowed methods. ```
+
+
+Multiple routes can be defined within a server block
 ## File structure
 
 The whole project is structured into pieces for each piece you have the declaration and the implementation, namely a .h and .cpp respectively.
@@ -103,7 +105,7 @@ Each feature is a folder defined, and all of its extra dependencies go into the 
 
 Every utils file starts with ```___``` and ends with ```utils``` followed by its extension for better identification.
 
-## If I want to build an webserv in C++98 how should I begin?
+## If I want to build a webserv in C++98 how should I begin?
 
 First understanding the basis of a client and a server is a good start.
 Next how the HTTP request and response cycle works.
