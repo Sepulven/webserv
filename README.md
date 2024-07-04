@@ -12,7 +12,6 @@ Building a Web Server is the foundation for understanding web technologies.
 It's a great tool to dive deeper into how networking in browsers works and see what is happening behind the scenes. It broadens our perspectives and skills and enhances our educational values through a demystifying complex system process.
 In the end, we achieve a better knowledge of HTTP protocol, sockets, request and response cycles, software architecture and so on.
 
- 
 ## Installation Process
 
 In your terminal run:
@@ -23,7 +22,7 @@ cd webserv
 make
 ./webserv config.yml
 ~~~
-We do not advise you to run it in any virtual terminal, for example, VS Code's terminal, it may create zombie child processes when you finish the execution which will block the port.
+We do not advise you to run it in any virtual terminal. For example, VS  Code's terminal may create a zombie child process when you finish executing, which blocks the port.
 
 In case that happens, you need to find the process that uses the PORT and kills it through its PID.
 
@@ -107,12 +106,15 @@ Each feature is a folder defined, and all of its extra dependencies go into the 
 
 Every utils file starts with ```___``` and ends with ```utils``` followed by its extension for better identification.
 
+> [!NOTE]
+> If you find any issues or have suggestions for improvements, or question feel free to open an issue or send an email.
+
 ## If I want to build a webserv in C++98 how should I begin?
 
-First understanding the basis of a client and a server is a good start.
-Next how the HTTP request and response cycle works.
-After that how file descriptors can be used as web sockets.
-Then how to syncronize fd's events with epoll or any of its variants.
+First, understanding the basis of a client and a server is a good start.
+Next, how the HTTP request and response cycle works.
+After that, how file descriptors can be used as web sockets.
+Then, how to syncronize fd's events with epoll or any of its variants.
 Finally, use all of the tools C++98 has to give to manage the requests and responses, you're going to see 
 that it is pretty much managing I/O operation with file descriptors.
 
@@ -146,3 +148,8 @@ sudo apt install siege
  - [How NodeJs works](https://www.youtube.com/watch?v=wB9tIg209-8)
  - [Internal Architecture of NodeJs](https://youtu.be/vyPzHBKa88w?si=7xhh935QGnAGgCjM)
 
+## Made by:
+
+ @ratavare - Rafael Tavares</br>
+ @terezamr - Tereza Ribeiro</br>
+ @sepulven - Arthur Aguiar</br>
