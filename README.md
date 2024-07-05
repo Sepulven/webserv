@@ -22,17 +22,19 @@ cd webserv
 make
 ./webserv config.yml
 ~~~
-We do not advise you to run it in any virtual terminal. For example, VS  Code's terminal may create a zombie child process when you finish executing, which blocks the port.
 
-In case that happens, you need to find the process that uses the PORT and kills it through its PID.
+> [!CAUTION]
+> We do not advise you to run it in any virtual terminal. For example, VS  Code's terminal may create a zombie child process when you finish executing, which blocks the port.
+> In case that happens, you need to find the process that uses the PORT and kills it through its PID.
+>
+> In your terminal run:
+> ~~~bash
+> lsof -i :[PORT]
+> kill -9 [PID]
+> ~~~
 
-In your terminal run:
-~~~bash
-lsof -i :[PORT]
-kill -9 [PID]
-~~~
-
-When testing it use Firefox as a browser. Where else you will run into unexpected behaviors.
+> [!WARNING]
+> When testing it, use Firefox as a browser. Otherwise, you will encounter unexpected behaviors.
 
 In your terminal run:
 
@@ -52,12 +54,11 @@ Operating System:
 
 Compiler:
 	
-	c++ (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0
+	> c++ (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0
 
 Browser:
 
-	firefox --version
-
+	> Mozilla Firefox 127.0.2
 
 ## How to use it
 
