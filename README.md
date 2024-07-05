@@ -102,6 +102,12 @@ We must have at least the ```/``` route definition which is in-build in the main
 	- http_methods: list of strings ` Defines the allowed methods. `
 
  If any rule is broken or a logic gap is presetended, the server won't run.
+ 
+ Errors such as:
+	- Bad indention;
+ 	- Wrong attr. definition, like attr. name and value;
+  	- Non-existing file path;
+In case no error pages is provided for an error code, a standart html page with the error code is created.
 
 > [!TIP]
 > The config file accepts comments. They must begin with `#` followed by the comment.
@@ -144,13 +150,6 @@ server:
         http_methods: GET POST DELETE
 
 ```
-
-Foot notes
-
-In case no error pages is provided or do not exists, a standart html page with the error code is created.
-
-In case a file path is sat and do not exists the webserv won't run.
-
 ## File structure
 
 The whole project is structured into pieces for each piece you have the declaration and the implementation, namely a .h and .cpp respectively.
