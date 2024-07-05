@@ -66,8 +66,9 @@ It will server locally all of the files requested and execute all of the defined
 
 ### Understanding the config file
 
-The config file is defined in a YAML-like file. Its structure is very similar except for the fact we can have multiple
-definitions of the same variable, the variables are going to be stored as an array. 
+The config file is defined in a YAML-like file. Its structure is very similar to YAML except for the fact we can have multiple
+definitions of the same variable, in this case, the variables are going to be stored as an array. 
+
 For example:
 ```YAML
 server:
@@ -76,28 +77,79 @@ server:
 	[...]
 ```
 
-Thus we can have multiple definitions of servers listining to different ports and multiple definitions of routes.
-We must have at least the ```/``` route definition.
+Thus we can have multiple definitions of servers listening to different ports and multiple definitions of routes.
+We must have at least the ```/``` route definition which is in-build in the main scope, it cannot be defined as any regular route.
+
 ### Definitions
 - listen:
-	- host : string | number ``` The host can only be either localhost or 127.0.0.1 ```
- 	- port: number ``` Any avaible port, the server with throw an error in case the port is busy. ```
-- server_name: string ``` Names the server block. ```
-- maxcbsize: string ``` Megabyte or bytes. Sets the max. size of the content-body(http protocol). ```
-- max_conn: number ``` 1 is enough as the max. connections. C++ is fast to deal with incoming requests thousands of incoming request flawlessly. ```
-- error_pages: ``` Sets up the path to the http error pages. ```
-	- number : path ``` Error code followed by the path of the file that is going to be served. ```
-- cgi: ``` Defines all of the cgis. ```
-  - string : path ``` Extension followed by the path to the interpreter. ```
-- root: path ``` The root to the / route.```
-- index: path ``` The index for the / route. ```
-- http_methods: list of strings ``` Allowed methods for the / route. ```
-- route path: ``` Defines a route except the / route. ```
-	- root: path ``` Defines root.```
-  	- redirect: path ``` Defines  the redirect route for when the http method completes. ```
-  	- index: path  ``` Defines the index file. ```
-	- dir_listing: on | off ``` Directory listing. ```
-	- http_methods: list of strings ``` Defines the allowed methods. ```
+	- host : string | number ` The host can only be either localhost or 127.0.0.1 `
+ 	- port: number ` Any avaible port, the server with throw an error in case the port is busy. `
+- server_name: string ` Names the server block. `
+- maxcbsize: string ` Megabyte or bytes. Sets the max. size of the content-body(http protocol). `
+- max_conn: number ` 1 is enough as the max. connections. C++ is fast to deal with thousands of incoming request flawlessly. `
+- error_pages: ` Sets up the path to the http error pages. `
+	- number : path ` Error code followed by the path of the file that is going to be served. `
+- cgi: ` Defines all of the cgis. `
+  - string : path ` Extension followed by the path to the interpreter. `
+- root: path ` The root to the / route.`
+- index: path ` The index for the / route. `
+- http_methods: list of strings ` Allowed methods for the / route. `
+- route path: ` Defines a route except the / route. `
+	- root: path ` Defines root.`
+  	- redirect: path ` Defines  the redirect route for when the http method completes. `
+  	- index: path  ` Defines the index file. `
+	- dir_listing: on | off ` Directory listing. `
+	- http_methods: list of strings ` Defines the allowed methods. `
+
+ If any rule is broken or a logic gap is presetended, the server won't run.
+
+> [!TIP]
+> The config file accepts comments. They must begin with `#` followed by the comment.
+> __# This is comment!__
+
+```YAML
+server:
+    listen:                     # mandatory
+        host: localhost   
+        port: 8080
+    server_name: main.server.com
+    max_cbsize: 2000m		#mandatory
+    max_conn: 1			#mandatory
+
+    # / route definition, mandatory
+    root: /www   # * Root definition 
+    index: pages/index.html
+    http_methods: GET POST
+
+    error_pages:   # * Error pages map;
+        403: error/403.html
+        400: error/400.html
+        404: error/404.asf    # works with every type of file
+        404: error/404.html
+
+    cgi:   # If not defined, no script can be interpreted
+        .py: /usr/bin/python3
+        .php: /usr/bin/php
+
+    # * Server routing;
+    route /main: # AN EXAMPLE OF A REGULAR ROUTE
+        root: /www/pages
+        redirect: /up
+        index: index.html
+        dir_listing: off
+        http_methods: GET POST 
+    route /up: # ROUTES THAT DEALS WITH FILES;
+        root: /www/uploads
+        dir_listing: on
+        http_methods: GET POST DELETE
+
+```
+
+Foot notes
+
+In case no error pages is provided or do not exists, a standart html page with the error code is created.
+
+In case a file path is sat and do not exists the webserv won't run.
 
 ## File structure
 
@@ -107,7 +159,7 @@ Each feature is a folder defined, and all of its extra dependencies go into the 
 Every utils file starts with ```___``` and ends with ```utils``` followed by its extension for better identification.
 
 > [!NOTE]
-> If you find any issues or have suggestions for improvements, or question feel free to open an issue or send an email.
+> If you find any issues, or have question, or have suggestions for improvements feel free to open an issue or send an email.
 
 ## If I want to build a webserv in C++98 how should I begin?
 
@@ -153,3 +205,4 @@ sudo apt install siege
  @ratavare - Rafael Tavares</br>
  @terezamr - Tereza Ribeiro</br>
  @sepulven - Arthur Aguiar</br>
+ 
