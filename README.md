@@ -23,7 +23,7 @@ make
 ./webserv config.yml
 ~~~
 
-> [!CAUTION]
+> [!WARNING]
 > We do not advise you to run it in any virtual terminal. For example, VS  Code's terminal may create a zombie child process when you finish executing, which blocks the port.
 > In case that happens, you need to find the process that uses the PORT and kills it through its PID.
 >
@@ -33,7 +33,7 @@ make
 > kill -9 [PID]
 > ~~~
 
-> [!WARNING]
+> [!CAUTION]
 > When testing it, use Firefox as a browser. Otherwise, you will encounter unexpected behaviors.
 
 In your terminal run:
